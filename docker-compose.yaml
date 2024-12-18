@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  # frontend:
+  #   build: ./client
+  #   ports:
+  #     - 3000:3000
+  server:
+    build: ./server
+    ports:
+      - 3001:3001
+    environment:
+      DATABASE_URL: postgres://postgres:freedom@12@db/notion_clone
+  postgres:
+    image: postgres:16
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: freedom@12
+      POSTGRES_DB: notion_clone
+    volumes:
+      - notion_clone_data:/var/lib/postgresql/data
+volumes:
+  notion_clone_data:
