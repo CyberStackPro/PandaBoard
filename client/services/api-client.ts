@@ -1,22 +1,41 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
+export interface FetchResponse<T> {
+  data: T;
+}
 const axiosInstance = axios.create({
   baseURL: "http://localhost:4000",
+  withCredentials: true,
 });
 
-class APIClient<T> {
+class APIClient<T, R = T> {
   endpoint: string;
 
   constructor(endpoint: string) {
     this.endpoint = endpoint;
   }
 
-  get = async (config?: AxiosRequestConfig) => {
-    const response = await axiosInstance.get<T>(this.endpoint, config);
+  get = async (config?: AxiosRequestConfig): Promise<R> => {
+    const response: AxiosResponse<R> = await axiosInstance.get<R>(
+      this.endpoint,
+      config
+    );
     return response.data;
   };
-  signup = async (config?: AxiosRequestConfig) => {
-    const response = await axiosInstance.post<T>(this.endpoint, config);
+  post = async (data: T, config?: AxiosRequestConfig): Promise<R> => {
+    const response: AxiosResponse<R> = await axiosInstance.post<R>(
+      this.endpoint,
+      data,
+      config
+    );
+    return response.data;
+  };
+  patch = async (data: Partial<T>, config?: AxiosRequestConfig): Promise<R> => {
+    const response: AxiosResponse<R> = await axiosInstance.patch<R>(
+      this.endpoint,
+      data,
+      config
+    );
     return response.data;
   };
 }

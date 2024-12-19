@@ -11,8 +11,16 @@ importers:
       axios:
         specifier: ^1.7.9
         version: 1.7.9
+    devDependencies:
+      '@types/axios':
+        specifier: ^0.14.4
+        version: 0.14.4
 
 packages:
+
+  '@types/axios@0.14.4':
+    resolution: {integrity: sha512-9JgOaunvQdsQ/qW2OPmE5+hCeUB52lQSolecrFrthct55QekhmXEwT203s20RL+UHtCQc15y3VXpby9E7Kkh/g==}
+    deprecated: This is a stub types definition. axios provides its own type definitions, so you do not need this installed.
 
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
@@ -53,6 +61,12 @@ packages:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
 
 snapshots:
+
+  '@types/axios@0.14.4':
+    dependencies:
+      axios: 1.7.9
+    transitivePeerDependencies:
+      - debug
 
   asynckit@0.4.0: {}
 
