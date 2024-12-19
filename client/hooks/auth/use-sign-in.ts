@@ -4,16 +4,18 @@ import APIClient from "@/services/api-client";
 import { SignInRequest, SignInResponse } from "@/types/auth";
 import { APIError } from "@/types/api";
 import { User } from "@/types/user";
+import { useAuthStore } from "@/stores/auth/auth-store";
 
 const apiClient = new APIClient<SignInRequest, SignInResponse>("/auth/signin");
 
-export const useSignUp = () => {
+export const useSignIn = () => {
   const [data, setData] = useState<SignInRequest>({
     email: "",
     password: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const setAuth = useAuthStore((state) => state.setAuth);
   const { toast } = useToast();
 
   const signin = async (
@@ -25,10 +27,13 @@ export const useSignUp = () => {
 
       const response = await apiClient.post(data);
 
+      setAuth(response.user, response.accessToken);
+
       toast({
         title: "Success",
         description: "Operation successful",
         variant: "default",
+        type: "foreground",
       });
       return response;
     } catch (err: unknown) {

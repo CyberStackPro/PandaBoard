@@ -1,7 +1,9 @@
 "use client";
-
-import { redirect } from "next/navigation";
+import { useEffect } from "react";
 import { ModeToggle } from "./_components/theme-toggler";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { useAuthStore } from "@/stores/auth/auth-store";
 
 const page = () => {
   // const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -9,15 +11,22 @@ const page = () => {
   // useEffect(() => {
   //   if (isAuthenticated) {
   //     redirect("/dashboard");
-  //   } else {
-  //     redirect("/auth/signup");
   //   }
   // }, [isAuthenticated]);
-  const isAuthenticated = false;
+
   return (
     <div className="flex justify-center items-center h-[100vh]">
-      <ModeToggle />
-      {isAuthenticated ? redirect("/dashboard") : redirect("/auth/signup")}
+      <nav>
+        <ModeToggle />
+        <ul>
+          <li>
+            <Link href="/auth/signin">Sign In</Link>
+          </li>
+          <li>
+            <Link href="/auth/signup">Sign Up</Link>
+          </li>
+        </ul>
+      </nav>
     </div>
   );
 };

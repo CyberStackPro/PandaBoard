@@ -3,6 +3,7 @@ import { useToast } from "../use-toast";
 import APIClient from "@/services/api-client";
 import { SignUpRequest, SignUpResponse } from "@/types/auth";
 import { APIError } from "@/types/api";
+import { useAuthStore } from "@/stores/auth/auth-store";
 
 interface User {
   name: string;
@@ -20,6 +21,7 @@ export const useSignUp = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const setAuth = useAuthStore((state) => state.setAuth);
   const { toast } = useToast();
 
   const signup = async (data: User) => {
@@ -28,6 +30,8 @@ export const useSignUp = () => {
       setError(null);
 
       const response = await apiClient.post(data);
+
+      setAuth(response.user, response.accessToken);
 
       toast({
         title: "Success",

@@ -15,6 +15,7 @@ import React from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useSignIn } from "@/hooks/auth/use-sign-in";
 
 const signUpSchema = z.object({
   email: z.string().email({
@@ -33,9 +34,15 @@ const SignIn = () => {
       password: "",
     },
   });
+  const { signin, loading, error } = useSignIn();
 
-  const onSubmit = (data: z.infer<typeof signUpSchema>) => {
-    console.log(data);
+  const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
+    try {
+      await signin(data);
+      console.log(data);
+    } catch {
+      console.log(error);
+    }
   };
   return (
     <div className="space-y-2">
@@ -95,7 +102,7 @@ const SignIn = () => {
             className="text-primary underline underline-offset-2 hover:text-primary/80"
             href="/auth/signup"
           >
-            Sign Up
+            {loading ? "Loading..." : "Sign In"}
           </Link>
         </p>
       </div>

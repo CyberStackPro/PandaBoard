@@ -16,7 +16,6 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useSignUp } from "@/hooks/auth/use-sign-up";
-import { toast } from "@/hooks/use-toast";
 
 const signUpSchema = z.object({
   name: z.string().min(2, {
@@ -44,11 +43,7 @@ const SignUp = () => {
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     try {
       await signup(data);
-      toast({
-        title: "Success",
-        description: "Account created successfully",
-        variant: "default",
-      });
+      console.log(data);
     } catch {
       console.log(error);
     }
