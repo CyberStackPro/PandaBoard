@@ -24,7 +24,7 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null, accessToken: null, isAuthenticated: false }),
     }),
     {
-      name: "auth-storage",
+      name: "notion-auth-store",
     }
   )
 );

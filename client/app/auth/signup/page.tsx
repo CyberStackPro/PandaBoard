@@ -15,10 +15,12 @@ import React from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useSignUp } from "@/hooks/auth/use-sign-up";
+import { toast } from "@/hooks/use-toast";
 
 const signUpSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
+  name: z.string().min(2, {
+    message: "name must be at least 2 characters.",
   }),
   email: z.string().email({
     message: "Please enter a valid email address.",
@@ -32,14 +34,24 @@ const SignUp = () => {
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      username: "",
+      name: "",
       email: "",
       password: "",
     },
   });
+  const { error, loading, signup } = useSignUp();
 
-  const onSubmit = (data: z.infer<typeof signUpSchema>) => {
-    console.log(data);
+  const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
+    try {
+      await signup(data);
+      toast({
+        title: "Success",
+        description: "Account created successfully",
+        variant: "default",
+      });
+    } catch {
+      console.log(error);
+    }
   };
   return (
     <div className="space-y-2">
@@ -47,10 +59,10 @@ const SignUp = () => {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
             control={form.control}
-            name="username"
+            name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>User Name</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
@@ -121,7 +133,7 @@ const SignUp = () => {
             className="text-primary underline underline-offset-2 hover:text-primary/80"
             href="/auth/signin"
           >
-            Login
+            {loading ? "Loading..." : "Sign Un"}
           </Link>
         </p>
       </div>

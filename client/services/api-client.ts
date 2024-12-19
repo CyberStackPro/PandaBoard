@@ -1,10 +1,11 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import axios from "axios";
+import { AxiosRequestConfig, AxiosResponse } from "axios";
 
-export interface FetchResponse<T> {
-  data: T;
-}
+// export interface FetchResponse<T> {
+//   data: T;
+// }
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:4000",
+  baseURL: "http://localhost:4000/api/v1",
   withCredentials: true,
 });
 
