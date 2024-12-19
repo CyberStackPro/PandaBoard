@@ -9,7 +9,7 @@ interface User {
   password: string;
 }
 
-const apiClient = new APIClient<SignUpRequest, SignUpResponse>("/auth/signup");
+const apiClient = new APIClient<SignUpRequest, SignUpResponse>("/auth/signin");
 
 export const useSignUp = () => {
   const [data, setData] = useState<SignUpRequest>({
@@ -21,7 +21,7 @@ export const useSignUp = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const signup = async (data: User) => {
+  const signin = async (data: User) => {
     try {
       setLoading(true);
       setError(null);
@@ -49,5 +49,5 @@ export const useSignUp = () => {
     }
   };
 
-  return { data, setData, error, loading, signup };
+  return { data, setData, error, loading, signin };
 };
