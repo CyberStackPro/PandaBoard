@@ -1,19 +1,14 @@
 import { useState } from "react";
-import { useToast } from "./use-toast";
+import { useToast } from "../use-toast";
 import APIClient from "@/services/api-client";
-import { APIError, SignUpRequest, SignUpResponse } from "@/types/api";
+import { SignInRequest, SignInResponse } from "@/types/auth";
+import { APIError } from "@/types/api";
+import { User } from "@/types/user";
 
-interface User {
-  name: string;
-  email: string;
-  password: string;
-}
-
-const apiClient = new APIClient<SignUpRequest, SignUpResponse>("/auth/signup");
+const apiClient = new APIClient<SignInRequest, SignInResponse>("/auth/signin");
 
 export const useSignUp = () => {
-  const [data, setData] = useState<SignUpRequest>({
-    name: "",
+  const [data, setData] = useState<SignInRequest>({
     email: "",
     password: "",
   });
@@ -21,7 +16,9 @@ export const useSignUp = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const signup = async (data: User) => {
+  const signin = async (
+    data: Pick<User & SignInRequest, "email" | "password">
+  ) => {
     try {
       setLoading(true);
       setError(null);
@@ -30,7 +27,7 @@ export const useSignUp = () => {
 
       toast({
         title: "Success",
-        description: "Account created successfully",
+        description: "Operation successful",
         variant: "default",
       });
       return response;
@@ -49,5 +46,5 @@ export const useSignUp = () => {
     }
   };
 
-  return { data, setData, error, loading, signup };
+  return { data, setData, error, loading, signin };
 };

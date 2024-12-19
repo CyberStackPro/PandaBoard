@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useToast } from "./use-toast";
+import { useToast } from "../use-toast";
 import APIClient from "@/services/api-client";
-import { APIError, SignUpRequest, SignUpResponse } from "@/types/api";
+import { SignUpRequest, SignUpResponse } from "@/types/auth";
+import { APIError } from "@/types/api";
 
 interface User {
   name: string;
@@ -9,7 +10,7 @@ interface User {
   password: string;
 }
 
-const apiClient = new APIClient<SignUpRequest, SignUpResponse>("/auth/signin");
+const apiClient = new APIClient<SignUpRequest, SignUpResponse>("/auth/signup");
 
 export const useSignUp = () => {
   const [data, setData] = useState<SignUpRequest>({
@@ -21,7 +22,7 @@ export const useSignUp = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const signin = async (data: User) => {
+  const signup = async (data: User) => {
     try {
       setLoading(true);
       setError(null);
@@ -49,5 +50,5 @@ export const useSignUp = () => {
     }
   };
 
-  return { data, setData, error, loading, signin };
+  return { data, setData, error, loading, signup };
 };

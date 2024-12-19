@@ -1,17 +1,21 @@
-// import { NextResponse, NextRequest } from 'next/server'
+// // middleware.ts
+// import { NextResponse } from 'next/server'
+// import type { NextRequest } from 'next/server'
 
 // export function middleware(request: NextRequest) {
-//   const isAuthenticated = authenticate(request)
+//   const token = request.cookies.get('accessToken')
 
-//   // If the user is authenticated, continue as normal
-//   if (isAuthenticated) {
-//     return NextResponse.next()
+//   if (!token && request.nextUrl.pathname.startsWith('/dashboard')) {
+//     return NextResponse.redirect(new URL('/auth/signin', request.url))
 //   }
 
-//   // Redirect to login page if not authenticated
-//   return NextResponse.redirect(new URL('/login', request.url))
+//   if (token && request.nextUrl.pathname.startsWith('/auth')) {
+//     return NextResponse.redirect(new URL('/dashboard', request.url))
+//   }
+
+//   return NextResponse.next()
 // }
 
 // export const config = {
-//   matcher: '/dashboard/:path*',
+//   matcher: ['/dashboard/:path*', '/auth/:path*'],
 // }
