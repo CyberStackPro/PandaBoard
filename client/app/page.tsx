@@ -1,9 +1,9 @@
 "use client";
-import { useEffect } from "react";
+// import { useEffect } from "react";
 import { ModeToggle } from "./_components/theme-toggler";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { useAuthStore } from "@/stores/auth/auth-store";
+// import { redirect } from "next/navigation";
+// import { useAuthStore } from "@/stores/auth/auth-store";
 
 const page = () => {
   // const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
