@@ -8,7 +8,7 @@ import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from './schema';
 import { Role } from './dto/create-user.dto';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { UpdateProfileDto } from './dto/create-profile.dto';
 
 @Injectable()
@@ -21,7 +21,9 @@ export class UsersService {
   async getUsers(role: Role) {
     const users = await this.database.query.users.findMany({
       with: { profile: true },
-      where: (users, { eq }) => eq(users.role, role),
+      limit: 10,
+      // offset: 0,
+      where: (users, { eq }) => and(role ? eq(users.role, role) : undefined),
     });
 
     return users;
