@@ -5,6 +5,7 @@ import { SignInRequest, SignInResponse } from "@/types/auth";
 import { APIError } from "@/types/api";
 import { User } from "@/types/user";
 import { useAuthStore } from "@/stores/auth/auth-store";
+import { redirect } from "next/navigation";
 
 const apiClient = new APIClient<SignInRequest, SignInResponse>("/auth/signin");
 
@@ -36,6 +37,7 @@ export const useSignIn = () => {
         type: "foreground",
       });
       return response;
+      redirect("/dashboard");
     } catch (err: unknown) {
       const error = err as { response: { data: APIError } };
       const errorMessage = error.response?.data?.message || "An error occurred";

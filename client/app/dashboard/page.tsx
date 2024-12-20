@@ -1,3 +1,5 @@
+"use client";
+
 import { useAuthStore } from "@/stores/auth/auth-store";
 import { redirect } from "next/navigation";
 import React, { useEffect } from "react";
@@ -5,11 +7,11 @@ import React, { useEffect } from "react";
 const DashboardPage = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!isAuthenticated) {
       redirect("/dashboard");
     }
   }, [isAuthenticated]);
-  return <div>DashboardPage</div>;
+  return <h1>hello</h1>;
 };
 
 export default DashboardPage;

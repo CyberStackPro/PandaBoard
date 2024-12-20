@@ -16,6 +16,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useSignUp } from "@/hooks/auth/use-sign-up";
+import { useRouter } from "next/navigation";
 
 const signUpSchema = z.object({
   name: z.string().min(2, {
@@ -39,10 +40,14 @@ const SignUp = () => {
     },
   });
   const { error, loading, signup } = useSignUp();
+  const router = useRouter();
 
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     try {
-      await signup(data);
+      const res = await signup(data);
+      if (res) {
+        router.push("/dashboard");
+      }
       console.log(data);
     } catch {
       console.log(error);
