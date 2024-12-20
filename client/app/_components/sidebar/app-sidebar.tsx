@@ -155,11 +155,11 @@ const data = {
     {
       name: "Jonathan's James",
       icon: "🏠",
-      pages: [
+      children: [
         {
           name: "Personal Life Management",
           icon: "🏠",
-          pages: [
+          children: [
             {
               name: "Daily Journal & Reflection",
               url: "#",
@@ -180,7 +180,7 @@ const data = {
         {
           name: "Professional Development",
           icon: "💼",
-          pages: [
+          children: [
             {
               name: "Career Objectives & Milestones",
               url: "#",
@@ -201,7 +201,7 @@ const data = {
         {
           name: "Creative Projects",
           icon: "🎨",
-          pages: [
+          children: [
             {
               name: "Writing Ideas & Story Outlines",
               url: "#",
@@ -222,7 +222,7 @@ const data = {
         {
           name: "Home Management",
           icon: "🏡",
-          pages: [
+          children: [
             {
               name: "Household Budget & Expense Tracking",
               url: "#",
@@ -243,7 +243,7 @@ const data = {
         {
           name: "Travel & Adventure",
           icon: "🧳",
-          pages: [
+          children: [
             {
               name: "Trip Planning & Itineraries",
               url: "#",
@@ -265,6 +265,8 @@ const data = {
     },
   ],
 };
+// ],
+// };
 
 export function AppSidebar({
   className,
@@ -279,18 +281,50 @@ export function AppSidebar({
       )}
       {...props}
     >
-      {/* <Sidebar className="border-r-0" collapsible="icon" {...props}></Sidebar> */}
-      <div className="flex-shrink-0 transition-all p-4">
-        <TeamSwitcher teams={data.teams} />
-      </div>
-      <div className="flex-1  overflow-auto">
-        {/* <NavMain items={data.navMain} />
+      <Sidebar className="border-r-0" collapsible="icon" {...props}>
+        <div className="flex-shrink-0 transition-all p-4">
+          <TeamSwitcher teams={data.teams} />
+        </div>
+        <div className="flex-1  overflow-auto">
+          {/* <NavMain items={data.navMain} />
         <NavFavorites favorites={data.favorites} /> */}
-        <NavWorkspaces workspaces={data.workspaces} />
-      </div>
-      <div className="flex-shrink-0 p-4">
-        <NavSecondary items={data.navSecondary} />
-      </div>
+          <NavWorkspaces projects={data.workspaces} />
+        </div>
+        <div className="flex-shrink-0 p-4">
+          <NavSecondary items={data.navSecondary} />
+        </div>
+      </Sidebar>
     </div>
   );
 }
+
+// export function AppSidebar({
+//   className,
+//   ...props
+// }: React.HTMLAttributes<HTMLDivElement>) {
+//   const { state } = useSidebar();
+//   return (
+//     <div
+//       className={cn(
+//         "flex h-full flex-col bg-sidebar-accent overflow-hidden",
+//         className
+//       )}
+//       {...props}
+//     >
+//       <Sidebar className="border-r-0" collapsible="icon" {...props}>
+
+//       </Sidebar>
+//       <div className="flex-shrink-0 transition-all p-4">
+//         <TeamSwitcher teams={data.teams} />
+//       </div>
+//       <div className="flex-1  overflow-auto">
+//         {/* <NavMain items={data.navMain} />
+//         <NavFavorites favorites={data.favorites} /> */}
+//         <NavWorkspaces workspaces={data.workspaces} />
+//       </div>
+//       <div className="flex-shrink-0 p-4">
+//         <NavSecondary items={data.navSecondary} />
+//       </div>
+//     </div>
+//   );
+// }

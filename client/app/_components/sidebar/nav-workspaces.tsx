@@ -95,9 +95,10 @@ const rightClickMenuItems = [
 
 interface NavWorkspacesProps {
   isCollapsed: boolean;
+  projects: Project[];
 }
 
-export function NavWorkspaces({ isCollapsed }: NavWorkspacesProps) {
+export function NavWorkspaces({ isCollapsed, projects }: NavWorkspacesProps) {
   const handleCreateProject = (parentId?: string) => {
     const projectName = prompt("Enter project name:");
     if (projectName) {
@@ -173,9 +174,17 @@ export function NavWorkspaces({ isCollapsed }: NavWorkspacesProps) {
                 >
                   <span className="flex-shrink-0">
                     {isFolder ? (
-                      <Folder className="h-4 w-4" />
+                      <>
+                        {project ? (
+                          project.icon
+                        ) : (
+                          <Folder className="h-4 w-4" />
+                        )}
+                      </>
                     ) : (
-                      <File className="h-4 w-4" />
+                      <>
+                        {project ? project.icon : <File className="h-4 w-4" />}
+                      </>
                     )}
                   </span>
                   {!isCollapsed && <span>{project.name}</span>}
@@ -187,7 +196,7 @@ export function NavWorkspaces({ isCollapsed }: NavWorkspacesProps) {
                   {isFolder && (
                     <CollapsibleTrigger asChild>
                       <SidebarMenuAction
-                        className="left-2 bg-sidebar-accent text-sidebar-accent-foreground data-[state=open]:rotate-90"
+                        className="left-2 bg-sidebar-accent text-sidebar-accent-foreground "
                         showOnHover
                       >
                         <ChevronRight className="h-4 w-4" />
@@ -253,7 +262,7 @@ export function NavWorkspaces({ isCollapsed }: NavWorkspacesProps) {
       </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {mockProjects.map((project) => (
+          {projects.map((project) => (
             <div key={project.id}>
               {renderProjectTree(isCollapsed, project)}
             </div>
