@@ -192,11 +192,11 @@ export function NavWorkspaces({ isCollapsed, projects }: NavWorkspacesProps) {
               </SidebarMenuButton>
 
               {!isCollapsed && (
-                <div className="group flex-shrink-0">
+                <>
                   {isFolder && (
                     <CollapsibleTrigger asChild>
                       <SidebarMenuAction
-                        className="left-2 bg-sidebar-accent text-sidebar-accent-foreground "
+                        className="left-2 bg-sidebar-accent text-sidebar-accent-foreground data-[state=open]:rotate-90"
                         showOnHover
                       >
                         <ChevronRight className="h-4 w-4" />
@@ -204,34 +204,20 @@ export function NavWorkspaces({ isCollapsed, projects }: NavWorkspacesProps) {
                     </CollapsibleTrigger>
                   )}
 
-                  {/* Dropdown for "..." menu */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <SidebarMenuAction showOnHover>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </SidebarMenuAction>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      {rightClickMenuItems.map((item) => (
-                        <DropdownMenuItem key={item.name}>
-                          {item.icon}
-                          {item.name}
-                          <ContextMenuShortcut>
-                            {item.shortcut}
-                          </ContextMenuShortcut>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                  <SidebarMenuAction showOnHover>
+                    <MoreHorizontal className="h-4 w-4" />
+                  </SidebarMenuAction>
+                </>
               )}
 
               {!isCollapsed && isFolder && (
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    {project.children?.map((child) =>
-                      renderProjectTree(isCollapsed, child, level + 1)
-                    )}
+                    <span key={project.id}>
+                      {project.children?.map((child) =>
+                        renderProjectTree(isCollapsed, child, level + 1)
+                      )}
+                    </span>
                   </SidebarMenuSub>
                 </CollapsibleContent>
               )}
@@ -240,14 +226,16 @@ export function NavWorkspaces({ isCollapsed, projects }: NavWorkspacesProps) {
         </ContextMenuTrigger>
 
         {/* Right-click context menu for projects */}
-        <ContextMenuContent className="w-64">
+        <ContextMenuContent className="w-64 backdrop-blur-sm !bg-background/50">
           {rightClickMenuItems.map((item) => (
             <ContextMenuItem
               key={item.name}
               onSelect={() => console.log(item.name)}
             >
               {item.icon}
-              {item.name}
+              <span className="ml-2">{item.name}</span>
+              {/* {item.name} */}
+              <ContextMenuShortcut>{item.shortcut}</ContextMenuShortcut>
             </ContextMenuItem>
           ))}
         </ContextMenuContent>

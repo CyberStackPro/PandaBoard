@@ -219,47 +219,68 @@ const data = {
             },
           ],
         },
+      ],
+    },
+    {
+      name: "Home Management",
+      icon: "🏡",
+      children: [
         {
-          name: "Home Management",
-          icon: "🏡",
-          children: [
-            {
-              name: "Household Budget & Expense Tracking",
-              url: "#",
-              icon: "💰",
-            },
-            {
-              name: "Home Maintenance Schedule & Tasks",
-              url: "#",
-              icon: "🔧",
-            },
-            {
-              name: "Family Calendar & Event Planning",
-              url: "#",
-              icon: "📅",
-            },
-          ],
+          name: "Household Budget & Expense Tracking",
+          url: "#",
+          icon: "💰",
         },
         {
-          name: "Travel & Adventure",
-          icon: "🧳",
-          children: [
-            {
-              name: "Trip Planning & Itineraries",
-              url: "#",
-              icon: "🗺️",
-            },
-            {
-              name: "Travel Bucket List & Inspiration",
-              url: "#",
-              icon: "🌎",
-            },
-            {
-              name: "Travel Journal & Photo Gallery",
-              url: "#",
-              icon: "📸",
-            },
-          ],
+          name: "Home Maintenance Schedule & Tasks",
+          url: "#",
+          icon: "🔧",
+        },
+        {
+          name: "Family Calendar & Event Planning",
+          url: "#",
+          icon: "📅",
+        },
+      ],
+    },
+    {
+      name: "Travel & Adventure",
+      icon: "🧳",
+      children: [
+        {
+          name: "Trip Planning & Itineraries",
+          url: "#",
+          icon: "🗺️",
+        },
+        {
+          name: "Travel Bucket List & Inspiration",
+          url: "#",
+          icon: "🌎",
+        },
+        {
+          name: "Travel Journal & Photo Gallery",
+          url: "#",
+          icon: "📸",
+        },
+      ],
+    },
+    {
+      name: "Personal Life Management",
+      icon: "🏠",
+      children: [
+        {
+          name: "Daily Journal & Reflection",
+          url: "#",
+          icon: "📔",
+        },
+        {
+          name: "Health & Wellness Tracker",
+          url: "#",
+          icon: "🍏",
+        },
+        {
+          name: "Personal Growth & Learning Goals",
+          url: "#",
+          icon: "🌟",
         },
       ],
     },
@@ -274,27 +295,24 @@ export function AppSidebar({
 }: React.HTMLAttributes<HTMLDivElement>) {
   const { state } = useSidebar();
   return (
-    <div
-      className={cn(
-        "flex h-full flex-col bg-sidebar-accent overflow-hidden",
-        className
-      )}
+    // <div className="relative  group-data-[variant=floating]:border-0">
+    // {/* <div className="absolute inset-y-0 right-0 w-3 bg-white filter blur-md opacity-100"></div> */}
+    <Sidebar
+      className="border-r-0 backdrop-blur-sm bg-background/50"
+      collapsible="icon"
       {...props}
     >
-      <Sidebar className="border-r-0" collapsible="icon" {...props}>
-        <div className="flex-shrink-0 transition-all p-4">
-          <TeamSwitcher teams={data.teams} />
-        </div>
-        <div className="flex-1  overflow-auto">
-          {/* <NavMain items={data.navMain} />
-        <NavFavorites favorites={data.favorites} /> */}
-          <NavWorkspaces projects={data.workspaces} />
-        </div>
-        <div className="flex-shrink-0 p-4">
-          <NavSecondary items={data.navSecondary} />
-        </div>
-      </Sidebar>
-    </div>
+      <SidebarHeader>
+        <TeamSwitcher teams={data.teams} />
+      </SidebarHeader>
+      <SidebarContent>
+        <NavWorkspaces projects={data.workspaces} />
+
+        <NavSecondary items={data.navSecondary} />
+      </SidebarContent>
+      <SidebarRail />
+    </Sidebar>
+    // </div>
   );
 }
 
