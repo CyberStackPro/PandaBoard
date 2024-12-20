@@ -284,8 +284,8 @@ export function AppSidebar({
         <TeamSwitcher teams={data.teams} />
       </div>
       <div className="flex-1  overflow-auto">
-        {/* <NavMain items={data.navMain} /> */}
-        {/* <NavFavorites favorites={data.favorites} /> */}
+        {/* <NavMain items={data.navMain} />
+        <NavFavorites favorites={data.favorites} /> */}
         <NavWorkspaces workspaces={data.workspaces} />
       </div>
       <div className="flex-shrink-0 p-4">

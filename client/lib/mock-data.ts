@@ -26,22 +26,7 @@ export const mockProjects: Project[] = [
         icon: "📁",
         cover_image: null,
         children: [],
-        documents: [
-          {
-            id: "doc1",
-            documents: [
-              {
-                id: "doc1",
-                title: "Document 1",
-                content: {},
-              },
-            ],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            title: "Document 1",
-            content: {},
-          },
-        ],
+        documents: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
