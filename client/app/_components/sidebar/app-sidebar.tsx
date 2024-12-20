@@ -20,12 +20,14 @@ import {
   SidebarContent,
   SidebarHeader,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { TeamSwitcher } from "./team-switch";
 import { NavMain } from "./nav-main";
 import { NavFavorites } from "./nav-favorites";
 import { NavWorkspaces } from "./nav-workspaces";
 import { NavSecondary } from "./nav-secondary";
+import { cn } from "@/lib/utils";
 
 // This is sample data.
 const data = {
@@ -101,176 +103,194 @@ const data = {
     {
       name: "Project Management & Task Tracking",
       url: "#",
-      emoji: "📊",
+      icon: "📊",
     },
     {
       name: "Family Recipe Collection & Meal Planning",
       url: "#",
-      emoji: "🍳",
+      icon: "🍳",
     },
     {
       name: "Fitness Tracker & Workout Routines",
       url: "#",
-      emoji: "💪",
+      icon: "💪",
     },
     {
       name: "Book Notes & Reading List",
       url: "#",
-      emoji: "📚",
+      icon: "📚",
     },
     {
       name: "Sustainable Gardening Tips & Plant Care",
       url: "#",
-      emoji: "🌱",
+      icon: "🌱",
     },
     {
       name: "Language Learning Progress & Resources",
       url: "#",
-      emoji: "🗣️",
+      icon: "🗣️",
     },
     {
       name: "Home Renovation Ideas & Budget Tracker",
       url: "#",
-      emoji: "🏠",
+      icon: "🏠",
     },
     {
       name: "Personal Finance & Investment Portfolio",
       url: "#",
-      emoji: "💰",
+      icon: "💰",
     },
     {
       name: "Movie & TV Show Watchlist with Reviews",
       url: "#",
-      emoji: "🎬",
+      icon: "🎬",
     },
     {
       name: "Daily Habit Tracker & Goal Setting",
       url: "#",
-      emoji: "✅",
+      icon: "✅",
     },
   ],
   workspaces: [
     {
-      name: "Personal Life Management",
-      emoji: "🏠",
+      name: "Jonathan's James",
+      icon: "🏠",
       pages: [
         {
-          name: "Daily Journal & Reflection",
-          url: "#",
-          emoji: "📔",
+          name: "Personal Life Management",
+          icon: "🏠",
+          pages: [
+            {
+              name: "Daily Journal & Reflection",
+              url: "#",
+              icon: "📔",
+            },
+            {
+              name: "Health & Wellness Tracker",
+              url: "#",
+              icon: "🍏",
+            },
+            {
+              name: "Personal Growth & Learning Goals",
+              url: "#",
+              icon: "🌟",
+            },
+          ],
         },
         {
-          name: "Health & Wellness Tracker",
-          url: "#",
-          emoji: "🍏",
+          name: "Professional Development",
+          icon: "💼",
+          pages: [
+            {
+              name: "Career Objectives & Milestones",
+              url: "#",
+              icon: "🎯",
+            },
+            {
+              name: "Skill Acquisition & Training Log",
+              url: "#",
+              icon: "🧠",
+            },
+            {
+              name: "Networking Contacts & Events",
+              url: "#",
+              icon: "🤝",
+            },
+          ],
         },
         {
-          name: "Personal Growth & Learning Goals",
-          url: "#",
-          emoji: "🌟",
-        },
-      ],
-    },
-    {
-      name: "Professional Development",
-      emoji: "💼",
-      pages: [
-        {
-          name: "Career Objectives & Milestones",
-          url: "#",
-          emoji: "🎯",
-        },
-        {
-          name: "Skill Acquisition & Training Log",
-          url: "#",
-          emoji: "🧠",
-        },
-        {
-          name: "Networking Contacts & Events",
-          url: "#",
-          emoji: "🤝",
-        },
-      ],
-    },
-    {
-      name: "Creative Projects",
-      emoji: "🎨",
-      pages: [
-        {
-          name: "Writing Ideas & Story Outlines",
-          url: "#",
-          emoji: "✍️",
+          name: "Creative Projects",
+          icon: "🎨",
+          pages: [
+            {
+              name: "Writing Ideas & Story Outlines",
+              url: "#",
+              icon: "✍️",
+            },
+            {
+              name: "Art & Design Portfolio",
+              url: "#",
+              icon: "🖼️",
+            },
+            {
+              name: "Music Composition & Practice Log",
+              url: "#",
+              icon: "🎵",
+            },
+          ],
         },
         {
-          name: "Art & Design Portfolio",
-          url: "#",
-          emoji: "🖼️",
+          name: "Home Management",
+          icon: "🏡",
+          pages: [
+            {
+              name: "Household Budget & Expense Tracking",
+              url: "#",
+              icon: "💰",
+            },
+            {
+              name: "Home Maintenance Schedule & Tasks",
+              url: "#",
+              icon: "🔧",
+            },
+            {
+              name: "Family Calendar & Event Planning",
+              url: "#",
+              icon: "📅",
+            },
+          ],
         },
         {
-          name: "Music Composition & Practice Log",
-          url: "#",
-          emoji: "🎵",
-        },
-      ],
-    },
-    {
-      name: "Home Management",
-      emoji: "🏡",
-      pages: [
-        {
-          name: "Household Budget & Expense Tracking",
-          url: "#",
-          emoji: "💰",
-        },
-        {
-          name: "Home Maintenance Schedule & Tasks",
-          url: "#",
-          emoji: "🔧",
-        },
-        {
-          name: "Family Calendar & Event Planning",
-          url: "#",
-          emoji: "📅",
-        },
-      ],
-    },
-    {
-      name: "Travel & Adventure",
-      emoji: "🧳",
-      pages: [
-        {
-          name: "Trip Planning & Itineraries",
-          url: "#",
-          emoji: "🗺️",
-        },
-        {
-          name: "Travel Bucket List & Inspiration",
-          url: "#",
-          emoji: "🌎",
-        },
-        {
-          name: "Travel Journal & Photo Gallery",
-          url: "#",
-          emoji: "📸",
+          name: "Travel & Adventure",
+          icon: "🧳",
+          pages: [
+            {
+              name: "Trip Planning & Itineraries",
+              url: "#",
+              icon: "🗺️",
+            },
+            {
+              name: "Travel Bucket List & Inspiration",
+              url: "#",
+              icon: "🌎",
+            },
+            {
+              name: "Travel Journal & Photo Gallery",
+              url: "#",
+              icon: "📸",
+            },
+          ],
         },
       ],
     },
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  const { state } = useSidebar();
   return (
-    <Sidebar className="border-r-0" {...props}>
-      <SidebarHeader>
+    <div
+      className={cn(
+        "flex h-full flex-col bg-sidebar-accent overflow-hidden",
+        className
+      )}
+      {...props}
+    >
+      {/* <Sidebar className="border-r-0" collapsible="icon" {...props}></Sidebar> */}
+      <div className="flex-shrink-0 transition-all p-4">
         <TeamSwitcher teams={data.teams} />
-        <NavMain items={data.navMain} />
-      </SidebarHeader>
-      <SidebarContent>
-        <NavFavorites favorites={data.favorites} />
+      </div>
+      <div className="flex-1  overflow-auto">
+        {/* <NavMain items={data.navMain} /> */}
+        {/* <NavFavorites favorites={data.favorites} /> */}
         <NavWorkspaces workspaces={data.workspaces} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
-      </SidebarContent>
-      <SidebarRail />
-    </Sidebar>
+      </div>
+      <div className="flex-shrink-0 p-4">
+        <NavSecondary items={data.navSecondary} />
+      </div>
+    </div>
   );
 }
