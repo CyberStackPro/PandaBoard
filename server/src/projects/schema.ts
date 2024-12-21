@@ -23,6 +23,7 @@ export const projectVisibilityEnum = pgEnum('project_visibility', [
   'team',
   'public',
 ]);
+export const projectTypeEnum = pgEnum('project_type', ['folder', 'file']);
 
 export const projects = pgTable(
   'projects',
@@ -38,6 +39,7 @@ export const projects = pgTable(
     parent_id: uuid('parent_id').references(() => projects.id, {
       onDelete: 'set null',
     }),
+    type: projectTypeEnum('type').notNull().default('folder'),
     description: text('description'),
     status: projectStatusEnum('status').default('active'),
     visibility: projectVisibilityEnum('visibility')

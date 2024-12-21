@@ -30,7 +30,7 @@ import { NavSecondary } from "./nav-secondary";
 import { cn } from "@/lib/utils";
 
 // This is sample data.
-const data = {
+const DATA = {
   teams: [
     {
       name: "Acme Inc",
@@ -315,10 +315,32 @@ const data = {
 // };
 
 export function AppSidebar({
-  className,
+  // className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  const { state } = useSidebar();
+  const [data, setData] = React.useState(DATA);
+  // const { state } = useSidebar();
+  const addNewProject = () => {
+    const workspaces = DATA.workspaces;
+    workspaces.push({
+      id: "5",
+      name: "New Project",
+      icon: "🎨",
+      children: [],
+    });
+    setData({ ...data, workspaces: workspaces });
+  };
+  const onAddChildProject = () => {
+    const workspaces = DATA.workspaces;
+    workspaces.push({
+      id: "5",
+      name: "New Project",
+      icon: "🎨",
+      children: [],
+    });
+    setData({ ...data, workspaces: workspaces });
+  };
+
   return (
     // <div className="relative  group-data-[variant=floating]:border-0">
     // {/* <div className="absolute inset-y-0 right-0 w-3 bg-white filter blur-md opacity-100"></div> */}
@@ -332,7 +354,8 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavWorkspaces
-          // key={data.workspaces.length}
+          isCollapsed={false}
+          onAddProject={addNewProject}
           projects={data.workspaces}
         />
 

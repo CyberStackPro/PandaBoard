@@ -43,6 +43,7 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { useCallback, useMemo } from "react";
 
 interface Project {
   id: string;
@@ -51,197 +52,154 @@ interface Project {
   children?: Project[];
 }
 
-// Mock data
-const mockProjects: Project[] = [
-  {
-    id: "1",
-    name: "Project 1",
-    children: [
-      {
-        id: "1-1",
-        name: "Sub Project 1",
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "Project 2",
-  },
-];
-const rightClickMenuItems = [
+const RIGHT_CLICK_MENU_ITEMS = [
   {
     name: "Duplicate",
     icon: <Copy className="h-4 w-4" />,
     shortcut: "⌘D",
-    separator: true,
+    action: "duplicate",
   },
   {
     name: "Rename",
     icon: <Edit className="h-4 w-4" />,
     shortcut: "⌘R",
-    separator: true,
+    action: "rename",
   },
   {
     name: "Move to Trash",
     icon: <Trash className="h-4 w-4" />,
     shortcut: "⌘T",
+    action: "delete",
   },
   {
     name: "Add to Favorites",
     icon: <Star className="h-4 w-4" />,
     shortcut: "⌘F",
+    action: "favorite",
   },
-  { name: "Copy Link", icon: <Link2 className="h-4 w-4" />, shortcut: "⌘L" },
+  {
+    name: "Copy Link",
+    icon: <Link2 className="h-4 w-4" />,
+    shortcut: "⌘L",
+    action: "copyLink",
+  },
 ];
 
-interface NavWorkspacesProps {
+interface ProjectItemProps {
+  project: Project;
   isCollapsed: boolean;
-  projects: Project[];
+  level: number;
+  onAction?: (action: string, projectId: string) => void;
+  onAddProject?: () => void;
 }
-
-export function NavWorkspaces({ isCollapsed, projects }: NavWorkspacesProps) {
-  const handleCreateProject = (parentId?: string) => {
-    const projectName = prompt("Enter project name:");
-    if (projectName) {
-      const newProject: Project = {
-        id: `${Date.now()}`,
-        name: projectName,
-        children: [],
-      };
-
-      if (parentId) {
-        // Add as child to existing project
-        const parent = findProject(mockProjects, parentId);
-        if (parent) {
-          parent.children = parent.children || [];
-          parent.children.push(newProject);
-        }
-      } else {
-        // Add as root project
-        mockProjects.push(newProject);
-      }
-      // In a real app, you'd want to trigger a re-render and save to backend
-    }
-  };
-
-  const handleDuplicateProject = (projectId: string) => {
-    const project = findProject(mockProjects, projectId);
-    if (project) {
-      const duplicatedProject: Project = {
-        ...project,
-        id: `${Date.now()}`,
-        name: `${project.name} (Copy)`,
-      };
-      mockProjects.push(duplicatedProject);
-    }
-  };
-
-  const handleRenameProject = (projectId: string) => {
-    const project = findProject(mockProjects, projectId);
-    if (project) {
-      const newName = prompt("Enter new name:", project.name);
-      <Input id="name" value={project.name} />;
-      if (newName) {
-        project.name = newName;
-      }
-    }
-  };
-
-  const handleDeleteProject = (projectId: string) => {
-    const confirmDelete = confirm(
-      "Are you sure you want to delete this project?"
+interface NavWorkspacesProps {
+  projects: Project[];
+  isCollapsed: boolean;
+  // onAction: (action: string, projectId: string) => void;
+  onAddProject: () => void;
+}
+const ProjectItem = ({
+  project,
+  isCollapsed,
+  level,
+  onAction,
+  onAddProject,
+}: ProjectItemProps) => {
+  const isFolder = project.children && project.children.length > 0;
+  const icon = useMemo(() => {
+    if (project.icon) return project.icon;
+    return isFolder ? (
+      <Folder className="h-4 w-4" />
+    ) : (
+      <File className="h-4 w-4" />
     );
-    if (confirmDelete) {
-      deleteProject(mockProjects, projectId);
-    }
-  };
+  }, [project.icon, isFolder]);
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <Collapsible>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link
+                href={`/projects/${project.id}`}
+                className="flex items-center gap-2"
+              >
+                <span className="flex-shrink-0">{icon}</span>
+                {!isCollapsed && <span>{project.name}</span>}
+              </Link>
+            </SidebarMenuButton>
 
-  const renderProjectTree = (
-    isCollapsed: boolean,
-    project: Project,
-    level: number = 0
-  ) => {
-    const isFolder = project.children && project.children.length > 0;
+            {!isCollapsed && (
+              <>
+                {isFolder && (
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuAction
+                      className="left-2 bg-sidebar-accent text-sidebar-accent-foreground data-[state=open]:rotate-90"
+                      showOnHover
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </SidebarMenuAction>
+                  </CollapsibleTrigger>
+                )}
 
-    return (
-      <ContextMenu>
-        <ContextMenuTrigger>
-          <Collapsible key={`${project.id}-${level}`}>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <Link
-                  href={`/projects/${project.id}`}
-                  className="flex items-center gap-2"
-                >
-                  <span className="flex-shrink-0">
-                    {isFolder ? (
-                      <>
-                        {project ? (
-                          project.icon
-                        ) : (
-                          <Folder className="h-4 w-4" />
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        {project ? project.icon : <File className="h-4 w-4" />}
-                      </>
-                    )}
-                  </span>
-                  {!isCollapsed && <span>{project.name}</span>}
-                </Link>
-              </SidebarMenuButton>
-
-              {!isCollapsed && (
-                <>
-                  {isFolder && (
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuAction
-                        className="left-2 bg-sidebar-accent text-sidebar-accent-foreground data-[state=open]:rotate-90"
-                        showOnHover
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </SidebarMenuAction>
-                    </CollapsibleTrigger>
-                  )}
-
+                {!isFolder ? (
                   <SidebarMenuAction showOnHover>
                     <MoreHorizontal className="h-4 w-4" />
                   </SidebarMenuAction>
-                </>
-              )}
+                ) : (
+                  <SidebarMenuAction showOnHover>
+                    <Plus onClick={onAddProject} />
+                  </SidebarMenuAction>
+                )}
+              </>
+            )}
 
-              {!isCollapsed && isFolder && (
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {project.children?.map((child) => (
-                      <div key={`${project.id}-${child.id}`}>
-                        {renderProjectTree(isCollapsed, child, level + 1)}
-                      </div>
-                    ))}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              )}
-            </SidebarMenuItem>
-          </Collapsible>
-        </ContextMenuTrigger>
+            {!isCollapsed && isFolder && (
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  {project.children?.map((child) => (
+                    <ProjectItem
+                      key={child.id}
+                      project={child}
+                      isCollapsed={isCollapsed}
+                      level={level + 1}
+                      onAction={onAction}
+                    />
+                  ))}
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            )}
+          </SidebarMenuItem>
+        </Collapsible>
+      </ContextMenuTrigger>
 
-        {/* Right-click context menu for projects */}
-        <ContextMenuContent className="w-64 backdrop-blur-sm !bg-background/50">
-          {rightClickMenuItems.map((item) => (
-            <ContextMenuItem
-              key={item.name}
-              onSelect={() => console.log(item.name)}
-            >
-              {item.icon}
-              <span className="ml-2">{item.name}</span>
-              <ContextMenuShortcut>{item.shortcut}</ContextMenuShortcut>
-            </ContextMenuItem>
-          ))}
-        </ContextMenuContent>
-      </ContextMenu>
-    );
-  };
+      <ContextMenuContent className="w-64 backdrop-blur-sm !bg-background/50">
+        {RIGHT_CLICK_MENU_ITEMS.map((item) => (
+          <ContextMenuItem
+            key={item.name}
+            onClick={() => onAction(item.action, project.id)}
+          >
+            {item.icon}
+            <span className="ml-2">{item.name}</span>
+            <ContextMenuShortcut>{item.shortcut}</ContextMenuShortcut>
+          </ContextMenuItem>
+        ))}
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+};
+export function NavWorkspaces({
+  isCollapsed,
+  projects,
+  onAddProject,
+}: {
+  isCollapsed: boolean;
+  projects: Project[];
+  onAddProject: () => void;
+}) {
+  const addNewProject = useCallback(() => {
+    onAddProject();
+  }, [onAddProject]);
 
   return (
     <SidebarGroup>
@@ -251,12 +209,16 @@ export function NavWorkspaces({ isCollapsed, projects }: NavWorkspacesProps) {
       <SidebarGroupContent>
         <SidebarMenu>
           {projects.map((project) => (
-            <div key={`${project.id}`}>
-              {renderProjectTree(isCollapsed, project)}
-            </div>
+            <ProjectItem
+              key={project.id}
+              project={project}
+              isCollapsed={isCollapsed}
+              level={0}
+              onAddProject={addNewProject}
+              // onAction={handleAction}
+            />
           ))}
 
-          {/* Dropdown menu for the plus icon */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <SidebarMenuItem>
@@ -272,13 +234,11 @@ export function NavWorkspaces({ isCollapsed, projects }: NavWorkspacesProps) {
               </SidebarMenuItem>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => console.log("Add Member")}>
+              <DropdownMenuItem onClick={addNewProject}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Member
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => console.log("Teamspace Settings")}
-              >
+              <DropdownMenuItem>
                 <Edit className="mr-2 h-4 w-4" />
                 Teamspace Settings
               </DropdownMenuItem>
