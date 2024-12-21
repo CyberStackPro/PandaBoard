@@ -1,3 +1,4 @@
+"use client";
 import {
   ChevronRight,
   Copy,
@@ -165,7 +166,7 @@ export function NavWorkspaces({ isCollapsed, projects }: NavWorkspacesProps) {
     return (
       <ContextMenu>
         <ContextMenuTrigger>
-          <Collapsible key={project.id}>
+          <Collapsible key={`${project.id}-${level}`}>
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
                 <Link
@@ -213,11 +214,11 @@ export function NavWorkspaces({ isCollapsed, projects }: NavWorkspacesProps) {
               {!isCollapsed && isFolder && (
                 <CollapsibleContent>
                   <SidebarMenuSub>
-                    <span key={project.id}>
-                      {project.children?.map((child) =>
-                        renderProjectTree(isCollapsed, child, level + 1)
-                      )}
-                    </span>
+                    {project.children?.map((child) => (
+                      <div key={`${project.id}-${child.id}`}>
+                        {renderProjectTree(isCollapsed, child, level + 1)}
+                      </div>
+                    ))}
                   </SidebarMenuSub>
                 </CollapsibleContent>
               )}
@@ -234,7 +235,6 @@ export function NavWorkspaces({ isCollapsed, projects }: NavWorkspacesProps) {
             >
               {item.icon}
               <span className="ml-2">{item.name}</span>
-              {/* {item.name} */}
               <ContextMenuShortcut>{item.shortcut}</ContextMenuShortcut>
             </ContextMenuItem>
           ))}
@@ -251,7 +251,7 @@ export function NavWorkspaces({ isCollapsed, projects }: NavWorkspacesProps) {
       <SidebarGroupContent>
         <SidebarMenu>
           {projects.map((project) => (
-            <div key={project.id}>
+            <div key={`${project.id}`}>
               {renderProjectTree(isCollapsed, project)}
             </div>
           ))}
@@ -288,35 +288,6 @@ export function NavWorkspaces({ isCollapsed, projects }: NavWorkspacesProps) {
       </SidebarGroupContent>
     </SidebarGroup>
   );
-
-  //   return (
-  //     <SidebarGroup>
-  //       <SidebarGroupLabel className={cn(isCollapsed && "sr-only")}>
-  //         Projects
-  //       </SidebarGroupLabel>
-  //       <SidebarGroupContent>
-  //         <SidebarMenu>
-  //           {mockProjects.map((project) => (
-  //             <div key={project.id}>
-  //               {renderProjectTree(isCollapsed, project)}
-  //             </div>
-  //           ))}
-  //           <SidebarMenuItem>
-  //             <SidebarMenuButton
-  //               onClick={() => handleCreateProject()}
-  //               className={cn(
-  //                 "text-sidebar-foreground/70",
-  //                 isCollapsed && "justify-center"
-  //               )}
-  //             >
-  //               <Plus className="h-4 w-4" />
-  //               {!isCollapsed && <span>New Project</span>}
-  //             </SidebarMenuButton>
-  //           </SidebarMenuItem>
-  //         </SidebarMenu>
-  //       </SidebarGroupContent>
-  //     </SidebarGroup>
-  //   );
 }
 
 // Helper functions
