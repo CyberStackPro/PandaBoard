@@ -13,10 +13,21 @@ export class ProjectsService {
     @Inject(DATABASE_CONNECTION)
     private readonly database: NodePgDatabase<typeof schema>,
   ) {}
-  async createProject(projects: CreateProjectDto) {
-    return this.database.insert(schema.projects).values(projects).returning();
-  }
+  async createProject(project: CreateProjectDto) {
+    const defaultMetadata =
+      project.type === 'folder' ? { childCount: 0 } : { fileType: 'document' };
 
+    return this.database
+      .insert(schema.projects)
+      .values({
+        ...project,
+        metadata: {
+          ...defaultMetadata,
+          ...(project.metadata || {}),
+        },
+      })
+      .returning();
+  }
   async findAllProjects(ownerId: string) {
     const projects = this.database.query.projects.findMany({
       with: {
