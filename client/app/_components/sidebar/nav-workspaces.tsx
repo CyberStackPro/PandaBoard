@@ -1,21 +1,33 @@
 "use client";
 import {
-  ChevronRight,
-  Copy,
-  Edit,
-  File,
-  Folder,
-  Link2,
-  MoreHorizontal,
-  Plus,
-  Star,
-  Trash,
-} from "lucide-react";
-import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuShortcut,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+  DialogHeader,
+  DialogFooter,
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -26,26 +38,23 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuShortcut,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import { useCallback, useMemo } from "react";
 import { useStore } from "@/stores/store";
 import { Project } from "@/types/project";
+import {
+  ChevronRight,
+  Copy,
+  Edit,
+  File,
+  Folder,
+  Link2,
+  Pencil,
+  Plus,
+  Star,
+  Trash,
+} from "lucide-react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
 
 const RIGHT_CLICK_MENU_ITEMS = [
   {
@@ -99,7 +108,8 @@ const ProjectItem = ({
   onAction,
   onAddProject,
 }: ProjectItemProps) => {
-  // const isFolder = project.children && project.children.length > 0;
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempName, setTempName] = useState(project.name || "");
   const isFolder = project.type === "folder";
 
   const icon = useMemo(
@@ -117,9 +127,26 @@ const ProjectItem = ({
   const handleAddClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onAddProject) {
-      if (isFolder) {
-        onAddProject(project.id, "file");
-      }
+      // if (isFolder) {
+      onAddProject(project.id, "file");
+      // }
+    }
+  };
+  const handleSaveName = () => {
+    if (tempName.trim()) {
+      onAction?.("rename", project.id);
+      setIsEditing(false);
+    } else {
+      alert("Project name cannot be empty.");
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSaveName();
+    } else if (e.key === "Escape") {
+      setTempName(project.name || "");
+      setIsEditing(false);
     }
   };
   return (
@@ -133,7 +160,21 @@ const ProjectItem = ({
                 className="flex items-center gap-2"
               >
                 <span className="flex-shrink-0">{icon}</span>
-                {!isCollapsed && <span>{project.name}</span>}
+                {!isCollapsed && (
+                  <span className="text-muted-foreground">
+                    {isEditing ? (
+                      <RenameDropdown
+                        project={project}
+                        onRename={(projectId, newName) => {
+                          onAction?.("rename", projectId);
+                          setIsEditing(false);
+                        }}
+                      />
+                    ) : (
+                      <>{project.name}</>
+                    )}
+                  </span>
+                )}
               </Link>
             </SidebarMenuButton>
 
@@ -142,17 +183,27 @@ const ProjectItem = ({
                 {isFolder && (
                   <>
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuAction
-                        className="left-2 bg-sidebar-accent text-sidebar-accent-foreground data-[state=open]:rotate-90"
-                        showOnHover
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </SidebarMenuAction>
+                      <div className="">
+                        <SidebarMenuAction
+                          className="left-2 bg-sidebar-accent text-sidebar-accent-foreground data-[state=open]:rotate-90"
+                          showOnHover
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                          {/* <SidebarGroupContent>
+                            {project.children.length === 0 ? (
+                              <p>there is no project</p>
+                            ) : null}
+                          </SidebarGroupContent> */}
+                        </SidebarMenuAction>
+                      </div>
                     </CollapsibleTrigger>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <SidebarMenuAction showOnHover>
-                          <Plus className="h-4 w-4" />
+                          <Plus
+                            onClick={() => onAddProject?.(project.id!, "file")}
+                            className="h-4 w-4"
+                          />
                         </SidebarMenuAction>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
@@ -198,10 +249,19 @@ const ProjectItem = ({
         {RIGHT_CLICK_MENU_ITEMS.map((item) => (
           <ContextMenuItem
             key={item.name}
-            // onClick={() => onAction(item.action, project.id)}
+            onClick={() => {
+              onAction!(item.action, project.id);
+            }}
           >
             {item.icon}
-            <span className="ml-2">{item.name}</span>
+            <span
+              className="ml-2"
+              onClick={() => {
+                if (item.action === "rename") setIsEditing(true);
+              }}
+            >
+              {item.name}
+            </span>
             <ContextMenuShortcut>{item.shortcut}</ContextMenuShortcut>
           </ContextMenuItem>
         ))}
@@ -214,6 +274,21 @@ export function NavWorkspaces({
   projects,
   onAddProject,
 }: NavWorkspacesProps) {
+  const deleteProject = useStore((state) => state.deleteProject);
+  const handleAction = (action: string, projectId: string) => {
+    switch (action) {
+      case "rename":
+        // projectActions.handleRename(projectId);
+        console.log(action, projectId);
+
+        break;
+      case "delete":
+        deleteProject(projectId);
+
+        break;
+      // ... other cases
+    }
+  };
   return (
     <SidebarGroup>
       <SidebarGroupLabel className={cn(isCollapsed && "sr-only")}>
@@ -228,7 +303,7 @@ export function NavWorkspaces({
               isCollapsed={isCollapsed}
               level={0}
               onAddProject={onAddProject}
-              // onAction={handleAction}
+              onAction={handleAction}
             />
           ))}
 
@@ -260,6 +335,48 @@ export function NavWorkspaces({
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
+  );
+}
+
+function RenameDropdown({
+  project,
+  onRename,
+}: {
+  project: Project;
+  onRename: (projectId: string, newName: string) => void;
+}) {
+  const [tempName, setTempName] = useState(project.name);
+
+  const handleRename = () => {
+    if (tempName.trim() && tempName !== project.name) {
+      onRename(project.id, tempName.trim());
+    }
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <div className="p-2 hover:bg-muted cursor-pointer">{project.name}</div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="p-2 w-64">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground size-10">{project.icon}</span>
+
+          <Input
+            value={tempName}
+            onChange={(e) => setTempName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleRename();
+                e.preventDefault();
+              }
+            }}
+            autoFocus
+            className="w-full"
+          />
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

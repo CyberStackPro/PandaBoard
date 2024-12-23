@@ -39,7 +39,7 @@ export const createWorkspaceSlice: StateCreator<
       visibility: params.visibility || "private",
       icon: params.icon || null,
       status: "active",
-      children: [],
+      children: params.type === "folder" ? [] : undefined,
       documents: [],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -82,42 +82,28 @@ export const createWorkspaceSlice: StateCreator<
     });
   },
 
-  addFile: async (params: CreateProjectParams) => {
+  deleteProject: async (projectId: string) => {
     set((state: WorkSpaceActions) => {
-      const newFile: Partial<Project> = {
-        name: params.name || "Untitled Document",
-        parent_id: params.parent_id,
-        type: "file",
-        icon: params.icon || null, // Default file icon
-        status: "active",
-        children: [],
+      const recursiveDelete = (projects: Project[], id: string): Project[] => {
+        return projects.filter((project) => {
+          if (project.id === id) return false;
+          if (project.children) {
+            project.children = recursiveDelete(project.children, id);
+          }
+          return true;
+        });
       };
-      if (!params.parent_id) {
-        return { workspaces: [...state.workspaces, newFile] };
-      }
-      const updatedWorkspaces = state.workspaces.map((workspace) => {
-        if (workspace.id === params.parent_id) {
-          return {
-            ...workspace,
-            children: [...(workspace.children || []), newFile],
-          };
-        }
-        return workspace;
-      });
 
-      return { workspaces: updatedWorkspaces };
+      // Mutate the draft state directly
+      state.workspaces = recursiveDelete(state.workspaces, projectId);
     });
   },
-  deleteProject: async (projectId: string) => {
-    set((state) => ({
-      workspaces: findAndDeleteProject(state.workspaces, projectId),
-    }));
-  },
-  updateProject: async (projectId: string, updates: Partial<Project>) => {
-    set((state) => ({
-      workspaces: findAndUpdateProject(state.workspaces, projectId, updates),
-    }));
-  },
+
+  // updateProject: async (projectId: string, updates: Partial<Project>) => {
+  //   set((state) => ({
+  //     workspaces: findAndUpdateProject(state.workspaces, projectId, updates),
+  //   }));
+  // },
 });
 
 // const findAndUpdateProject = (
@@ -156,7 +142,7 @@ const updateWorkspaceTree = (
     if (workspace.id === projectId) {
       return updateFn(workspace);
     }
-    if (workspace.children) {
+    if (workspace.children && workspace.children.length > 0) {
       return {
         ...workspace,
         children: updateWorkspaceTree(workspace.children, projectId, updateFn),
@@ -165,3 +151,16 @@ const updateWorkspaceTree = (
     return workspace;
   });
 };
+
+// const findAndDeleteProject = (
+//   projects: Project[],
+//   projectId: string
+// ): Project[] => {
+//   return projects.filter((project) => {
+//     if (project.id === projectId) return false;
+//     if (project.children) {
+//       project.children = findAndDeleteProject(project.children, projectId);
+//     }
+//     return true;
+//   });
+// };

@@ -6,9 +6,33 @@ export interface WorkspaceState {
   error: string | null;
 }
 
+export interface ProjectAction {
+  type:
+    | "add"
+    | "rename"
+    | "update"
+    | "delete"
+    | "duplicate"
+    | "favorite"
+    | "copyLink"
+    | "move";
+  handler: WorkspaceActions;
+}
+// const PROJECT_ACTIONS: Record<string, ProjectAction> = {
+//   rename: {
+//     type: 'rename',
+//     handler: {renameProject()}
+//   },
+//   delete: {
+//     type: 'delete',
+//     handler: {deleteProject()}
+//   },
+//   // ... other actions
+// };
 export interface WorkspaceActions {
   addProject: (params: CreateProjectParams) => Promise<void>;
-  //   deleteProject: (projectId: string) => Promise<void>;
+  deleteProject: (projectId: string) => Promise<void>;
+  // renameProject: (projectId: string) => Promise<void>;
   //   updateProject: (
   //     projectId: string,
   //     updates: Partial<Project>

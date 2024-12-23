@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import {
   AudioWaveform,
   Blocks,
@@ -14,22 +13,18 @@ import {
   Sparkles,
   Trash2,
 } from "lucide-react";
+import * as React from "react";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
   SidebarRail,
-  useSidebar,
 } from "@/components/ui/sidebar";
-import { TeamSwitcher } from "./team-switch";
-import { NavMain } from "./nav-main";
-import { NavFavorites } from "./nav-favorites";
-import { NavWorkspaces } from "./nav-workspaces";
-import { NavSecondary } from "./nav-secondary";
-import { cn } from "@/lib/utils";
-import { useWorkspaceStore } from "@/stores/square-store";
 import { useStore } from "@/stores/store";
+import { NavSecondary } from "./nav-secondary";
+import { NavWorkspaces } from "./nav-workspaces";
+import { TeamSwitcher } from "./team-switch";
 
 // This is sample data.
 const DATA = {
@@ -325,7 +320,7 @@ export function AppSidebar({
   // className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  const [data, setData] = React.useState(DATA);
+  const [data] = React.useState(DATA);
   const workspaces = useStore((state) => state.workspaces);
   const addProject = useStore((state) => state.addProject);
 
