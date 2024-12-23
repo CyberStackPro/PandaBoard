@@ -11,7 +11,8 @@ export const useStore = create<Store>()(
         immer((...a) => ({
           ...createWorkspaceSlice(...a),
         }))
-      )
+      ),
+      { name: "notion-store" }
     )
   )
 );

@@ -8,6 +8,7 @@ export interface Project {
   parent_id?: string | null;
   description?: string | null;
   status: ProjectStatus;
+  type: "folder" | "file";
   visibility: ProjectVisibility;
   metadata: Record<string, unknown>;
   icon?: string | null;

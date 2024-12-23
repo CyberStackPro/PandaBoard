@@ -44,13 +44,8 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { useCallback, useMemo } from "react";
-
-interface Project {
-  id: string;
-  name: string;
-  icon?: string | null;
-  children?: Project[];
-}
+import { useStore } from "@/stores/store";
+import { Project } from "@/types/project";
 
 const RIGHT_CLICK_MENU_ITEMS = [
   {
@@ -90,13 +85,12 @@ interface ProjectItemProps {
   isCollapsed: boolean;
   level: number;
   onAction?: (action: string, projectId: string) => void;
-  onAddProject?: () => void;
+  onAddProject?: (parentId: string | null, type: "folder" | "file") => void;
 }
 interface NavWorkspacesProps {
-  projects: Project[];
   isCollapsed: boolean;
-  // onAction: (action: string, projectId: string) => void;
-  onAddProject: () => void;
+  projects: Project[];
+  onAddProject: (parentId: string | null, type: "folder" | "file") => void;
 }
 const ProjectItem = ({
   project,
@@ -105,15 +99,29 @@ const ProjectItem = ({
   onAction,
   onAddProject,
 }: ProjectItemProps) => {
-  const isFolder = project.children && project.children.length > 0;
-  const icon = useMemo(() => {
-    if (project.icon) return project.icon;
-    return isFolder ? (
-      <Folder className="h-4 w-4" />
-    ) : (
-      <File className="h-4 w-4" />
-    );
-  }, [project.icon, isFolder]);
+  // const isFolder = project.children && project.children.length > 0;
+  const isFolder = project.type === "folder";
+
+  const icon = useMemo(
+    () =>
+      project.icon ? (
+        project.icon
+      ) : isFolder ? (
+        <Folder className="h-4 w-4" />
+      ) : (
+        <File className="h-4 w-4" />
+      ),
+    [project.icon, isFolder]
+  );
+
+  const handleAddClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onAddProject) {
+      if (isFolder) {
+        onAddProject(project.id, "file");
+      }
+    }
+  };
   return (
     <ContextMenu>
       <ContextMenuTrigger>
@@ -121,7 +129,7 @@ const ProjectItem = ({
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link
-                href={`/projects/${project.id}`}
+                href={`/dashboard/projects/${project.id}`}
                 className="flex items-center gap-2"
               >
                 <span className="flex-shrink-0">{icon}</span>
@@ -132,24 +140,37 @@ const ProjectItem = ({
             {!isCollapsed && (
               <>
                 {isFolder && (
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuAction
-                      className="left-2 bg-sidebar-accent text-sidebar-accent-foreground data-[state=open]:rotate-90"
-                      showOnHover
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </SidebarMenuAction>
-                  </CollapsibleTrigger>
-                )}
-
-                {!isFolder ? (
-                  <SidebarMenuAction showOnHover>
-                    <MoreHorizontal className="h-4 w-4" />
-                  </SidebarMenuAction>
-                ) : (
-                  <SidebarMenuAction showOnHover>
-                    <Plus onClick={onAddProject} />
-                  </SidebarMenuAction>
+                  <>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuAction
+                        className="left-2 bg-sidebar-accent text-sidebar-accent-foreground data-[state=open]:rotate-90"
+                        showOnHover
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </SidebarMenuAction>
+                    </CollapsibleTrigger>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <SidebarMenuAction showOnHover>
+                          <Plus className="h-4 w-4" />
+                        </SidebarMenuAction>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onClick={() => onAddProject?.(project.id, "folder")}
+                        >
+                          <Folder className="mr-2 h-4 w-4" />
+                          New Folder
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onAddProject?.(project.id, "file")}
+                        >
+                          <File className="mr-2 h-4 w-4" />
+                          New File
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </>
                 )}
               </>
             )}
@@ -177,7 +198,7 @@ const ProjectItem = ({
         {RIGHT_CLICK_MENU_ITEMS.map((item) => (
           <ContextMenuItem
             key={item.name}
-            onClick={() => onAction(item.action, project.id)}
+            // onClick={() => onAction(item.action, project.id)}
           >
             {item.icon}
             <span className="ml-2">{item.name}</span>
@@ -192,15 +213,7 @@ export function NavWorkspaces({
   isCollapsed,
   projects,
   onAddProject,
-}: {
-  isCollapsed: boolean;
-  projects: Project[];
-  onAddProject: () => void;
-}) {
-  const addNewProject = useCallback(() => {
-    onAddProject();
-  }, [onAddProject]);
-
+}: NavWorkspacesProps) {
   return (
     <SidebarGroup>
       <SidebarGroupLabel className={cn(isCollapsed && "sr-only")}>
@@ -214,7 +227,7 @@ export function NavWorkspaces({
               project={project}
               isCollapsed={isCollapsed}
               level={0}
-              onAddProject={addNewProject}
+              onAddProject={onAddProject}
               // onAction={handleAction}
             />
           ))}
@@ -234,13 +247,13 @@ export function NavWorkspaces({
               </SidebarMenuItem>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={addNewProject}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Member
+              <DropdownMenuItem onClick={() => onAddProject(null, "folder")}>
+                <Folder className="mr-2 h-4 w-4" />
+                New Folder
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Edit className="mr-2 h-4 w-4" />
-                Teamspace Settings
+              <DropdownMenuItem onClick={() => onAddProject(null, "file")}>
+                <File className="mr-2 h-4 w-4" />
+                New File
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

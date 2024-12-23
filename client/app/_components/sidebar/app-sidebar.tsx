@@ -28,6 +28,8 @@ import { NavFavorites } from "./nav-favorites";
 import { NavWorkspaces } from "./nav-workspaces";
 import { NavSecondary } from "./nav-secondary";
 import { cn } from "@/lib/utils";
+import { useWorkspaceStore } from "@/stores/square-store";
+import { useStore } from "@/stores/store";
 
 // This is sample data.
 const DATA = {
@@ -313,32 +315,32 @@ const DATA = {
 };
 // ],
 // };
-
+const promptForName = async (type: "folder" | "file") => {
+  // In a real application, you'd want to use a proper dialog/modal component
+  const defaultName = type === "folder" ? "Untitled Folder" : "Untitled";
+  const name = prompt(`Enter ${type} name:`, defaultName);
+  return name || null;
+};
 export function AppSidebar({
   // className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   const [data, setData] = React.useState(DATA);
-  // const { state } = useSidebar();
-  const addNewProject = () => {
-    const workspaces = DATA.workspaces;
-    workspaces.push({
-      id: "5",
-      name: "New Project",
-      icon: "🎨",
-      children: [],
-    });
-    setData({ ...data, workspaces: workspaces });
-  };
-  const onAddChildProject = () => {
-    const workspaces = DATA.workspaces;
-    workspaces.push({
-      id: "5",
-      name: "New Project",
-      icon: "🎨",
-      children: [],
-    });
-    setData({ ...data, workspaces: workspaces });
+  const workspaces = useStore((state) => state.workspaces);
+  const addProject = useStore((state) => state.addProject);
+
+  const handleAddProject = async (
+    parentId: string | null,
+    type: "folder" | "file"
+  ) => {
+    const name = await promptForName(type); // Implement this function to show a dialog/modal
+    if (name) {
+      await addProject({
+        name,
+        parent_id: parentId,
+        type,
+      });
+    }
   };
 
   return (
@@ -355,8 +357,8 @@ export function AppSidebar({
       <SidebarContent>
         <NavWorkspaces
           isCollapsed={false}
-          onAddProject={addNewProject}
-          projects={data.workspaces}
+          onAddProject={handleAddProject}
+          projects={workspaces}
         />
 
         <NavSecondary items={data.navSecondary} />
