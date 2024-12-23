@@ -179,6 +179,8 @@ const ProjectItem = ({
   const handleRename = (newName: string) => {
     if (newName.trim() && newName !== project.name) {
       onAction?.("rename", project.id, newName.trim());
+    } else {
+      setTempName(project.name || "");
     }
     setIsRenaming(false);
   };
@@ -197,31 +199,40 @@ const ProjectItem = ({
             <SidebarMenuButton asChild>
               <Link
                 href={`/dashboard/projects/${project.id}`}
-                className="flex items-center gap-2"
+                className="flex relative items-center gap-2"
                 onClick={(e) => {
                   if (isRenaming) e.preventDefault();
                 }}
               >
-                <span className="flex-shrink-0">{icon}</span>
+                <span className="flex-shrink-0">{isRenaming ? "" : icon}</span>
                 {!isCollapsed && (
-                  <span className="text-muted-foreground min-w-[120px]">
+                  <span className="text-muted-foreground z-50 min-w-[12px]">
                     {isRenaming ? (
-                      <Input
-                        ref={inputRef}
-                        value={tempName}
-                        onChange={(e) => setTempName(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            handleRename(tempName);
-                          } else if (e.key === "Escape") {
-                            setTempName(project.name);
-                            setIsRenaming(false);
-                          }
-                        }}
-                        onBlur={() => handleRename(tempName)}
-                        className="h-6 px-1 py-0 w-full bg-transparent hover:bg-accent focus:bg-accent"
-                        onClick={(e) => e.preventDefault()}
-                      />
+                      <div className="flex absolute top-0 z-50 scale-110  items-center gap-2 px-2 py-1 w-[50%]">
+                        <span className="flex-shrink-0 text-muted-foreground">
+                          {icon}
+                        </span>
+                        <div className="flex-1 min-w-[120px]">
+                          <Input
+                            ref={inputRef}
+                            value={tempName}
+                            onChange={(e) => setTempName(e.target.value)}
+                            onKeyDown={(e) => {
+                              e.stopPropagation();
+                              if (e.key === "Enter") {
+                                handleRename(tempName);
+                              } else if (e.key === "Escape") {
+                                setTempName(project.name || "");
+                                setIsRenaming(false);
+                              }
+                            }}
+                            onBlur={() => handleRename(tempName)}
+                            className="h-6 px-1 py-0 w-full bg-transparent border-none focus:ring-1 focus:ring-ring focus:ring-offset-0"
+                            onClick={(e) => e.preventDefault()}
+                            autoFocus
+                          />
+                        </div>
+                      </div>
                     ) : (
                       <span
                         className="px-1 py-0.5 rounded-sm hover:bg-accent/50 cursor-text"

@@ -25,6 +25,16 @@ import { useStore } from "@/stores/store";
 import { NavSecondary } from "./nav-secondary";
 import { NavWorkspaces } from "./nav-workspaces";
 import { TeamSwitcher } from "./team-switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 // This is sample data.
 const DATA = {
@@ -316,6 +326,36 @@ const promptForName = async (type: "folder" | "file") => {
   const name = prompt(`Enter ${type} name:`, defaultName);
   return name || null;
 };
+// const NameDialog = (name?: string, type: "folder" | "file") => {
+//   const [parentId, setParentId] = React.useState<string | null>(null);
+//   const [name, setName] = React.useState<string | null>(null);
+//   const defaultName = type === "folder" ? "Untitled Folder" : "Untitled";
+//   return (
+//     <>
+//      <Dialog>
+//       <DialogTrigger asChild>
+//         <Button variant="outline">{name}</Button>
+//       </DialogTrigger>
+//       <DialogContent className="sm:max-w-[425px]">
+//         <DialogHeader>
+//           <DialogTitle>Add Name</DialogTitle>
+//           <DialogDescription>
+//            {name}
+//           </DialogDescription>
+//         </DialogHeader>
+//         <div className="grid gap-4 py-4">
+//           <div className="grid grid-cols-4 items-center gap-4">
+//             <Label htmlFor="name" className="text-right">
+//               Name
+//             </Label>
+//             <Input  id="name" defaultValue={defaultName} value={name} className="col-span-3" />
+//           </div>
+//         </div>
+//       </DialogContent>
+//     </Dialog>
+//     </>
+//   )
+// }
 export function AppSidebar({
   // className,
   ...props
@@ -323,19 +363,27 @@ export function AppSidebar({
   const [data] = React.useState(DATA);
   const workspaces = useStore((state) => state.workspaces);
   const addProject = useStore((state) => state.addProject);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [dialogType, setDialogType] = React.useState<"folder" | "file">(
+    "folder"
+  );
+  const [parentId, setParentId] = React.useState<string | null>(null);
 
   const handleAddProject = async (
     parentId: string | null,
     type: "folder" | "file"
   ) => {
-    const name = await promptForName(type); // Implement this function to show a dialog/modal
-    if (name) {
-      await addProject({
-        name,
-        parent_id: parentId,
-        type,
-      });
-    }
+    setDialogType(type);
+    setParentId(parentId);
+    setDialogOpen(true);
+  };
+
+  const handleDialogSubmit = async (name: string) => {
+    await addProject({
+      name,
+      parent_id: parentId,
+      type: dialogType,
+    });
   };
 
   return (
@@ -359,6 +407,12 @@ export function AppSidebar({
         <NavSecondary items={data.navSecondary} />
       </SidebarContent>
       <SidebarRail />
+      <NameDialog
+        type={dialogType}
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onSubmit={handleDialogSubmit}
+      />
     </Sidebar>
     // </div>
   );
@@ -394,3 +448,67 @@ export function AppSidebar({
 //     </div>
 //   );
 // }
+
+interface NameDialogProps {
+  type: "folder" | "file";
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (name: string) => void;
+}
+
+export function NameDialog({
+  type,
+  isOpen,
+  onClose,
+  onSubmit,
+}: NameDialogProps) {
+  const [name, setName] = React.useState("");
+  const defaultName = type === "folder" ? "Untitled Folder" : "Untitled";
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setName(defaultName);
+    }
+  }, [isOpen, defaultName]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(name);
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Add {type === "folder" ? "Folder" : "File"}</DialogTitle>
+          <DialogDescription>
+            Enter a name for your new {type}
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="col-span-3"
+                autoFocus
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit">Create</Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

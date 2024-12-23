@@ -146,3 +146,16 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+Add to your global.css .sidebar-item-input {
+  @apply bg-transparent border-none focus:ring-1 focus:ring-ring py-0.5 px-1 h-7 text-sm;
+  width: calc(100% - 24px); /* Adjust based on your icon size */
+}
+
+.sidebar-item {
+  @apply relative flex items-center w-full rounded-sm hover:bg-accent/50 transition-colors;
+}
+
+.sidebar-item-content {
+  @apply flex items-center gap-2 px-2 py-1 w-full;
+}
