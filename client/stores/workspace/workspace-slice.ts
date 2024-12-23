@@ -99,31 +99,32 @@ export const createWorkspaceSlice: StateCreator<
     });
   },
 
-  // updateProject: async (projectId: string, updates: Partial<Project>) => {
-  //   set((state) => ({
-  //     workspaces: findAndUpdateProject(state.workspaces, projectId, updates),
-  //   }));
-  // },
+  updateProject: async (projectId: string, updates: Partial<Project>) => {
+    set((state: WorkSpaceActions) => ({
+      workspaces: findAndUpdateProject(state.workspaces, projectId, updates),
+    }));
+  },
 });
 
-// const findAndUpdateProject = (
-//     projects: Project[],
-//     projectId: string,
-//     updates: Partial<Project>
-//   ): Project[] => {
-//     return projects.map(project => {
-//       if (project.id === projectId) {
-//         return { ...project, ...updates };
-//       }
-//       if (project.children) {
-//         return {
-//           ...project,
-//           children: findAndUpdateProject(project.children, projectId, updates),
-//         };
-//       }
-//       return project;
-//     });
-//   };
+const findAndUpdateProject = (
+  projects: Project[],
+  projectId: string,
+  updates: Partial<Project>
+): Project[] => {
+  return projects.map((project) => {
+    if (project.id === projectId) {
+      return { ...project, ...updates };
+    }
+    if (project.children) {
+      return {
+        ...project,
+        children: findAndUpdateProject(project.children, projectId, updates),
+      };
+    }
+    return project;
+  });
+};
+
 // const findAndDeleteProject = (projects: Project[], projectId: string): Project[] => {
 //     return projects.filter(project => {
 //       if (project.id === projectId) return false;

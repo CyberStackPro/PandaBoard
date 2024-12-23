@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -29,6 +30,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -54,7 +60,7 @@ import {
   Trash,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const RIGHT_CLICK_MENU_ITEMS = [
   {
@@ -93,7 +99,7 @@ interface ProjectItemProps {
   project: Project;
   isCollapsed: boolean;
   level: number;
-  onAction?: (action: string, projectId: string) => void;
+  onAction?: (action: string, projectId: string, newName?: string) => void;
   onAddProject?: (parentId: string | null, type: "folder" | "file") => void;
 }
 interface NavWorkspacesProps {
@@ -108,9 +114,10 @@ const ProjectItem = ({
   onAction,
   onAddProject,
 }: ProjectItemProps) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
   const [tempName, setTempName] = useState(project.name || "");
   const isFolder = project.type === "folder";
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const icon = useMemo(
     () =>
@@ -124,20 +131,40 @@ const ProjectItem = ({
     [project.icon, isFolder]
   );
 
-  const handleAddClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onAddProject) {
-      // if (isFolder) {
-      onAddProject(project.id, "file");
-      // }
-    }
-  };
+  // const renderContextMenuItem = (item: (typeof RIGHT_CLICK_MENU_ITEMS)[0]) => (
+  //   <ContextMenuItem
+  //     key={item.name}
+  //     onClick={(e) => {
+  //       e.preventDefault();
+  //       if (item.action === "rename") {
+  //         setIsRenaming(true);
+  //       } else {
+  //         onAction!(item.action, project.id);
+  //       }
+  //     }}
+  //   >
+  //     {item.icon}
+  //     <span className="ml-2">{item.name}</span>
+  //     <ContextMenuShortcut>{item.shortcut}</ContextMenuShortcut>
+  //   </ContextMenuItem>
+  // );
+
+  // const handleAddClick = (e: React.MouseEvent) => {
+  //   e.stopPropagation();
+  //   if (onAddProject) {
+  //     // if (isFolder) {
+  //     onAddProject(project.id, "file");
+  //     // }
+  //   }
+  // };
   const handleSaveName = () => {
-    if (tempName.trim()) {
-      onAction?.("rename", project.id);
-      setIsEditing(false);
-    } else {
+    if (tempName.trim() && tempName !== project.name) {
+      onAction?.("rename", project.id, tempName.trim());
+      setIsRenaming(false);
+    } else if (!tempName.trim()) {
       alert("Project name cannot be empty.");
+    } else {
+      setIsRenaming(false);
     }
   };
 
@@ -146,9 +173,22 @@ const ProjectItem = ({
       handleSaveName();
     } else if (e.key === "Escape") {
       setTempName(project.name || "");
-      setIsEditing(false);
+      setIsRenaming(false);
     }
   };
+  const handleRename = (newName: string) => {
+    if (newName.trim() && newName !== project.name) {
+      onAction?.("rename", project.id, newName.trim());
+    }
+    setIsRenaming(false);
+  };
+  useEffect(() => {
+    if (isRenaming) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [isRenaming]);
+
   return (
     <ContextMenu>
       <ContextMenuTrigger>
@@ -158,71 +198,80 @@ const ProjectItem = ({
               <Link
                 href={`/dashboard/projects/${project.id}`}
                 className="flex items-center gap-2"
+                onClick={(e) => {
+                  if (isRenaming) e.preventDefault();
+                }}
               >
                 <span className="flex-shrink-0">{icon}</span>
                 {!isCollapsed && (
-                  <span className="text-muted-foreground">
-                    {isEditing ? (
-                      <RenameDropdown
-                        project={project}
-                        onRename={(projectId, newName) => {
-                          onAction?.("rename", projectId);
-                          setIsEditing(false);
+                  <span className="text-muted-foreground min-w-[120px]">
+                    {isRenaming ? (
+                      <Input
+                        ref={inputRef}
+                        value={tempName}
+                        onChange={(e) => setTempName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleRename(tempName);
+                          } else if (e.key === "Escape") {
+                            setTempName(project.name);
+                            setIsRenaming(false);
+                          }
                         }}
+                        onBlur={() => handleRename(tempName)}
+                        className="h-6 px-1 py-0 w-full bg-transparent hover:bg-accent focus:bg-accent"
+                        onClick={(e) => e.preventDefault()}
                       />
                     ) : (
-                      <>{project.name}</>
+                      <span
+                        className="px-1 py-0.5 rounded-sm hover:bg-accent/50 cursor-text"
+                        onClick={() => setIsRenaming(true)}
+                      >
+                        {project.name}
+                      </span>
                     )}
                   </span>
                 )}
               </Link>
             </SidebarMenuButton>
 
-            {!isCollapsed && (
+            {!isCollapsed && isFolder && (
               <>
-                {isFolder && (
-                  <>
-                    <CollapsibleTrigger asChild>
-                      <div className="">
-                        <SidebarMenuAction
-                          className="left-2 bg-sidebar-accent text-sidebar-accent-foreground data-[state=open]:rotate-90"
-                          showOnHover
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                          {/* <SidebarGroupContent>
-                            {project.children.length === 0 ? (
-                              <p>there is no project</p>
-                            ) : null}
-                          </SidebarGroupContent> */}
-                        </SidebarMenuAction>
-                      </div>
-                    </CollapsibleTrigger>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <SidebarMenuAction showOnHover>
-                          <Plus
-                            onClick={() => onAddProject?.(project.id!, "file")}
-                            className="h-4 w-4"
-                          />
-                        </SidebarMenuAction>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem
-                          onClick={() => onAddProject?.(project.id, "folder")}
-                        >
-                          <Folder className="mr-2 h-4 w-4" />
-                          New Folder
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => onAddProject?.(project.id, "file")}
-                        >
-                          <File className="mr-2 h-4 w-4" />
-                          New File
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
-                )}
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuAction
+                    className="left-2 bg-sidebar-accent text-sidebar-accent-foreground data-[state=open]:rotate-90"
+                    showOnHover
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </SidebarMenuAction>
+                </CollapsibleTrigger>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuAction showOnHover>
+                      <Plus className="h-4 w-4" />
+                    </SidebarMenuAction>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddProject?.(project.id, "folder");
+                      }}
+                    >
+                      <Folder className="mr-2 h-4 w-4" />
+                      New Folder
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddProject?.(project.id, "file");
+                      }}
+                    >
+                      <File className="mr-2 h-4 w-4" />
+                      New File
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             )}
 
@@ -236,6 +285,7 @@ const ProjectItem = ({
                       isCollapsed={isCollapsed}
                       level={level + 1}
                       onAction={onAction}
+                      onAddProject={onAddProject}
                     />
                   ))}
                 </SidebarMenuSub>
@@ -257,7 +307,11 @@ const ProjectItem = ({
             <span
               className="ml-2"
               onClick={() => {
-                if (item.action === "rename") setIsEditing(true);
+                if (item.action === "rename") {
+                  setIsRenaming(true);
+                } else {
+                  onAction!(item.action, project.id);
+                }
               }}
             >
               {item.name}
@@ -275,11 +329,17 @@ export function NavWorkspaces({
   onAddProject,
 }: NavWorkspacesProps) {
   const deleteProject = useStore((state) => state.deleteProject);
-  const handleAction = (action: string, projectId: string) => {
+  const updateProject = useStore((state) => state.updateProject);
+  const handleAction = (
+    action: string,
+    projectId: string,
+    newName?: string
+  ) => {
     switch (action) {
       case "rename":
-        // projectActions.handleRename(projectId);
-        console.log(action, projectId);
+        if (newName) {
+          updateProject(projectId, { name: newName });
+        }
 
         break;
       case "delete":
@@ -346,22 +406,29 @@ function RenameDropdown({
   onRename: (projectId: string, newName: string) => void;
 }) {
   const [tempName, setTempName] = useState(project.name);
+  const [open, setOpen] = useState(false);
 
   const handleRename = () => {
-    if (tempName.trim() && tempName !== project.name) {
+    if (tempName.trim()) {
       onRename(project.id, tempName.trim());
+      setOpen(false); // Close the popup after renaming
     }
   };
 
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <div className="p-2 hover:bg-muted cursor-pointer">{project.name}</div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="p-2 w-64">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground size-10">{project.icon}</span>
+  const handleCancel = () => {
+    setTempName(project.name); // Reset the name
+    setOpen(false); // Close the popup
+  };
 
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="sm">
+          Rename
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-64 p-4">
+        <div className="flex flex-col gap-2">
           <Input
             value={tempName}
             onChange={(e) => setTempName(e.target.value)}
@@ -369,14 +436,24 @@ function RenameDropdown({
               if (e.key === "Enter") {
                 handleRename();
                 e.preventDefault();
+              } else if (e.key === "Escape") {
+                handleCancel();
               }
             }}
             autoFocus
-            className="w-full"
+            placeholder="Enter new name"
           />
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleRename}>
+              Save
+            </Button>
+          </div>
         </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </PopoverContent>
+    </Popover>
   );
 }
 

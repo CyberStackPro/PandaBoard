@@ -33,10 +33,10 @@ export interface WorkspaceActions {
   addProject: (params: CreateProjectParams) => Promise<void>;
   deleteProject: (projectId: string) => Promise<void>;
   // renameProject: (projectId: string) => Promise<void>;
-  //   updateProject: (
-  //     projectId: string,
-  //     updates: Partial<Project>
-  //   ) => Promise<void>;
+  updateProject: (
+    projectId: string,
+    updates: Partial<Project>
+  ) => Promise<void>;
   //   fetchProjects: () => Promise<void>;
 }
 
