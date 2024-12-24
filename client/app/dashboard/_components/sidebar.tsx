@@ -1,18 +1,10 @@
 // components/sidebar.tsx
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  ChevronsLeft,
-  MenuIcon,
-  Plus,
-  Search,
-  Settings,
-  Trash,
-} from "lucide-react";
-import { ElementRef, useEffect, useRef, useState } from "react";
+import { Search } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { ElementRef, useRef, useState } from "react";
 // import { useMediaQuery } from "@/hooks/use-media-query";
 import { Button } from "@/components/ui/button";
 

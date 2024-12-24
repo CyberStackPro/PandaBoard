@@ -31,7 +31,7 @@ export const createWorkspaceSlice: StateCreator<
   ...initialState,
   addProject: async (params: CreateProjectParams) => {
     const newProject: Partial<Project> = {
-      id: crypto.randomUUID(), // Generate unique ID
+      // id: crypto.randomUUID(), // Generate unique ID
       name: params.name || "Untitled",
       parent_id: params.parent_id || null,
       type: params.type || "folder",
@@ -41,8 +41,6 @@ export const createWorkspaceSlice: StateCreator<
       status: "active",
       children: params.type === "folder" ? [] : undefined,
       documents: [],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
     };
     set((state: WorkSpaceActions) => {
       if (!params.parent_id) {
@@ -124,16 +122,6 @@ const findAndUpdateProject = (
     return project;
   });
 };
-
-// const findAndDeleteProject = (projects: Project[], projectId: string): Project[] => {
-//     return projects.filter(project => {
-//       if (project.id === projectId) return false;
-//       if (project.children) {
-//         project.children = findAndDeleteProject(project.children, projectId);
-//       }
-//       return true;
-//     });
-// };
 const updateWorkspaceTree = (
   workspaces: Project[],
   projectId: string,

@@ -36,10 +36,7 @@ const signUpSchema = z.object({
   }),
 });
 
-const SignIn = ({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<"div">) => {
+const SignIn = ({ className }: React.ComponentPropsWithoutRef<"div">) => {
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
