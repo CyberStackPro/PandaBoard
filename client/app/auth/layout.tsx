@@ -1,4 +1,5 @@
 import { LampContainer, LampDemo } from "@/components/ui/lamp";
+import { Spotlight } from "@/components/ui/spotlight";
 import { motion } from "framer-motion";
 import React from "react";
 
