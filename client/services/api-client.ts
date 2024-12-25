@@ -39,6 +39,13 @@ class APIClient<T, R = T> {
     );
     return response.data;
   };
+  delete = async (config?: AxiosRequestConfig): Promise<R> => {
+    const response: AxiosResponse<R> = await axiosInstance.delete<R>(
+      this.endpoint,
+      config
+    );
+    return response.data;
+  };
 }
 
 export default APIClient;

@@ -67,7 +67,7 @@ export const ProjectItem = ({
         if (item.action === "rename") {
           setIsRenaming(true);
         } else {
-          onAction!(item.action, project.id);
+          onAction!(item.action, project.id as string);
         }
       }}
     >
@@ -107,7 +107,7 @@ export const ProjectItem = ({
   };
   const handleRename = (newName: string) => {
     if (newName.trim() && newName !== project.name) {
-      onAction?.("rename", project.id, newName.trim());
+      onAction?.("rename", project.id as string, newName.trim());
     } else {
       setTempName(project.name || "");
     }
@@ -187,7 +187,8 @@ export const ProjectItem = ({
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
-                        onAddProject?.(project.id, "folder");
+                        const parentId = project.id || null;
+                        onAddProject?.(parentId, "folder");
                       }}
                     >
                       <Folder className="mr-2 h-4 w-4" />
@@ -196,7 +197,8 @@ export const ProjectItem = ({
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
-                        onAddProject?.(project.id, "file");
+                        const parentId = project.id || null;
+                        onAddProject?.(parentId, "file");
                       }}
                     >
                       <File className="mr-2 h-4 w-4" />
@@ -207,29 +209,32 @@ export const ProjectItem = ({
               </>
             )}
 
-            {!isCollapsed && isFolder && (
-              <CollapsibleContent>
-                <SidebarMenuSub>
-                  {project.children?.map((child) => (
-                    <ProjectItem
-                      key={child.id}
-                      project={child}
-                      isCollapsed={isCollapsed}
-                      level={level + 1}
-                      onAction={onAction}
-                      onAddProject={onAddProject}
-                    />
-                  ))}
-                </SidebarMenuSub>
-              </CollapsibleContent>
-            )}
+            {!isCollapsed &&
+              isFolder &&
+              project.children &&
+              project.children.length > 0 && (
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {project.children.map((child, index) => (
+                      <ProjectItem
+                        key={`child-${child.id}-${index}`}
+                        project={child}
+                        isCollapsed={isCollapsed}
+                        level={level + 1}
+                        onAction={onAction}
+                        onAddProject={onAddProject}
+                      />
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              )}
           </SidebarMenuItem>
         </Collapsible>
       </ContextMenuTrigger>
 
       <ContextMenuContent className="w-64 backdrop-blur-sm !bg-background/50">
         {RIGHT_CLICK_MENU_ITEMS.map((item) => (
-          <>{renderContextMenuItem(item)}</>
+          <div key={item.name}>{renderContextMenuItem(item)}</div>
         ))}
       </ContextMenuContent>
     </ContextMenu>

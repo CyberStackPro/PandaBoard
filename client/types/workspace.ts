@@ -30,7 +30,7 @@ export interface ProjectAction {
 //   // ... other actions
 // };
 export interface WorkspaceActions {
-  addProject: (params: CreateProjectParams) => Promise<void>;
+  addProject: (project: Project) => Promise<void>;
   deleteProject: (projectId: string) => Promise<void>;
   // renameProject: (projectId: string) => Promise<void>;
   updateProject: (

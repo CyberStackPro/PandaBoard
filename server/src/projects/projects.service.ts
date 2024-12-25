@@ -21,6 +21,7 @@ export class ProjectsService {
       .insert(schema.projects)
       .values({
         ...project,
+        parent_id: project.parent_id || null,
         metadata: {
           ...defaultMetadata,
           ...(project.metadata || {}),
@@ -29,7 +30,7 @@ export class ProjectsService {
       .returning();
   }
   async findAllProjects(ownerId: string) {
-    const projects = this.database.query.projects.findMany({
+    const allProjects = await this.database.query.projects.findMany({
       with: {
         owner: {
           columns: { id: true, name: true, email: true },
@@ -40,7 +41,21 @@ export class ProjectsService {
       where: (projects, { eq }) => eq(projects.owner_id, ownerId),
       orderBy: (projects, { desc }) => [desc(projects.created_at)],
     });
-    return projects;
+
+    // Convert flat array to tree structure
+    const buildProjectTree = (
+      projects: any[],
+      parentId: string | null = null,
+    ): any[] => {
+      return projects
+        .filter((project) => project.parent_id === parentId)
+        .map((project) => ({
+          ...project,
+          children: buildProjectTree(projects, project.id),
+        }));
+    };
+
+    return buildProjectTree(allProjects);
   }
 
   async findProjectById(id: string) {

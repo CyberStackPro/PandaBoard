@@ -13,45 +13,45 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-
-import { useStore } from "@/stores/store";
 import { Project } from "@/types/project";
 import { File, Folder, Plus } from "lucide-react";
 import { ProjectItem } from "./project-item";
+import { useProjects } from "@/hooks/use-projects";
 
 interface NavWorkspacesProps {
   isCollapsed: boolean;
-  projects: Project[];
+  // work: Project[];
+  workspaces: Project[];
   onAddProject: (parentId: string | null, type: "folder" | "file") => void;
 }
 
 export function NavWorkspaces({
   isCollapsed,
-  projects,
+  workspaces,
   onAddProject,
 }: NavWorkspacesProps) {
-  const deleteProject = useStore((state) => state.deleteProject);
-  const updateProject = useStore((state) => state.updateProject);
-  const handleAction = (
-    action: string,
-    projectId: string,
-    newName?: string
-  ) => {
-    switch (action) {
-      case "duplicate":
-      case "rename":
-        if (newName) {
-          updateProject(projectId, { name: newName });
-        }
+  const { handleProjectAction } = useProjects();
+  // const handleAction = (
+  //   action: string,
+  //   projectId: string,
+  //   newName?: string
+  // ) => {
+  //   switch (action) {
+  //     case "duplicate":
+  //     case "rename":
+  //       if (newName) {
+  //         updateProject(projectId, { name: newName });
+  //       }
 
-        break;
-      case "delete":
-        deleteProject(projectId);
+  //       break;
+  //     case "delete":
+  //       deleteProject(projectId);
 
-        break;
-      // ... other cases
-    }
-  };
+  //       break;
+  //     // ... other cases
+  //   }
+  // };
+  const topLevelProjects = workspaces.filter((project) => !project.parent_id);
   return (
     <SidebarGroup>
       <SidebarGroupLabel className={cn(isCollapsed && "sr-only")}>
@@ -59,14 +59,14 @@ export function NavWorkspaces({
       </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {projects.map((project) => (
+          {topLevelProjects.map((project) => (
             <ProjectItem
-              key={project.id}
+              key={`project-${project.id}`}
               project={project}
               isCollapsed={isCollapsed}
               level={0}
               onAddProject={onAddProject}
-              onAction={handleAction}
+              onAction={handleProjectAction}
             />
           ))}
 

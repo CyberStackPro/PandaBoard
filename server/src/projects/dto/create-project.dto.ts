@@ -16,6 +16,11 @@ export const CreateProjectSchema = z.object({
     .string()
     .min(1, 'Project name is required')
     .max(255, 'Project name cannot exceed 255 characters'),
+  parent_id: z
+    .string()
+    .uuid('Parent ID must be a valid UUID')
+    .optional()
+    .nullable(),
   description: z.string().optional(),
   status: ProjectStatusEnum.default('active'),
   visibility: ProjectVisibilityEnum.default('private'),

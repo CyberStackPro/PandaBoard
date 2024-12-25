@@ -7,6 +7,7 @@ import {
   WorkspaceState,
 } from "@/types/workspace";
 import { Project } from "@/types/project";
+import APIClient from "@/services/api-client";
 
 interface WorkSpaceActions {
   workspaces: Project[];
@@ -22,6 +23,10 @@ const initialState: WorkspaceState = {
   error: null,
 };
 
+const apiClient = new APIClient(
+  "/projects/owner/8ac84726-7c67-4c1b-a18f-aa8bd52710dc"
+);
+
 export const createWorkspaceSlice: StateCreator<
   Store,
   [["zustand/immer", never]],
@@ -29,54 +34,57 @@ export const createWorkspaceSlice: StateCreator<
   WorkspaceSlice
 > = (set) => ({
   ...initialState,
-  addProject: async (params: CreateProjectParams) => {
-    const newProject: Partial<Project> = {
-      // id: crypto.randomUUID(), // Generate unique ID
-      name: params.name || "Untitled",
-      parent_id: params.parent_id || null,
-      type: params.type || "folder",
-      description: params.description,
-      visibility: params.visibility || "private",
-      icon: params.icon || null,
-      status: "active",
-      children: params.type === "folder" ? [] : undefined,
-      documents: [],
-    };
+  fetchWorkspaces: async () => {
+    try {
+      const response = await apiClient.get();
+
+      set({ workspaces: response });
+    } catch (error) {
+      console.error("Failed to fetch workspaces:", error);
+    }
+  },
+
+  addProject: async (project: Project) => {
     set((state: WorkSpaceActions) => {
-      if (!params.parent_id) {
+      const addToTree = (workspace: Project[], newProject: Project) => {
+        return workspace.map((workspace) => {
+          if (workspace.id === newProject.parent_id) {
+            return {
+              ...workspace,
+              children: [...(workspace.children || []), newProject],
+            };
+          }
+          if (workspace.children?.length) {
+            return {
+              ...workspace,
+              children: addToTree(workspace.children, newProject),
+            };
+          }
+          return workspace;
+        });
+      };
+      if (!project.parent_id) {
         return {
           ...state,
-          workspaces: [...state.workspaces, newProject as Project],
+          workspaces: [...state.workspaces, project],
         };
       }
-      // const updatedWorkspaces = state.workspaces.map((workspace) => {
-      //   if (workspace.id === params.parent_id) {
-      //     return {
-      //       ...workspace,
-      //       children: [...(workspace.children || []), newProject],
-      //     };
-      //   }
-      //   return workspace;
-      // });
+
+      // return {
+      //   ...state,
+      //   workspaces: updateWorkspaceTree(
+      //     state.workspaces,
+      //     project.parent_id,
+      //     (parent) => ({
+      //       ...parent,
+      //       children: [...(parent.children || []), project],
+      //     })
+      //   ),
+      // };
       return {
         ...state,
-        workspaces: updateWorkspaceTree(
-          state.workspaces,
-          params.parent_id,
-          (parent) => ({
-            ...parent,
-            children: [...(parent.children || []), newProject as Project],
-          })
-        ),
+        workspaces: addToTree(state.workspaces, project),
       };
-      // return updateWorkspaceTree(
-      //   state.workspaces,
-      //   params.parent_id,
-      //   (parent) => ({
-      //     ...parent,
-      //     children: [...(parent.children || []), newProject as Project],
-      //   })
-      // );
     });
   },
 
@@ -153,3 +161,13 @@ const updateWorkspaceTree = (
 //     return true;
 //   });
 // };
+
+// const updatedWorkspaces = state.workspaces.map((workspace) => {
+//   if (workspace.id === params.parent_id) {
+//     return {
+//       ...workspace,
+//       children: [...(workspace.children || []), newProject],
+//     };
+//   }
+//   return workspace;
+// });

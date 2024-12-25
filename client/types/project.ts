@@ -2,21 +2,21 @@ export type ProjectStatus = "active" | "archived" | "deleted" | "template";
 export type ProjectVisibility = "private" | "team" | "public";
 
 export interface Project {
-  id: string;
+  id?: string;
   name: string;
   owner_id: string;
-  parent_id?: string | null;
+  parent_id: string | null;
   description?: string | null;
-  status: ProjectStatus;
+  status?: ProjectStatus;
   type: "folder" | "file";
-  visibility: ProjectVisibility;
-  metadata: Record<string, unknown>;
+  visibility?: ProjectVisibility;
+  metadata?: Record<string, unknown>;
   icon?: string | null;
   cover_image?: string | null;
-  children: Project[];
-  documents: Document[];
-  created_at: string;
-  updated_at: string;
+  children?: Project[];
+  documents?: Document[];
+  // created_at: string;
+  // updated_at: string;
 }
 
 export interface WorkspaceContextProps {

@@ -9,41 +9,49 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { DATA } from "@/constants/side-bar-data";
-import { useStore } from "@/stores/store";
 import { NameDialog } from "../dialogs/add-project-dialog";
 import { NavSecondary } from "./nav-secondary";
 import { NavWorkspaces } from "./nav-workspaces";
 import { TeamSwitcher } from "./team-switch";
+import { useProjects } from "@/hooks/use-projects";
 
 export function AppSidebar({
   // className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   const [data] = React.useState(DATA);
-  const workspaces = useStore((state) => state.workspaces);
-  const addProject = useStore((state) => state.addProject);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [dialogType, setDialogType] = React.useState<"folder" | "file">(
-    "folder"
-  );
-  const [parentId, setParentId] = React.useState<string | null>(null);
+  // const workspaces = useStore((state) => state.workspaces);
+  // const addProject = useStore((state) => state.addProject);
+  // const [dialogOpen, setDialogOpen] = React.useState(false);
+  // const [dialogType, setDialogType] = React.useState<"folder" | "file">(
+  //   "folder"
+  // );
+  const {
+    workspaces,
+    dialogOpen,
+    dialogType,
+    setDialogOpen,
+    handleCreateProject,
+    handleDialogSubmit,
+  } = useProjects();
+  console.log(workspaces);
 
-  const handleAddProject = async (
-    parentId: string | null,
-    type: "folder" | "file"
-  ) => {
-    setDialogType(type);
-    setParentId(parentId);
-    setDialogOpen(true);
-  };
+  // const handleAddProject = async (
+  //   parentId: string | null,
+  //   type: "folder" | "file"
+  // ) => {
+  //   setDialogType(type);
+  //   setParentId(parentId);
+  //   setDialogOpen(true);
+  // };
 
-  const handleDialogSubmit = async (name: string) => {
-    await addProject({
-      name,
-      parent_id: parentId,
-      type: dialogType,
-    });
-  };
+  // const handleDialogSubmit = async (name: string) => {
+  //   await addProject({
+  //     name,
+  //     parent_id: parentId,
+  //     type: dialogType,
+  //   });
+  // };
 
   return (
     // <div className="relative  group-data-[variant=floating]:border-0">
@@ -59,8 +67,8 @@ export function AppSidebar({
       <SidebarContent>
         <NavWorkspaces
           isCollapsed={false}
-          onAddProject={handleAddProject}
-          projects={workspaces}
+          onAddProject={handleCreateProject}
+          workspaces={workspaces || []}
         />
 
         <NavSecondary items={data.navSecondary} />
