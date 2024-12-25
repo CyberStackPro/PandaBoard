@@ -89,12 +89,10 @@ export const useProjects = () => {
   const workspaces = useStore((state) => state.workspaces);
   const fetchWorkspaces = useStore((state) => state.fetchWorkspaces);
 
-  // dialog
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"folder" | "file">("folder");
   const [parentId, setParentId] = useState<string | null>(null);
-
-  // console.log("parentId", workspaces);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     fetchWorkspaces();
@@ -108,8 +106,11 @@ export const useProjects = () => {
     },
     []
   );
+
   const handleDialogSubmit = useCallback(
     async (name: string) => {
+      setIsLoading(true);
+      const tempId = Date.now().toString();
       try {
         const projectData = {
           name,
@@ -117,59 +118,63 @@ export const useProjects = () => {
           type: dialogType,
           owner_id: "8ac84726-7c67-4c1b-a18f-aa8bd52710dc",
         };
+
+        // Optimistic update
+        const optimisticProject = {
+          ...projectData,
+          id: tempId,
+          children: [],
+        };
+        addProject(optimisticProject);
+
         const newProject = await projectsAPI.post(projectData);
+
+        // Update with real data
         addProject({ ...newProject, parent_id: parentId, type: dialogType });
       } catch (err) {
         console.error("Error creating project:", err);
+        // Rollback optimistic update if needed
+        deleteProject(tempId);
         alert("Failed to create project. Please try again.");
       } finally {
+        setIsLoading(false);
         setDialogOpen(false);
         setParentId(null);
       }
     },
-    [addProject, dialogType, parentId]
+    [addProject, dialogType, parentId, deleteProject]
   );
 
-  // const handleAddProject = async (params: Project) => {
-  //   try {
-  //     // const newProject = await projectsAPI.post(params);
+  const handleProjectAction = useCallback(
+    async (action: string, projectId: string, newName?: string) => {
+      try {
+        switch (action) {
+          case "rename":
+            if (newName) {
+              // Optimistic update
+              updateProject(projectId, { name: newName });
+              const updatedProject = await projectsAPI.patch(`/${projectId}`, {
+                name: newName,
+              });
+              updateProject(projectId, updatedProject);
+            }
+            break;
 
-  //     await addProject({
-  //       ...params,
-  //       id: newProject.id,
-  //     });
-  //     return newProject;
-  //   } catch (error) {
-  //     console.error("Error adding project:", error);
-  //     throw error;
-  //   }
-  // };
-  const handleProjectAction = async (
-    action: string,
-    projectId: string,
-    newName?: string
-  ) => {
-    try {
-      switch (action) {
-        case "rename":
-          if (newName) {
-            const updatedProject = await projectsAPI.patch(`/${projectId}`, {
-              name: newName,
-            });
-            await updateProject(projectId, updatedProject);
-          }
-          break;
-
-        case "delete":
-          await projectsAPI.delete(`/${projectId}`);
-          await deleteProject(projectId);
-          break;
+          case "delete":
+            // Optimistic delete
+            deleteProject(projectId);
+            await projectsAPI.delete(`/${projectId}`);
+            break;
+        }
+      } catch (error) {
+        console.error(`Failed to ${action} project:`, error);
+        // Rollback on error
+        await fetchWorkspaces();
+        throw error;
       }
-    } catch (error) {
-      console.error(`Failed to ${action} project:`, error);
-      throw error;
-    }
-  };
+    },
+    [updateProject, deleteProject, fetchWorkspaces]
+  );
 
   return {
     handleProjectAction,
@@ -179,5 +184,6 @@ export const useProjects = () => {
     setDialogOpen,
     handleCreateProject,
     handleDialogSubmit,
+    isLoading,
   };
 };

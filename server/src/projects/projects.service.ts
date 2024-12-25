@@ -9,6 +9,7 @@ import { eq } from 'drizzle-orm';
 
 @Injectable()
 export class ProjectsService {
+  private projectsCache: Map<string, any[]> = new Map();
   constructor(
     @Inject(DATABASE_CONNECTION)
     private readonly database: NodePgDatabase<typeof schema>,
@@ -43,19 +44,20 @@ export class ProjectsService {
     });
 
     // Convert flat array to tree structure
-    const buildProjectTree = (
-      projects: any[],
-      parentId: string | null = null,
-    ): any[] => {
-      return projects
-        .filter((project) => project.parent_id === parentId)
-        .map((project) => ({
-          ...project,
-          children: buildProjectTree(projects, project.id),
-        }));
-    };
+    // const buildProjectTree = (
+    //   projects: any[],
+    //   parentId: string | null = null,
+    // ): any[] => {
+    //   return projects
+    //     .filter((project) => project.parent_id === parentId)
+    //     .map((project) => ({
+    //       ...project,
+    //       children: buildProjectTree(projects, project.id),
+    //     }));
+    // };
+    const projectTree = this.buildProjectTree(allProjects);
 
-    return buildProjectTree(allProjects);
+    return projectTree;
   }
 
   async findProjectById(id: string) {
@@ -84,5 +86,16 @@ export class ProjectsService {
       .delete(schema.projects)
       .where(eq(schema.projects.id, id))
       .returning();
+  }
+  private buildProjectTree(
+    projects: any[],
+    parentId: string | null = null,
+  ): any[] {
+    return projects
+      .filter((project) => project.parent_id === parentId)
+      .map((project) => ({
+        ...project,
+        children: this.buildProjectTree(projects, project.id),
+      }));
   }
 }

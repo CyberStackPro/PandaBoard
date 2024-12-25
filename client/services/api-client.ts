@@ -1,9 +1,5 @@
-import axios from "axios";
-import { AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
-// export interface FetchResponse<T> {
-//   data: T;
-// }
 const axiosInstance = axios.create({
   baseURL: "http://localhost:4000/api/v1",
   withCredentials: true,
@@ -16,36 +12,70 @@ class APIClient<T, R = T> {
     this.endpoint = endpoint;
   }
 
-  get = async (config?: AxiosRequestConfig): Promise<R> => {
-    const response: AxiosResponse<R> = await axiosInstance.get<R>(
-      this.endpoint,
-      config
-    );
-    return response.data;
-  };
-  post = async (data: T, config?: AxiosRequestConfig): Promise<R> => {
-    const response: AxiosResponse<R> = await axiosInstance.post<R>(
-      this.endpoint,
-      data,
-      config
-    );
-    return response.data;
-  };
-  patch = async (data: Partial<T>, config?: AxiosRequestConfig): Promise<R> => {
-    const response: AxiosResponse<R> = await axiosInstance.patch<R>(
-      this.endpoint,
-      data,
-      config
-    );
-    return response.data;
-  };
-  delete = async (config?: AxiosRequestConfig): Promise<R> => {
-    const response: AxiosResponse<R> = await axiosInstance.delete<R>(
-      this.endpoint,
-      config
-    );
-    return response.data;
-  };
+  async get(path = "", config?: AxiosRequestConfig): Promise<R> {
+    try {
+      const response: AxiosResponse<R> = await axiosInstance.get<R>(
+        `${this.endpoint}${path}`,
+        config
+      );
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async post(data: T, config?: AxiosRequestConfig): Promise<R> {
+    try {
+      const response: AxiosResponse<R> = await axiosInstance.post<R>(
+        this.endpoint,
+        data,
+        config
+      );
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async patch(
+    path: string,
+    data: Partial<T>,
+    config?: AxiosRequestConfig
+  ): Promise<R> {
+    try {
+      const response: AxiosResponse<R> = await axiosInstance.patch<R>(
+        `${this.endpoint}${path}`,
+        data,
+        config
+      );
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async delete(path: string, config?: AxiosRequestConfig): Promise<R> {
+    try {
+      const response: AxiosResponse<R> = await axiosInstance.delete<R>(
+        `${this.endpoint}${path}`,
+        config
+      );
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  private handleError(error: any) {
+    if (axios.isAxiosError(error)) {
+      return {
+        message: error.response?.data?.message || "An error occurred",
+        status: error.response?.status,
+        data: error.response?.data,
+      };
+    }
+    return error;
+  }
 }
 
 export default APIClient;
