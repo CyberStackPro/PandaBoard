@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { ModeToggle } from "./_components/theme-toggler";
+import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -11,14 +10,14 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import React from "react";
 import { cn } from "@/lib/utils";
-import { MailQuestion, Github, Car } from "lucide-react";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { useTheme } from "next-themes";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Spotlight } from "@/components/ui/spotlight";
+import { Github, MailQuestion } from "lucide-react";
+import { useTheme } from "next-themes";
+import Image from "next/image";
+import Link from "next/link";
+import React from "react";
+import { ModeToggle } from "./_components/theme-toggler";
 
 const features = [
   {
@@ -60,7 +59,7 @@ const Page = () => {
   const y = useTransform(scrollY, [1000, 300], [0, 50]);
   // const bgTranslateY = useTransform(scrollY, [0, 300], [0, -100]);
   const rotate = useTransform(scrollY, [0, 300], [0, -10]);
-  const opacity = useTransform(scrollY, [0, 150], [0, 1]);
+  // const opacity = useTransform(scrollY, [0, 150], [0, 1]);
   const scale = useTransform(scrollY, [0, 300], [1, 0.95]);
   const draw = {
     hidden: { pathLength: 0, opacity: 0 },
@@ -304,7 +303,7 @@ const Page = () => {
                     /> */}
 
                     {/* Edge highlight effect */}
-                    <div
+                    {/* <div
                       className={cn(
                         "absolute inset-0 rounded-2xl",
                         theme === "dark"
@@ -317,7 +316,7 @@ const Page = () => {
                         WebkitMaskImage:
                           "linear-gradient(to bottom, transparent, black)",
                       }}
-                    />
+                    /> */}
                   </motion.div>
                 </div>
               </motion.div>

@@ -88,6 +88,7 @@ export const useProjects = () => {
   const updateProject = useStore((state) => state.updateProject);
   const workspaces = useStore((state) => state.workspaces);
   const fetchWorkspaces = useStore((state) => state.fetchWorkspaces);
+  const duplicateProject = useStore((state) => state.duplicateProject);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"folder" | "file">("folder");
@@ -165,6 +166,88 @@ export const useProjects = () => {
             deleteProject(projectId);
             await projectsAPI.delete(`/${projectId}`);
             break;
+          case "duplicate":
+            const findProject = (projects: Project[]): Project | null => {
+              for (const project of projects) {
+                if (project.id === projectId) {
+                  return project;
+                }
+                if (project.children?.length) {
+                  const found = findProject(project.children);
+                  if (found) return found;
+                }
+              }
+              return null;
+            };
+
+            const createDuplicateData = (
+              project: Project,
+              parentId: string | null = null
+            ): Project => {
+              // Create base project data without ID and children
+              const baseData = {
+                name: `${project.name} (Copy)`,
+                type: project.type,
+                parent_id: parentId,
+                status: project.status,
+                visibility: project.visibility,
+                metadata: project.metadata,
+                icon: project.icon || "",
+                cover_image: project.cover_image,
+                owner_id: "8ac84726-7c67-4c1b-a18f-aa8bd52710dc",
+              };
+
+              return baseData;
+            };
+            const projectToDuplicate = findProject(workspaces);
+            if (projectToDuplicate) {
+              try {
+                // Create the parent project first
+                const parentDuplicateData = createDuplicateData(
+                  projectToDuplicate,
+                  projectToDuplicate.parent_id
+                );
+                const newParentProject = await projectsAPI.post(
+                  parentDuplicateData
+                );
+
+                // If original project had children, duplicate them with the new parent ID
+                if (projectToDuplicate.children?.length) {
+                  const duplicateChildren = async (
+                    children: Project[],
+                    newParentId: string
+                  ) => {
+                    for (const child of children) {
+                      const childDuplicateData = createDuplicateData(
+                        child,
+                        newParentId
+                      );
+                      const newChild = await projectsAPI.post(
+                        childDuplicateData
+                      );
+
+                      // Recursively duplicate nested children
+                      if (child.children?.length) {
+                        await duplicateChildren(child.children, newChild.id);
+                      }
+                    }
+                  };
+
+                  await duplicateChildren(
+                    projectToDuplicate.children,
+                    newParentProject.id
+                  );
+                }
+
+                // Fetch the updated project tree after all duplications are complete
+                await fetchWorkspaces();
+              } catch (error) {
+                console.error("Failed to duplicate project:", error);
+                await fetchWorkspaces(); // Refresh the tree in case of partial success
+                throw error;
+              }
+            }
+            break;
         }
       } catch (error) {
         console.error(`Failed to ${action} project:`, error);
@@ -173,7 +256,13 @@ export const useProjects = () => {
         throw error;
       }
     },
-    [updateProject, deleteProject, fetchWorkspaces]
+    [
+      updateProject,
+      deleteProject,
+      duplicateProject,
+      workspaces,
+      fetchWorkspaces,
+    ]
   );
 
   return {

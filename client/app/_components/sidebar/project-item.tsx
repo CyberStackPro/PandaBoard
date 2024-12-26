@@ -8,6 +8,9 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuShortcut,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
@@ -27,7 +30,7 @@ import { RIGHT_CLICK_MENU_ITEMS } from "@/lib/utils/nav-workspaces";
 import { Project } from "@/types/project";
 import { ChevronRight, File, Folder, Plus } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface ProjectItemProps {
   project: Project;
@@ -60,59 +63,73 @@ export const ProjectItem = ({
       ),
     [project.icon, isFolder]
   );
-  const renderContextMenuItem = (item: (typeof RIGHT_CLICK_MENU_ITEMS)[0]) => (
-    <ContextMenuItem
-      key={item.name}
-      onClick={() => {
-        if (item.action === "rename") {
-          setIsRenaming(true);
-        } else {
-          onAction!(item.action, project.id as string);
-        }
-      }}
-    >
-      {item.icon}
-      <span className="ml-2">{item.name}</span>
-      <ContextMenuShortcut>{item.shortcut}</ContextMenuShortcut>
-    </ContextMenuItem>
-  );
+  const renderContextMenuItem = (item: (typeof RIGHT_CLICK_MENU_ITEMS)[0]) => {
+    if (item.subItems && item.subItems.length > 0) {
+      return (
+        <ContextMenuSub key={item.name}>
+          <ContextMenuSubTrigger>
+            {item.icon}
+            <span className="ml-2">{item.name}</span>
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent className="w-48">
+            {item.subItems.map((subItem) => (
+              <ContextMenuItem
+                key={subItem.name}
+                onClick={() => {
+                  console.log(subItem.action);
 
-  // const handleAddClick = (e: React.MouseEvent) => {
-  //   e.stopPropagation();
-  //   if (onAddProject) {
-  //     // if (isFolder) {
-  //     onAddProject(project.id, "file");
-  //     // }
-  //   }
-  // };
-  // const handleSaveName = () => {
-  //   if (tempName.trim() && tempName !== project.name) {
-  //     onAction?.("rename", project.id, tempName.trim());
-  //     setIsRenaming(false);
-  //   } else if (!tempName.trim()) {
-  //     alert("Project name cannot be empty.");
-  //   } else {
-  //     setIsRenaming(false);
-  //   }
-  // };
+                  onAction?.(subItem.action, project.id as string);
+                }}
+              >
+                {subItem.name}
+              </ContextMenuItem>
+            ))}
+          </ContextMenuSubContent>
+        </ContextMenuSub>
+      );
+    }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    e.stopPropagation();
-    if (e.key === "Enter") {
-      handleRename(tempName);
-    } else if (e.key === "Escape") {
+    return (
+      <ContextMenuItem
+        key={item.name}
+        onClick={() => {
+          if (item.action === "rename") {
+            setIsRenaming(true);
+          } else {
+            onAction?.(item.action, project.id as string);
+          }
+        }}
+      >
+        {item.icon}
+        <span className="ml-2">{item.name}</span>
+        {item.shortcut && (
+          <ContextMenuShortcut>{item.shortcut}</ContextMenuShortcut>
+        )}
+      </ContextMenuItem>
+    );
+  };
+  const handleRename = useCallback(
+    (newName: string) => {
+      if (newName.trim() && newName !== project.name) {
+        onAction?.("rename", project.id as string, newName.trim());
+      }
       setTempName(project.name || "");
       setIsRenaming(false);
-    }
-  };
-  const handleRename = (newName: string) => {
-    if (newName.trim() && newName !== project.name) {
-      onAction?.("rename", project.id as string, newName.trim());
-    } else {
-      setTempName(project.name || "");
-    }
-    setIsRenaming(false);
-  };
+    },
+    [onAction, project.id, project.name]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+        handleRename(tempName);
+      } else if (e.key === "Escape") {
+        setTempName(project.name || "");
+        setIsRenaming(false);
+      }
+    },
+    [handleRename, tempName, project.name]
+  );
   useEffect(() => {
     if (isRenaming) {
       inputRef.current?.focus();
@@ -232,10 +249,8 @@ export const ProjectItem = ({
         </Collapsible>
       </ContextMenuTrigger>
 
-      <ContextMenuContent className="w-64 backdrop-blur-sm !bg-background/50">
-        {RIGHT_CLICK_MENU_ITEMS.map((item) => (
-          <div key={item.name}>{renderContextMenuItem(item)}</div>
-        ))}
+      <ContextMenuContent className="w-64 ">
+        {RIGHT_CLICK_MENU_ITEMS.map(renderContextMenuItem)}
       </ContextMenuContent>
     </ContextMenu>
   );

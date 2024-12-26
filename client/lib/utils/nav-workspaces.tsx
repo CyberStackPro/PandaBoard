@@ -6,6 +6,16 @@ export const RIGHT_CLICK_MENU_ITEMS = [
     icon: <Copy className="h-4 w-4" />,
     shortcut: "⌘D",
     action: "duplicate",
+    subItems: [
+      {
+        name: "Duplicate with contents",
+        action: "duplicateWithContents",
+      },
+      {
+        name: "Duplicate structure only",
+        action: "duplicateStructure",
+      },
+    ],
   },
   {
     name: "Rename",

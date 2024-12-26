@@ -15,6 +15,8 @@ interface WorkSpaceActions {
   addFile: (parentId?: string | null) => void;
   deleteProject: (projectId: string) => void;
   updateProject: (projectId: string, updates: Partial<Project>) => void;
+  duplicateProject: (projectId: string) => void;
+  fetchWorkspaces: () => void;
 }
 
 const initialState: WorkspaceState = {
@@ -46,7 +48,10 @@ export const createWorkspaceSlice: StateCreator<
 
   addProject: async (project: Project) => {
     set((state: WorkSpaceActions) => {
-      const addToTree = (workspace: Project[], newProject: Project) => {
+      const addToTree = (
+        workspace: Project[],
+        newProject: Project
+      ): Project[] => {
         return workspace.map((workspace) => {
           if (workspace.id === newProject.parent_id) {
             return {
@@ -110,8 +115,63 @@ export const createWorkspaceSlice: StateCreator<
       workspaces: findAndUpdateProject(state.workspaces, projectId, updates),
     }));
   },
+
+  duplicateProject: async (project: Project) => {
+    set((state: WorkSpaceActions) => {
+      const addToTree = (
+        workspace: Project[],
+        newProject: Project
+      ): Project[] => {
+        if (!newProject.parent_id) {
+          return [...workspace, newProject];
+        }
+
+        return workspace.map((workspace) => {
+          if (workspace.id === newProject.parent_id) {
+            return {
+              ...workspace,
+              children: [...(workspace.children || []), newProject],
+            };
+          }
+          if (workspace.children?.length) {
+            return {
+              ...workspace,
+              children: addToTree(workspace.children, newProject),
+            };
+          }
+          return workspace;
+        });
+      };
+
+      return {
+        ...state,
+        workspaces: addToTree(state.workspaces, project),
+      };
+    });
+  },
 });
 
+const addToTree = (workspace: Project[], newProject: Project): Project[] => {
+  if (!newProject.parent_id) {
+    return [...workspace, newProject];
+  }
+
+  return workspace.map((workspace) => {
+    if (workspace.id === newProject.parent_id) {
+      return {
+        ...workspace,
+        children: [...(workspace.children || []), newProject],
+      };
+    }
+    if (workspace.children?.length) {
+      return {
+        ...workspace,
+        children: addToTree(workspace.children, newProject),
+      };
+    }
+    return workspace;
+  });
+};
 const findAndUpdateProject = (
   projects: Project[],
   projectId: string,
