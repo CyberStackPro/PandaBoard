@@ -1,16 +1,19 @@
 "use client";
 
-import { useAuthStore } from "@/stores/auth/auth-store";
-import { redirect } from "next/navigation";
-import React, { useEffect } from "react";
+import { redirect, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const DashboardPage = () => {
-  // const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  // useEffect(() => {
-  //   if (!isAuthenticated) {
-  //     redirect("/dashboard");
-  //   }
-  // }, [isAuthenticated]);
+  const router = useRouter();
+  const isAuthenticated = true; // Replace with your auth check
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    } else {
+      redirect("/auth/signin");
+    }
+  }, [isAuthenticated, router]);
   return <h1>hello</h1>;
 };
 

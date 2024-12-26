@@ -47,6 +47,7 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --perspective-value: 1000px;
   }
   .dark {
     --background: 240 10% 3.9%;
@@ -81,6 +82,7 @@ body {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --perspective-value: 1000px;
   }
   .theme-green.light {
     --background: 0 0% 100%;
@@ -159,3 +161,15 @@ Add to your global.css .sidebar-item-input {
 .sidebar-item-content {
   @apply flex items-center gap-2 px-2 py-1 w-full;
 }
+:root {
+  --primary-rgb: 24, 24, 27; /* Change these values based on your primary color */
+}
+
+[data-theme="dark"] {
+  --primary-rgb: 244, 244, 245; /* Change these values for dark mode */
+}
+/* 
+.perspective {
+  perspective: 9000px;
+  transform-style: preserve-3d;
+} */
