@@ -2,83 +2,6 @@ import APIClient from "@/services/api-client";
 import { useStore } from "@/stores/store";
 import { Project } from "@/types/project";
 import { useCallback, useEffect, useState } from "react";
-// // hooks/use-projects.ts
-// import { create } from "zustand";
-// import { Project } from "@/types/project";
-// import { mockProjects } from "@/lib/mock-data";
-
-// interface ProjectsStore {
-//   projects: Project[];
-//   loading: boolean;
-//   error: string | null;
-//   fetchProjects: () => Promise<void>;
-//   addProject: (project: Project) => void;
-//   updateProject: (id: string, updates: Partial<Project>) => void;
-//   deleteProject: (id: string) => void;
-// }
-
-// export const useProjects = create<ProjectsStore>((set, get) => ({
-//   projects: mockProjects,
-//   loading: false,
-//   error: null,
-//   fetchProjects: async () => {
-//     set({ loading: true });
-//     try {
-//       // Replace with actual API call
-//       set({ projects: mockProjects, loading: false });
-//     } catch (error) {
-//       if (error instanceof Error)
-//         set({ error: "Failed to fetch projects", loading: false });
-//     }
-//   },
-//   addProject: (project) => {
-//     set((state) => ({
-//       projects: [...state.projects, project],
-//     }));
-//   },
-//   updateProject: (id, updates) => {
-//     set((state) => ({
-//       projects: updateProjectInTree(state.projects, id, updates),
-//     }));
-//   },
-//   deleteProject: (id) => {
-//     set((state) => ({
-//       projects: deleteProjectFromTree(state.projects, id),
-//     }));
-//   },
-// }));
-
-// // Helper functions for updating nested project tree
-// const updateProjectInTree = (
-//   projects: Project[],
-//   id: string,
-//   updates: Partial<Project>
-// ): Project[] => {
-//   return projects.map((project) => {
-//     if (project.id === id) {
-//       return { ...project, ...updates };
-//     }
-//     if (project.children?.length) {
-//       return {
-//         ...project,
-//         children: updateProjectInTree(project.children, id, updates),
-//       };
-//     }
-//     return project;
-//   });
-// };
-
-// const deleteProjectFromTree = (projects: Project[], id: string): Project[] => {
-//   return projects.filter((project) => {
-//     if (project.id === id) {
-//       return false;
-//     }
-//     if (project.children?.length) {
-//       project.children = deleteProjectFromTree(project.children, id);
-//     }
-//     return true;
-//   });
-// };
 
 const projectsAPI = new APIClient<Project>("/projects");
 
@@ -201,53 +124,126 @@ export const useProjects = () => {
             };
             const projectToDuplicate = findProject(workspaces);
             if (projectToDuplicate) {
+              const duplicateData = createDuplicateData(
+                projectToDuplicate,
+                projectToDuplicate.parent_id
+              );
+
+              // Optimistic update with temporary ID
+              const tempId = Date.now().toString();
+              const optimisticProject = {
+                ...duplicateData,
+                id: tempId,
+                children: [],
+              };
+              duplicateProject(optimisticProject);
+
               try {
                 // Create the parent project first
-                const parentDuplicateData = createDuplicateData(
-                  projectToDuplicate,
-                  projectToDuplicate.parent_id
-                );
-                const newParentProject = await projectsAPI.post(
-                  parentDuplicateData
-                );
+                const newProject = await projectsAPI.post(duplicateData);
 
-                // If original project had children, duplicate them with the new parent ID
+                // If original project had children, duplicate them
                 if (projectToDuplicate.children?.length) {
-                  const duplicateChildren = async (
-                    children: Project[],
-                    newParentId: string
-                  ) => {
-                    for (const child of children) {
-                      const childDuplicateData = createDuplicateData(
-                        child,
-                        newParentId
-                      );
-                      const newChild = await projectsAPI.post(
-                        childDuplicateData
-                      );
-
-                      // Recursively duplicate nested children
-                      if (child.children?.length) {
-                        await duplicateChildren(child.children, newChild.id);
-                      }
-                    }
-                  };
-
-                  await duplicateChildren(
-                    projectToDuplicate.children,
-                    newParentProject.id
-                  );
+                  for (const child of projectToDuplicate.children) {
+                    const childDuplicateData = createDuplicateData(
+                      child,
+                      newProject.id
+                    );
+                    await projectsAPI.post(childDuplicateData);
+                  }
                 }
 
-                // Fetch the updated project tree after all duplications are complete
+                // Fetch the updated project tree to get all new children
                 await fetchWorkspaces();
               } catch (error) {
                 console.error("Failed to duplicate project:", error);
-                await fetchWorkspaces(); // Refresh the tree in case of partial success
+                // Rollback optimistic update
+                deleteProject(tempId);
                 throw error;
               }
             }
             break;
+          case "duplicateWithContents":
+          case "duplicateStructure": {
+            const withContent = action === "duplicateWithContents";
+            const findProject = (projects: Project[]): Project | null => {
+              if (!projectId) {
+                console.error("Parent ID is missing for the project.");
+              }
+
+              for (const project of projects) {
+                if (project.id === projectId) {
+                  return project;
+                }
+                if (project.children?.length) {
+                  const found = findProject(project.children);
+                  if (found) return found;
+                }
+              }
+              return null;
+            };
+
+            const tempId = Date.now().toString();
+            const projectToDuplicate = findProject(workspaces);
+            if (projectToDuplicate) {
+              try {
+                // Find the project to duplicate
+                const projectToDuplicate = findProject(workspaces);
+                if (!projectToDuplicate) throw new Error("Project not found");
+                // Create the duplicate data
+
+                const duplicateData = {
+                  name: `${projectToDuplicate.name} (Copy)`,
+                  type: projectToDuplicate.type,
+                  parent_id: projectToDuplicate.parent_id,
+                  owner_id: "8ac84726-7c67-4c1b-a18f-aa8bd52710dc", // Make sure this matches your user ID
+                  status: projectToDuplicate.status,
+                  visibility: projectToDuplicate.visibility,
+                  metadata: projectToDuplicate.metadata,
+                  icon: projectToDuplicate.icon || "",
+                  cover_image: projectToDuplicate.cover_image,
+                };
+
+                // Optimistic update
+                const tempId = Date.now().toString();
+                const optimisticProject = {
+                  ...duplicateData,
+                  id: tempId,
+                  children: withContent
+                    ? projectToDuplicate.children || []
+                    : [],
+                };
+                console.log("Owner ID:", duplicateData.owner_id);
+
+                // Add to UI immediately
+                duplicateProject(optimisticProject);
+                console.log("Optimistic update:", optimisticProject);
+
+                // Call backend
+                await projectsAPI.post(`/${projectId}/duplicate`, {
+                  withContent,
+                  name: duplicateData.name,
+                  owner_id: "8ac84726-7c67-4c1b-a18f-aa8bd52710dc",
+                  type: duplicateData.type,
+                  parent_id: duplicateData.parent_id,
+                  status: duplicateData.status,
+                  visibility: duplicateData.visibility,
+                  metadata: duplicateData.metadata,
+                  icon: duplicateData.icon,
+                  cover_image: duplicateData.cover_image,
+                });
+
+                // Refresh to get actual data
+                await fetchWorkspaces();
+              } catch (error) {
+                console.error("Failed to duplicate project:", error);
+                // Rollback optimistic update
+                deleteProject(tempId);
+                throw error;
+              }
+            }
+            break;
+          }
         }
       } catch (error) {
         console.error(`Failed to ${action} project:`, error);

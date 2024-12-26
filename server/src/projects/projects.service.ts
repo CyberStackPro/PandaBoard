@@ -7,6 +7,22 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { CreateProjectDto, UpdateProjectDto } from './dto/create-project.dto';
 import { eq } from 'drizzle-orm';
 
+// interface Project {
+//   id: string;
+//   name: string;
+//   type: 'folder' | 'file';
+//   parent_id: string | null;
+//   children: Project[];
+//   documents: Project[];
+//   owner_id: string;
+//   status: 'active' | 'archived' | 'deleted' | 'template';
+//   visibility: 'private' | 'team' | 'public';
+//   metadata: Record<string, any>;
+//   icon: string;
+//   cover_image?: string;
+//   created_at: Date;
+//   updated_at: Date;
+// }
 @Injectable()
 export class ProjectsService {
   private projectsCache: Map<string, any[]> = new Map();
@@ -86,6 +102,45 @@ export class ProjectsService {
       .delete(schema.projects)
       .where(eq(schema.projects.id, id))
       .returning();
+  }
+  async duplicateProject(projectId: string, withContent: boolean = true) {
+    try {
+      const originalProject = await this.findProjectById(projectId);
+      if (!originalProject) throw new Error('Project not found');
+
+      const duplicateProjectRecursive = async (
+        project: any,
+        parentId: string | null = null,
+      ): Promise<any> => {
+        // Create new project without children
+        const newProjectData: CreateProjectDto = {
+          name: `${project.name} (Copy)`,
+          type: project.type,
+          parent_id: parentId,
+          owner_id: project.owner_id,
+          status: project.status || 'active',
+          visibility: project.visibility || 'private',
+          metadata: withContent ? project.metadata : {},
+          icon: project.icon || '',
+          cover_image: project.cover_image,
+        };
+
+        const newProject = await this.createProject(newProjectData);
+
+        if (withContent && project.children?.length) {
+          const duplicatePromises = project.children.map((child: any) =>
+            duplicateProjectRecursive(child, newProject[0].id),
+          );
+          await Promise.all(duplicatePromises);
+        }
+
+        return newProject[0];
+      };
+
+      return duplicateProjectRecursive(originalProject);
+    } catch (error) {
+      throw new Error(`Failed to duplicate project: ${error.message}`);
+    }
   }
   private buildProjectTree(
     projects: any[],

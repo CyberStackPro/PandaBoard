@@ -18,6 +18,10 @@ import {
   UpdateProjectDto,
 } from './dto/create-project.dto';
 import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
+import {
+  DuplicateProjectDto,
+  DuplicateProjectSchema,
+} from './dto/duplicate-project.dto';
 
 @Controller('projects')
 export class ProjectsController {
@@ -54,5 +58,14 @@ export class ProjectsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteProject(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.projectsService.deleteProject(id);
+  }
+
+  @Post(':id/duplicate')
+  duplicateProject(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(DuplicateProjectSchema))
+    data: DuplicateProjectDto,
+  ) {
+    return this.projectsService.duplicateProject(id, data.withContent);
   }
 }
