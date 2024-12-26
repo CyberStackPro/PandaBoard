@@ -218,19 +218,17 @@ const Page = () => {
 
           <motion.div
             className="mb-24 perspective-[100px] ml-auto mr-auto"
-            style={
-              {
-                // scale,
-                // rotateX: "-50deg",
-                // // rotateX: "45deg",
-                // rotateY: "0",
-                // rotateZ: "-30deg",
-              }
-            }
+            style={{
+              scale,
+              // rotateX: "-50deg",
+              rotateX: "20deg",
+              // rotateY: "0",
+              // rotateZ: "-30deg",
+            }}
           >
             <div className="relative w-full max-w-[1200px] mx-auto">
               {/* Background glow effect */}
-              {/* <div
+              <div
                 className={cn(
                   "absolute inset-0 rounded-2xl",
                   theme === "light"
@@ -241,11 +239,11 @@ const Page = () => {
                   filter: "blur(40px)",
                   transform: "translateY(-20px) scale(0.95)",
                 }}
-              /> */}
+              />
 
               {/* Main image container */}
               <motion.div
-                className="relative rounded-2xl -z-50 overflow-hidden"
+                className="relative rounded-2xl flex justify-center items-center  overflow-hidden"
                 style={{ y, rotate }}
                 initial={{ opacity: 0, y: 100 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -265,7 +263,7 @@ const Page = () => {
                 /> */}
 
                 {/* Main image */}
-                <div className="relative backdrop-blur-[2px]  rounded-2xl overflow-hidden">
+                <div className="relative  backdrop-blur-[2px]  rounded-2xl overflow-hidden">
                   <motion.div
                     className="w-full"
                     initial={{ scale: 1.1 }}
@@ -282,7 +280,7 @@ const Page = () => {
                       width={800}
                       height={800}
                       className={cn(
-                        "  rounded-2xl transition-all duration-300",
+                        "relative  transition-all duration-300",
                         theme === "light"
                           ? "filter brightness-105"
                           : "filter brightness-110"
@@ -306,7 +304,7 @@ const Page = () => {
                     /> */}
 
                     {/* Edge highlight effect */}
-                    {/* <div
+                    <div
                       className={cn(
                         "absolute inset-0 rounded-2xl",
                         theme === "dark"
@@ -319,14 +317,14 @@ const Page = () => {
                         WebkitMaskImage:
                           "linear-gradient(to bottom, transparent, black)",
                       }}
-                    /> */}
+                    />
                   </motion.div>
                 </div>
               </motion.div>
             </div>
           </motion.div>
-          {/* Optional: Add floating elements around the main image */}
-          <motion.div
+          {/*  floating elements around the main image */}
+          {/* <motion.div
             className="absolute top-1/2 left-[15%] w-20 h-20"
             animate={{
               y: [0, -20, 0],
@@ -336,9 +334,9 @@ const Page = () => {
               repeat: Infinity,
               ease: "easeInOut",
             }}
-          >
-            {/* <Car className="w-full h-full" /> */}
-          </motion.div>
+          > */}
+          {/* <Car className="w-full h-full" /> */}
+          {/* </motion.div> */}
         </div>
       </main>
     </div>
