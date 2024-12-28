@@ -82,7 +82,7 @@ const Page = () => {
           <div className="flex items-center space-x-4">
             <Link href="/" className="flex items-center space-x-2">
               <MailQuestion className="h-6 w-6" />
-              <span className="font-bold text-xl">Notion Clone</span>
+              <span className="font-bold text-xl">Panda</span>
             </Link>
             <NavigationMenu>
               <NavigationMenuList>

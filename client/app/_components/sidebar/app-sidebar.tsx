@@ -14,6 +14,7 @@ import { NavSecondary } from "./nav-secondary";
 import { NavWorkspaces } from "./nav-workspaces";
 import { TeamSwitcher } from "./team-switch";
 import { useProjects } from "@/hooks/use-projects";
+import { NavFavorites } from "./nav-favorites";
 
 export function AppSidebar({
   // className,
@@ -65,6 +66,7 @@ export function AppSidebar({
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
+        <NavFavorites favorites={data.favorites} />
         <NavWorkspaces
           isCollapsed={false}
           onAddProject={handleCreateProject}

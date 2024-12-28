@@ -112,26 +112,6 @@ export const DATA = {
       url: "#",
       icon: "🗣️",
     },
-    {
-      name: "Home Renovation Ideas & Budget Tracker",
-      url: "#",
-      icon: "🏠",
-    },
-    {
-      name: "Personal Finance & Investment Portfolio",
-      url: "#",
-      icon: "💰",
-    },
-    {
-      name: "Movie & TV Show Watchlist with Reviews",
-      url: "#",
-      icon: "🎬",
-    },
-    {
-      name: "Daily Habit Tracker & Goal Setting",
-      url: "#",
-      icon: "✅",
-    },
   ],
   workspaces: [
     {
