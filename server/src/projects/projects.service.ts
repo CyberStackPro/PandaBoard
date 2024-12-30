@@ -7,6 +7,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { CreateProjectDto, UpdateProjectDto } from './dto/create-project.dto';
 import { eq } from 'drizzle-orm';
 import { ProjectsGateway } from './projects.getway';
+import { DuplicateProjectDto } from './dto/duplicate-project.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -103,7 +104,10 @@ export class ProjectsService {
 
     return deletedProject[0];
   }
-  async duplicateProject(projectId: string, withContent: boolean = true) {
+  async duplicateProject(
+    projectId: string,
+    duplicateData: DuplicateProjectDto,
+  ) {
     const originalProject = await this.findProjectById(projectId);
     if (!originalProject) throw new Error('Project not found');
 
@@ -111,28 +115,27 @@ export class ProjectsService {
       project: any,
       parentId: string | null = null,
     ): Promise<any> => {
-      // Ensure all required fields are present
       const newProjectData: CreateProjectDto = {
-        name: `${project.name} (Copy)`,
-        type: project.type,
+        name: duplicateData.name || `${project.name} (Copy)`,
+        type: duplicateData.type || project.type,
         parent_id: parentId,
-        owner_id: project.owner_id,
-        status: project.status || 'active',
-        visibility: project.visibility || 'private',
-        metadata: withContent ? project.metadata : {},
-        icon: project.icon || '',
-        cover_image: project.cover_image || null,
+        owner_id: duplicateData.owner_id,
+        status: duplicateData.status || project.status || 'active',
+        visibility: duplicateData.visibility || project.visibility || 'private',
+        metadata: duplicateData.withContent ? project.metadata || {} : {},
+        icon: duplicateData.icon || project.icon || '',
+        cover_image: duplicateData.cover_image || project.cover_image || null,
       };
 
-      const [newProject] = await this.createProject(newProjectData);
+      const newProject = await this.createProject(newProjectData);
 
-      if (withContent && project.children?.length) {
+      if (duplicateData.withContent && project.children?.length) {
         for (const child of project.children) {
-          await duplicateProjectRecursive(child, newProject.id);
+          await duplicateProjectRecursive(child, newProject[0].id);
         }
       }
 
-      return newProject;
+      return newProject[0];
     };
 
     return duplicateProjectRecursive(
@@ -140,6 +143,7 @@ export class ProjectsService {
       originalProject.parent_id,
     );
   }
+
   private buildProjectTree(
     projects: any[],
     parentId: string | null = null,

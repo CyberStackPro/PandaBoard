@@ -147,89 +147,85 @@ export const useProjects = () => {
             await projectsAPI.delete(`/${projectId}`);
             // await fetchWorkspaces(userId);
             break;
-          case "duplicate":
-            const findProject = (projects: Project[]): Project | null => {
-              for (const project of projects) {
-                if (project.id === projectId) {
-                  return project;
-                }
-                if (project.children?.length) {
-                  const found = findProject(project.children);
-                  if (found) return found;
-                }
-              }
-              return null;
-            };
+          // case "duplicate":
+          //   const findProject = (projects: Project[]): Project | null => {
+          //     for (const project of projects) {
+          //       if (project.id === projectId) {
+          //         return project;
+          //       }
+          //       if (project.children?.length) {
+          //         const found = findProject(project.children);
+          //         if (found) return found;
+          //       }
+          //     }
+          //     return null;
+          //   };
 
-            const createDuplicateData = (
-              project: Project,
-              parentId: string | null = null
-            ): Project => {
-              // Create base project data without ID and children
-              const baseData = {
-                name: `${project.name} (Copy)`,
-                type: project.type,
-                parent_id: parentId,
-                status: project.status,
-                visibility: project.visibility,
-                metadata: project.metadata,
-                icon: project.icon || "",
-                cover_image: project.cover_image,
-                owner_id: "8ac84726-7c67-4c1b-a18f-aa8bd52710dc",
-              };
+          //   const createDuplicateData = (
+          //     project: Project,
+          //     parentId: string | null = null
+          //   ): Project => {
+          //     // Create base project data without ID and children
+          //     const baseData = {
+          //       name: `${project.name} (Copy)`,
+          //       type: project.type,
+          //       parent_id: parentId,
+          //       status: project.status,
+          //       visibility: project.visibility,
+          //       metadata: project.metadata,
+          //       icon: project.icon || "",
+          //       cover_image: project.cover_image,
+          //       owner_id: "8ac84726-7c67-4c1b-a18f-aa8bd52710dc",
+          //     };
 
-              return baseData;
-            };
-            const projectToDuplicate = findProject(workspaces);
-            if (projectToDuplicate) {
-              const duplicateData = createDuplicateData(
-                projectToDuplicate,
-                projectToDuplicate.parent_id
-              );
+          //     return baseData;
+          //   };
+          //   const projectToDuplicate = findProject(workspaces);
+          //   if (projectToDuplicate) {
+          //     const duplicateData = createDuplicateData(
+          //       projectToDuplicate,
+          //       projectToDuplicate.parent_id
+          //     );
 
-              // Optimistic update with temporary ID
-              const tempId = Date.now().toString();
-              const optimisticProject = {
-                ...duplicateData,
-                id: tempId,
-                children: [],
-              };
-              duplicateProject(optimisticProject);
+          //     // Optimistic update with temporary ID
+          //     const tempId = Date.now().toString();
+          //     const optimisticProject = {
+          //       ...duplicateData,
+          //       id: tempId,
+          //       children: [],
+          //     };
+          //     duplicateProject(optimisticProject);
 
-              try {
-                // Create the parent project first
-                const newProject = await projectsAPI.post(duplicateData);
+          //     try {
+          //       // Create the parent project first
+          //       const newProject = await projectsAPI.post(duplicateData);
 
-                // If original project had children, duplicate them
-                if (projectToDuplicate.children?.length) {
-                  for (const child of projectToDuplicate.children) {
-                    const childDuplicateData = createDuplicateData(
-                      child,
-                      newProject.id
-                    );
-                    await projectsAPI.post(childDuplicateData);
-                  }
-                }
+          //       // If original project had children, duplicate them
+          //       if (projectToDuplicate.children?.length) {
+          //         for (const child of projectToDuplicate.children) {
+          //           const childDuplicateData = createDuplicateData(
+          //             child,
+          //             newProject.id
+          //           );
+          //           await projectsAPI.post(childDuplicateData);
+          //         }
+          //       }
 
-                // Fetch the updated project tree to get all new children
-                await fetchWorkspaces();
-              } catch (error) {
-                console.error(`Failed to ${action} project:`, error);
-                // Rollback optimistic update
-                deleteProject(tempId);
-                throw error;
-              }
-            }
-            break;
+          //       // Fetch the updated project tree to get all new children
+          //       await fetchWorkspaces();
+          //     } catch (error) {
+          //       console.error(`Failed to ${action} project:`, error);
+          //       // Rollback optimistic update
+          //       deleteProject(tempId);
+          //       throw error;
+          //     }
+          //   }
+          //   break;
 
           case "duplicateWithContents":
           case "duplicateStructure": {
             const withContent = action === "duplicateWithContents";
             const findProject = (projects: Project[]): Project | null => {
-              // if (!projectId) {
-              //   console.error("Parent ID is missing for the project.");
-              // }
-
               for (const project of projects) {
                 if (project.id === projectId) {
                   return project;
@@ -242,22 +238,25 @@ export const useProjects = () => {
               return null;
             };
 
-            // const tempId = Date.now().toString();
             const projectToDuplicate = findProject(workspaces);
             if (projectToDuplicate) {
               const tempId = Date.now().toString();
               try {
-                // Find the project to duplicate
+                // Match the schema requirements
                 const duplicateData = {
-                  name: `${projectToDuplicate.name} (Copy)`,
-                  type: projectToDuplicate.type,
-                  parent_id: projectToDuplicate.parent_id,
-                  owner_id: "8ac84726-7c67-4c1b-a18f-aa8bd52710dc",
-                  status: projectToDuplicate.status,
-                  visibility: projectToDuplicate.visibility,
-                  metadata: projectToDuplicate.metadata,
+                  withContent,
+                  name: projectToDuplicate.name
+                    ? `${projectToDuplicate.name} (Copy)`
+                    : "Untitled Copy",
+                  type: projectToDuplicate.type || "folder",
+                  parent_id: projectToDuplicate.parent_id || null,
+                  owner_id: userId, // Make sure this is a valid UUID
+                  status: projectToDuplicate.status || "active",
+                  visibility: projectToDuplicate.visibility || "private",
+                  metadata: projectToDuplicate.metadata || {},
                   icon: projectToDuplicate.icon || "",
-                  cover_image: projectToDuplicate.cover_image,
+                  cover_image: projectToDuplicate.cover_image || undefined, // Only include if it's a valid URL
+                  description: projectToDuplicate.description || "",
                 };
 
                 // Optimistic update
@@ -269,23 +268,19 @@ export const useProjects = () => {
                     : [],
                 };
 
-                console.log("Owner ID:", duplicateData.owner_id);
-
-                // Add to UI immediately
                 // Add to UI immediately
                 duplicateProject(optimisticProject);
 
-                // Call backend using the dedicated duplicate endpoint
-                await projectsAPI.post(`/projects/${projectId}/duplicate`, {
-                  withContent,
-                  ...duplicateData,
-                });
+                // Call backend
+                await projectsAPI.post(
+                  `/projects/${projectId}/duplicate`,
+                  duplicateData
+                );
 
                 // Refresh to get actual data
                 await fetchWorkspaces();
               } catch (error) {
                 console.error("Failed to duplicate project:", error);
-                // Rollback optimistic update
                 deleteProject(tempId);
                 throw error;
               }

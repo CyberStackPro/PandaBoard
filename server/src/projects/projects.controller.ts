@@ -64,8 +64,8 @@ export class ProjectsController {
   duplicateProject(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body(new ZodValidationPipe(DuplicateProjectSchema))
-    data: DuplicateProjectDto,
+    duplicateData: DuplicateProjectDto,
   ) {
-    return this.projectsService.duplicateProject(id, data.withContent);
+    return this.projectsService.duplicateProject(id, duplicateData);
   }
 }
