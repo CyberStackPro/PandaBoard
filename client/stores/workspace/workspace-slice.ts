@@ -11,7 +11,7 @@ import APIClient from "@/services/api-client";
 
 interface WorkSpaceActions {
   workspaces: Project[];
-  addProject: (parentId?: string | null) => void;
+  addProject: (parent?: Project | null) => void;
   addFile: (parentId?: string | null) => void;
   deleteProject: (projectId: string) => void;
   updateProject: (projectId: string, updates: Partial<Project>) => void;
@@ -25,9 +25,7 @@ const initialState: WorkspaceState = {
   error: null,
 };
 
-const apiClient = new APIClient(
-  "/projects/owner/8ac84726-7c67-4c1b-a18f-aa8bd52710dc"
-);
+const apiClient = new APIClient("/projects");
 
 export const createWorkspaceSlice: StateCreator<
   Store,
@@ -36,10 +34,9 @@ export const createWorkspaceSlice: StateCreator<
   WorkspaceSlice
 > = (set) => ({
   ...initialState,
-  fetchWorkspaces: async () => {
+  fetchWorkspaces: async (ownerId: string) => {
     try {
-      const response = await apiClient.get();
-
+      const response = await apiClient.get(`/owner/${ownerId}`);
       set({ workspaces: response });
     } catch (error) {
       console.error("Failed to fetch workspaces:", error);
@@ -52,6 +49,9 @@ export const createWorkspaceSlice: StateCreator<
         workspace: Project[],
         newProject: Project
       ): Project[] => {
+        if (!newProject.parent_id) {
+          return [...workspace, newProject];
+        }
         return workspace.map((workspace) => {
           if (workspace.id === newProject.parent_id) {
             return {
@@ -74,18 +74,6 @@ export const createWorkspaceSlice: StateCreator<
           workspaces: [...state.workspaces, project],
         };
       }
-
-      // return {
-      //   ...state,
-      //   workspaces: updateWorkspaceTree(
-      //     state.workspaces,
-      //     project.parent_id,
-      //     (parent) => ({
-      //       ...parent,
-      //       children: [...(parent.children || []), project],
-      //     })
-      //   ),
-      // };
       return {
         ...state,
         workspaces: addToTree(state.workspaces, project),
@@ -208,26 +196,3 @@ const updateWorkspaceTree = (
     return workspace;
   });
 };
-
-// const findAndDeleteProject = (
-//   projects: Project[],
-//   projectId: string
-// ): Project[] => {
-//   return projects.filter((project) => {
-//     if (project.id === projectId) return false;
-//     if (project.children) {
-//       project.children = findAndDeleteProject(project.children, projectId);
-//     }
-//     return true;
-//   });
-// };
-
-// const updatedWorkspaces = state.workspaces.map((workspace) => {
-//   if (workspace.id === params.parent_id) {
-//     return {
-//       ...workspace,
-//       children: [...(workspace.children || []), newProject],
-//     };
-//   }
-//   return workspace;
-// });

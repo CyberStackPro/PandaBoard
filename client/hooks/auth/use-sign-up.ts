@@ -32,6 +32,7 @@ export const useSignUp = () => {
       const response = await apiClient.post(data);
 
       setAuth(response.user, response.accessToken);
+      console.log(response);
 
       toast({
         title: "Success",

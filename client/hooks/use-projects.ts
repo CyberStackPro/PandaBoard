@@ -1,9 +1,14 @@
 import APIClient from "@/services/api-client";
+import { useAuthStore } from "@/stores/auth/auth-store";
 import { useStore } from "@/stores/store";
 import { Project } from "@/types/project";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
 
 const projectsAPI = new APIClient<Project>("/projects");
+// const socket = io("http://localhost:4000/projects", {
+//   withCredentials: true,
+// });
 
 export const useProjects = () => {
   const addProject = useStore((state) => state.addProject);
@@ -12,16 +17,38 @@ export const useProjects = () => {
   const workspaces = useStore((state) => state.workspaces);
   const fetchWorkspaces = useStore((state) => state.fetchWorkspaces);
   const duplicateProject = useStore((state) => state.duplicateProject);
+  const { user } = useAuthStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"folder" | "file">("folder");
   const [parentId, setParentId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    fetchWorkspaces();
-  }, [fetchWorkspaces]);
+  // Use useRef for socket to maintain connection
+  const socketRef = useRef<Socket | null>(null);
+  const isProcessingServerUpdate = useRef(false);
+  const userId = "06321aa5-78d2-450c-9892-fd5277775fae";
 
+  useEffect(() => {
+    if (userId) {
+      fetchWorkspaces(userId);
+    }
+  }, [userId, fetchWorkspaces]);
+
+  useEffect(() => {
+    socketRef.current = io("http://localhost:4000/projects", {
+      withCredentials: true,
+      query: { userId },
+    });
+
+    // Cleanup on unmount
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, [userId]);
   const handleCreateProject = useCallback(
     (pId: string | null, type: "folder" | "file") => {
       setDialogType(type);
@@ -34,40 +61,71 @@ export const useProjects = () => {
   const handleDialogSubmit = useCallback(
     async (name: string) => {
       setIsLoading(true);
-      const tempId = Date.now().toString();
       try {
         const projectData = {
           name,
           parent_id: parentId,
           type: dialogType,
-          owner_id: "8ac84726-7c67-4c1b-a18f-aa8bd52710dc",
+          owner_id: userId,
         };
 
-        // Optimistic update
-        const optimisticProject = {
-          ...projectData,
-          id: tempId,
-          children: [],
-        };
-        addProject(optimisticProject);
+        // Create the project
+        isProcessingServerUpdate.current = true;
+        await projectsAPI.post(projectData);
 
-        const newProject = await projectsAPI.post(projectData);
+        // Instead of manually adding, refresh the workspaces
+        // await fetchWorkspaces(userId);
 
-        // Update with real data
-        addProject({ ...newProject, parent_id: parentId, type: dialogType });
+        setDialogOpen(false);
       } catch (err) {
         console.error("Error creating project:", err);
-        // Rollback optimistic update if needed
-        deleteProject(tempId);
         alert("Failed to create project. Please try again.");
+        await fetchWorkspaces(userId);
       } finally {
         setIsLoading(false);
         setDialogOpen(false);
         setParentId(null);
+        isProcessingServerUpdate.current = false;
       }
     },
-    [addProject, dialogType, parentId, deleteProject]
+    [dialogType, parentId, userId, fetchWorkspaces]
   );
+  // WebSocket event listeners
+  useEffect(() => {
+    if (!socketRef.current) return;
+
+    // Initial data fetch
+
+    const onProjectCreated = (project: Project) => {
+      console.log("Project created:", project);
+      if (!isProcessingServerUpdate.current) {
+        addProject(project);
+      }
+      // addProject(project);
+    };
+
+    const onProjectUpdated = (project: Project) => {
+      console.log("Project updated:", project);
+      updateProject(project.id, project);
+    };
+
+    const onProjectDeleted = ({ id }: { id: string }) => {
+      console.log("Project deleted:", id);
+      deleteProject(id);
+    };
+
+    socketRef.current.on("onProjectCreated", onProjectCreated);
+    socketRef.current.on("onProjectUpdated", onProjectUpdated);
+    socketRef.current.on("onProjectDeleted", onProjectDeleted);
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.off("onProjectCreated", onProjectCreated);
+        socketRef.current.off("onProjectUpdated", onProjectUpdated);
+        socketRef.current.off("onProjectDeleted", onProjectDeleted);
+      }
+    };
+  }, [addProject, updateProject, deleteProject, fetchWorkspaces]);
 
   const handleProjectAction = useCallback(
     async (action: string, projectId: string, newName?: string) => {
@@ -75,19 +133,19 @@ export const useProjects = () => {
         switch (action) {
           case "rename":
             if (newName) {
-              // Optimistic update
-              updateProject(projectId, { name: newName });
-              const updatedProject = await projectsAPI.patch(`/${projectId}`, {
+              // updateProject(projectId, { name: newName });
+              await projectsAPI.patch(`/${projectId}`, {
                 name: newName,
               });
-              updateProject(projectId, updatedProject);
+              // await fetchWorkspaces(userId);
             }
             break;
 
           case "delete":
             // Optimistic delete
-            deleteProject(projectId);
+            // deleteProject(projectId);
             await projectsAPI.delete(`/${projectId}`);
+            // await fetchWorkspaces(userId);
             break;
           case "duplicate":
             const findProject = (projects: Project[]): Project | null => {
@@ -156,20 +214,21 @@ export const useProjects = () => {
                 // Fetch the updated project tree to get all new children
                 await fetchWorkspaces();
               } catch (error) {
-                console.error("Failed to duplicate project:", error);
+                console.error(`Failed to ${action} project:`, error);
                 // Rollback optimistic update
                 deleteProject(tempId);
                 throw error;
               }
             }
             break;
+
           case "duplicateWithContents":
           case "duplicateStructure": {
             const withContent = action === "duplicateWithContents";
             const findProject = (projects: Project[]): Project | null => {
-              if (!projectId) {
-                console.error("Parent ID is missing for the project.");
-              }
+              // if (!projectId) {
+              //   console.error("Parent ID is missing for the project.");
+              // }
 
               for (const project of projects) {
                 if (project.id === projectId) {
@@ -183,20 +242,17 @@ export const useProjects = () => {
               return null;
             };
 
-            const tempId = Date.now().toString();
+            // const tempId = Date.now().toString();
             const projectToDuplicate = findProject(workspaces);
             if (projectToDuplicate) {
+              const tempId = Date.now().toString();
               try {
                 // Find the project to duplicate
-                const projectToDuplicate = findProject(workspaces);
-                if (!projectToDuplicate) throw new Error("Project not found");
-                // Create the duplicate data
-
                 const duplicateData = {
                   name: `${projectToDuplicate.name} (Copy)`,
                   type: projectToDuplicate.type,
                   parent_id: projectToDuplicate.parent_id,
-                  owner_id: "8ac84726-7c67-4c1b-a18f-aa8bd52710dc", // Make sure this matches your user ID
+                  owner_id: "8ac84726-7c67-4c1b-a18f-aa8bd52710dc",
                   status: projectToDuplicate.status,
                   visibility: projectToDuplicate.visibility,
                   metadata: projectToDuplicate.metadata,
@@ -205,7 +261,6 @@ export const useProjects = () => {
                 };
 
                 // Optimistic update
-                const tempId = Date.now().toString();
                 const optimisticProject = {
                   ...duplicateData,
                   id: tempId,
@@ -213,24 +268,17 @@ export const useProjects = () => {
                     ? projectToDuplicate.children || []
                     : [],
                 };
+
                 console.log("Owner ID:", duplicateData.owner_id);
 
                 // Add to UI immediately
+                // Add to UI immediately
                 duplicateProject(optimisticProject);
-                console.log("Optimistic update:", optimisticProject);
 
-                // Call backend
-                await projectsAPI.post(`/${projectId}/duplicate`, {
+                // Call backend using the dedicated duplicate endpoint
+                await projectsAPI.post(`/projects/${projectId}/duplicate`, {
                   withContent,
-                  name: duplicateData.name,
-                  owner_id: "8ac84726-7c67-4c1b-a18f-aa8bd52710dc",
-                  type: duplicateData.type,
-                  parent_id: duplicateData.parent_id,
-                  status: duplicateData.status,
-                  visibility: duplicateData.visibility,
-                  metadata: duplicateData.metadata,
-                  icon: duplicateData.icon,
-                  cover_image: duplicateData.cover_image,
+                  ...duplicateData,
                 });
 
                 // Refresh to get actual data
@@ -248,17 +296,13 @@ export const useProjects = () => {
       } catch (error) {
         console.error(`Failed to ${action} project:`, error);
         // Rollback on error
-        await fetchWorkspaces();
+        await fetchWorkspaces(userId);
         throw error;
+      } finally {
+        isProcessingServerUpdate.current = false;
       }
     },
-    [
-      updateProject,
-      deleteProject,
-      duplicateProject,
-      workspaces,
-      fetchWorkspaces,
-    ]
+    [workspaces, duplicateProject, deleteProject, fetchWorkspaces, userId]
   );
 
   return {
