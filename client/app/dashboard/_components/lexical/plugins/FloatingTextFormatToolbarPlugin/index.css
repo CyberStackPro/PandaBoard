@@ -1,32 +1,39 @@
 .floating-text-format-popup {
   display: flex;
-  background: #555050;
+  background: hsl(var(--popover));
   padding: 4px;
   vertical-align: middle;
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 10;
+  z-index: 50;
   opacity: 0;
-  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
+  border-radius: var(--radius);
+  box-shadow: 0px 2px 10px hsl(var(--foreground) / 0.1);
   transition: opacity 0.5s;
-  height: 35px;
+  height: 40px;
   will-change: transform;
+  gap: 1px;
+  border: 1px solid hsl(var(--border));
 }
+
 
 .floating-text-format-popup button.popup-item {
   border: 0;
   display: flex;
-  background: none;
-  border-radius: 10px;
-  padding: 8px;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border-radius: calc(var(--radius) - 2px);
+  padding: 6px;
   cursor: pointer;
-  vertical-align: middle;
+  color: hsl(var(--foreground));
+  transition: all 0.2s;
 }
 
 .floating-text-format-popup button.popup-item:disabled {
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .floating-text-format-popup button.popup-item.spaced {
@@ -47,8 +54,9 @@
   opacity: 0.2;
 }
 
-.floating-text-format-popup button.popup-item.active {
-  background-color: rgba(223, 232, 250, 0.3);
+.floating-text-format-popup button.popup-item:hover:not([disabled]) {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
 }
 
 .floating-text-format-popup button.popup-item.active i {

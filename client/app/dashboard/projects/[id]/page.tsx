@@ -26,6 +26,7 @@ function onError(error: unknown) {
 }
 const Page = ({ params }: { params: { id: string } }) => {
   const [editorState, setEditorState] = useState();
+  const [isLinkEditMode, setIsLinkEditMode] = useState(false);
 
   function onChange(editorState) {
     const editorStateJSON = editorState.toJSON();
@@ -34,24 +35,24 @@ const Page = ({ params }: { params: { id: string } }) => {
 
   const initialConfig = {
     namespace: "MyEditor",
-    theme: exampleTheme,
+    theme: notionTheme,
     // editable: false,
     // theme,
     onError,
   };
   return (
-    <>
-      <div>Page {params.id}</div>
+    <div className="mx-auto max-w-4xl ">
       <LexicalComposer initialConfig={initialConfig}>
-        <FloatingTextFormatToolbarPlugin setIsLinkEditMode={() => {}} />
-        {/* <ToolbarPlugin /> */}
+        <FloatingTextFormatToolbarPlugin
+          setIsLinkEditMode={setIsLinkEditMode}
+        />
         <RichTextPlugin
           contentEditable={
-            <ContentEditable className="bg-card text-foreground p-4 w-full h-screen rounded-md  focus:outline-none shadow-md" />
+            <ContentEditable className="outline-none min-h-[calc(100vh-300px)] prose prose-slate dark:prose-invert max-w-none" />
           }
           placeholder={
-            <div className="editor-placeholder">
-              Enter some text... or type /
+            <div className="absolute top-[1.125rem] left-[3.125rem] text-muted-foreground">
+              {`Type ' / ' for commands...`}
             </div>
           }
           ErrorBoundary={LexicalErrorBoundary}
@@ -60,79 +61,43 @@ const Page = ({ params }: { params: { id: string } }) => {
         <AutoFocusPlugin />
         <MyOnChangePlugin onChange={onChange} />
       </LexicalComposer>
-    </>
+    </div>
   );
 };
 
 export default Page;
 
-const exampleTheme = {
-  ltr: "ltr",
-  rtl: "rtl",
-  paragraph: "editor-paragraph",
-  quote: "editor-quote",
+export const notionTheme = {
+  ltr: "text-left",
+  rtl: "text-right",
+  paragraph: "mb-2",
+  quote: "border-l-4 border-muted pl-4 my-4",
   heading: {
-    h1: "editor-heading-h1",
-    h2: "editor-heading-h2",
-    h3: "editor-heading-h3",
-    h4: "editor-heading-h4",
-    h5: "editor-heading-h5",
-    h6: "editor-heading-h6",
+    h1: "text-4xl font-bold mb-4",
+    h2: "text-3xl font-bold mb-3",
+    h3: "text-2xl font-bold mb-2",
+    h4: "text-xl font-bold mb-2",
+    h5: "text-lg font-bold mb-2",
+    h6: "text-base font-bold mb-2",
   },
   list: {
     nested: {
-      listitem: "editor-nested-listitem",
+      listitem: "ml-4",
     },
-    ol: "editor-list-ol",
-    ul: "editor-list-ul",
-    listitem: "editor-listItem",
-    listitemChecked: "editor-listItemChecked",
-    listitemUnchecked: "editor-listItemUnchecked",
+    ol: "list-decimal ml-4 my-2",
+    ul: "list-disc ml-4 my-2",
+    listitem: "ml-4",
+    listitemChecked: "ml-4 line-through",
+    listitemUnchecked: "ml-4",
   },
-  hashtag: "editor-hashtag",
-  image: "editor-image",
-  link: "editor-link",
+  link: "text-primary underline",
   text: {
-    bold: "editor-textBold",
-    code: "editor-textCode",
-    italic: "editor-textItalic",
-    strikethrough: "editor-textStrikethrough",
-    subscript: "editor-textSubscript",
-    superscript: "editor-textSuperscript",
-    underline: "editor-textUnderline",
-    underlineStrikethrough: "editor-textUnderlineStrikethrough",
+    bold: "font-bold",
+    italic: "italic",
+    underline: "underline",
+    strikethrough: "line-through",
+    underlineStrikethrough: "underline line-through",
+    code: "bg-muted rounded px-1 py-0.5 font-mono text-sm",
   },
-  code: "editor-code",
-  codeHighlight: {
-    atrule: "editor-tokenAttr",
-    attr: "editor-tokenAttr",
-    boolean: "editor-tokenProperty",
-    builtin: "editor-tokenSelector",
-    cdata: "editor-tokenComment",
-    char: "editor-tokenSelector",
-    class: "editor-tokenFunction",
-    "class-name": "editor-tokenFunction",
-    comment: "editor-tokenComment",
-    constant: "editor-tokenProperty",
-    deleted: "editor-tokenProperty",
-    doctype: "editor-tokenComment",
-    entity: "editor-tokenOperator",
-    function: "editor-tokenFunction",
-    important: "editor-tokenVariable",
-    inserted: "editor-tokenSelector",
-    keyword: "editor-tokenAttr",
-    namespace: "editor-tokenVariable",
-    number: "editor-tokenProperty",
-    operator: "editor-tokenOperator",
-    prolog: "editor-tokenComment",
-    property: "editor-tokenProperty",
-    punctuation: "editor-tokenPunctuation",
-    regex: "editor-tokenVariable",
-    selector: "editor-tokenSelector",
-    string: "editor-tokenSelector",
-    symbol: "editor-tokenProperty",
-    tag: "editor-tokenProperty",
-    url: "editor-tokenOperator",
-    variable: "editor-tokenVariable",
-  },
+  code: "bg-muted p-4 rounded-lg font-mono text-sm my-4",
 };

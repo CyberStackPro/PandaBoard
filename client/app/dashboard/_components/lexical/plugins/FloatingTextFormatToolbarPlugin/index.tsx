@@ -19,7 +19,19 @@ import { $isCodeHighlightNode } from "@lexical/code";
 import { getSelectedNode } from "@/lib/utils/lexical/getSelectedNode";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import "./index.css";
-import { BoldIcon } from "lucide-react";
+import {
+  BoldIcon,
+  CaseLowerIcon,
+  CaseUpperIcon,
+  CodeIcon,
+  ItalicIcon,
+  Link2Icon,
+  MessageSquare,
+  StrikethroughIcon,
+  SubscriptIcon,
+  SuperscriptIcon,
+  UnderlineIcon,
+} from "lucide-react";
 // import {INSERT_INLINE_COMMAND} from '../CommentPlugin';
 
 function TextFormatFloatingToolbar({
@@ -192,7 +204,7 @@ function TextFormatFloatingToolbar({
             aria-label="Format text as bold"
           >
             {/* <i className="format bold" /> */}
-            <BoldIcon className="h-4 w-4" />
+            <BoldIcon className="size-4" />
           </button>
           <button
             type="button"
@@ -203,7 +215,8 @@ function TextFormatFloatingToolbar({
             title="Italic"
             aria-label="Format text as italics"
           >
-            <i className="format italic" />
+            {/* <i className="format italic" /> */}
+            <ItalicIcon className="size-4" />
           </button>
           <button
             type="button"
@@ -214,7 +227,8 @@ function TextFormatFloatingToolbar({
             title="Underline"
             aria-label="Format text to underlined"
           >
-            <i className="format underline" />
+            {/* <i className="format underline" /> */}
+            <UnderlineIcon className="size-4" />
           </button>
           <button
             type="button"
@@ -225,7 +239,8 @@ function TextFormatFloatingToolbar({
             title="Strikethrough"
             aria-label="Format text with a strikethrough"
           >
-            <i className="format strikethrough" />
+            {/* <i className="format strikethrough" /> */}
+            <StrikethroughIcon className="size-4" />
           </button>
           <button
             type="button"
@@ -236,7 +251,8 @@ function TextFormatFloatingToolbar({
             title="Subscript"
             aria-label="Format Subscript"
           >
-            <i className="format subscript" />
+            {/* <i className="format subscript" /> */}
+            <SubscriptIcon className="size-4" />
           </button>
           <button
             type="button"
@@ -247,7 +263,8 @@ function TextFormatFloatingToolbar({
             title="Superscript"
             aria-label="Format Superscript"
           >
-            <i className="format superscript" />
+            {/* <i className="format superscript" /> */}
+            <SuperscriptIcon className="size-4" />
           </button>
           <button
             type="button"
@@ -258,7 +275,8 @@ function TextFormatFloatingToolbar({
             title="Uppercase"
             aria-label="Format text to uppercase"
           >
-            <i className="format uppercase" />
+            {/* <i className="format uppercase" /> */}
+            <CaseUpperIcon className="size-4" />
           </button>
           <button
             type="button"
@@ -269,7 +287,8 @@ function TextFormatFloatingToolbar({
             title="Lowercase"
             aria-label="Format text to lowercase"
           >
-            <i className="format lowercase" />
+            {/* <i className="format lowercase" /> */}
+            <CaseLowerIcon className="size-4" />
           </button>
           <button
             type="button"
@@ -291,7 +310,8 @@ function TextFormatFloatingToolbar({
             title="Insert code block"
             aria-label="Insert code block"
           >
-            <i className="format code" />
+            {/* <i className="format code" /> */}
+            <CodeIcon className="size-4" />
           </button>
           <button
             type="button"
@@ -300,7 +320,9 @@ function TextFormatFloatingToolbar({
             title="Insert link"
             aria-label="Insert link"
           >
-            <i className="format link" />
+            {/* <i className="format link" /> */}
+
+            <Link2Icon className="size-4" />
           </button>
         </>
       )}
@@ -311,7 +333,8 @@ function TextFormatFloatingToolbar({
         title="Insert comment"
         aria-label="Insert comment"
       >
-        <i className="format add-comment" />
+        {/* <i className="format add-comment" /> */}
+        <MessageSquare className="size-4" />
       </button>
     </div>
   );
