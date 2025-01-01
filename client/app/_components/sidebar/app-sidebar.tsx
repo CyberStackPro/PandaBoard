@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 
 import {
@@ -13,46 +12,33 @@ import { NameDialog } from "../dialogs/add-project-dialog";
 import { NavSecondary } from "./nav-secondary";
 import { NavWorkspaces } from "./nav-workspaces";
 import { TeamSwitcher } from "./team-switch";
-import { useProjects } from "@/hooks/use-projects";
+// import { useProjects } from "@/hooks/use-projects";
 import { NavFavorites } from "./nav-favorites";
+import { useProjectDialog } from "@/hooks/project/use-project-dialog";
+import { useProjectActions } from "@/hooks/project/use-project-actions";
+import { useProjectSocket } from "@/hooks/project/use-project-socket";
+import { useStore } from "@/stores/store";
 
 export function AppSidebar({
   // className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   const [data] = React.useState(DATA);
-  // const workspaces = useStore((state) => state.workspaces);
-  // const addProject = useStore((state) => state.addProject);
-  // const [dialogOpen, setDialogOpen] = React.useState(false);
-  // const [dialogType, setDialogType] = React.useState<"folder" | "file">(
-  //   "folder"
-  // );
+  const userId = "06321aa5-78d2-450c-9892-fd5277775fae";
+
   const {
-    workspaces,
     dialogOpen,
-    dialogType,
     setDialogOpen,
+    dialogType,
     handleCreateProject,
     handleDialogSubmit,
-  } = useProjects();
-  console.log(workspaces);
+  } = useProjectDialog(userId);
 
-  // const handleAddProject = async (
-  //   parentId: string | null,
-  //   type: "folder" | "file"
-  // ) => {
-  //   setDialogType(type);
-  //   setParentId(parentId);
-  //   setDialogOpen(true);
-  // };
+  const { handleRename, handleDelete, handleDuplicate } =
+    useProjectActions(userId);
+  useProjectSocket(userId);
 
-  // const handleDialogSubmit = async (name: string) => {
-  //   await addProject({
-  //     name,
-  //     parent_id: parentId,
-  //     type: dialogType,
-  //   });
-  // };
+  const workspaces = useStore((state) => state.workspaces);
 
   return (
     // <div className="relative  group-data-[variant=floating]:border-0">
@@ -70,9 +56,11 @@ export function AppSidebar({
         <NavWorkspaces
           isCollapsed={false}
           onAddProject={handleCreateProject}
-          workspaces={workspaces || []}
+          workspaces={workspaces}
+          handleRename={handleRename}
+          handleDelete={handleDelete}
+          handleDuplicate={handleDuplicate}
         />
-
         <NavSecondary items={data.navSecondary} />
       </SidebarContent>
       <SidebarRail />
@@ -86,34 +74,3 @@ export function AppSidebar({
     // </div>
   );
 }
-
-// export function AppSidebar({
-//   className,
-//   ...props
-// }: React.HTMLAttributes<HTMLDivElement>) {
-//   const { state } = useSidebar();
-//   return (
-//     <div
-//       className={cn(
-//         "flex h-full flex-col bg-sidebar-accent overflow-hidden",
-//         className
-//       )}
-//       {...props}
-//     >
-//       <Sidebar className="border-r-0" collapsible="icon" {...props}>
-
-//       </Sidebar>
-//       <div className="flex-shrink-0 transition-all p-4">
-//         <TeamSwitcher teams={data.teams} />
-//       </div>
-//       <div className="flex-1  overflow-auto">
-//         {/* <NavMain items={data.navMain} />
-//         <NavFavorites favorites={data.favorites} /> */}
-//         <NavWorkspaces workspaces={data.workspaces} />
-//       </div>
-//       <div className="flex-shrink-0 p-4">
-//         <NavSecondary items={data.navSecondary} />
-//       </div>
-//     </div>
-//   );
-// }

@@ -3,9 +3,8 @@ import { Project, ProjectVisibility } from "./project";
 export interface WorkspaceState {
   workspaces: Project[];
   isLoading: boolean;
-  error: string | null;
+  error: Error | null;
 }
-
 export interface ProjectAction {
   type:
     | "add"
@@ -30,13 +29,14 @@ export interface ProjectAction {
 //   // ... other actions
 // };
 export interface WorkspaceActions {
+  fetchWorkspaces: (userId: string) => Promise<void>;
   addProject: (project: Project) => Promise<void>;
-  deleteProject: (projectId: string) => Promise<void>;
-  // renameProject: (projectId: string) => Promise<void>;
   updateProject: (
     projectId: string,
     updates: Partial<Project>
   ) => Promise<void>;
+  deleteProject: (projectId: string) => Promise<void>;
+  duplicateProject: (project: Project) => Promise<void>;
   //   fetchProjects: () => Promise<void>;
 }
 
@@ -49,4 +49,13 @@ export interface CreateProjectParams {
   icon?: string | null;
 }
 
-export type WorkspaceSlice = WorkspaceState & WorkspaceActions;
+export interface WorkspaceSlice extends WorkspaceState {
+  fetchWorkspaces: (userId: string) => Promise<void>;
+  addProject: (project: Project) => Promise<void>;
+  updateProject: (
+    projectId: string,
+    updates: Partial<Project>
+  ) => Promise<void>;
+  deleteProject: (projectId: string) => Promise<void>;
+  duplicateProject: (project: Project) => Promise<void>;
+}

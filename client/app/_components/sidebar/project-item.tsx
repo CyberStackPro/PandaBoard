@@ -36,22 +36,48 @@ interface ProjectItemProps {
   project: Project;
   isCollapsed: boolean;
   level: number;
-  onAction?: (action: string, projectId: string, newName?: string) => void;
   onAddProject?: (parentId: string | null, type: "folder" | "file") => void;
+  onRename: (projectId: string, newName: string) => Promise<void>;
+  onDelete: (projectId: string) => Promise<void>;
+  onDuplicate: (projectId: string, withContent: boolean) => Promise<void>;
 }
 
 export const ProjectItem = ({
   project,
   isCollapsed,
   level,
-  onAction,
   onAddProject,
+  onRename,
+  onDelete,
+  onDuplicate,
 }: ProjectItemProps) => {
   const [isRenaming, setIsRenaming] = useState(false);
   const [tempName, setTempName] = useState(project.name || "");
   const isFolder = project.type === "folder";
   const inputRef = useRef<HTMLInputElement>(null);
-
+  const handleAction = useCallback(
+    async (action: string, projectId: string, data?: string) => {
+      try {
+        switch (action) {
+          case "rename":
+            await onRename(projectId, data);
+            break;
+          case "delete":
+            await onDelete(projectId);
+            break;
+          case "duplicate":
+            await onDuplicate(projectId, true);
+            break;
+          case "duplicate-structure":
+            await onDuplicate(projectId, false);
+            break;
+        }
+      } catch (error) {
+        console.error(`Failed to perform action ${action}:`, error);
+      }
+    },
+    [onRename, onDelete, onDuplicate]
+  );
   const icon = useMemo(
     () =>
       project.icon ? (
@@ -63,6 +89,7 @@ export const ProjectItem = ({
       ),
     [project.icon, isFolder]
   );
+
   const renderContextMenuItem = (item: (typeof RIGHT_CLICK_MENU_ITEMS)[0]) => {
     if (item.subItems && item.subItems.length > 0) {
       return (
@@ -78,7 +105,7 @@ export const ProjectItem = ({
                 onClick={() => {
                   console.log(subItem.action);
 
-                  onAction?.(subItem.action, project.id as string);
+                  handleAction?.(subItem.action, project.id as string);
                 }}
               >
                 {subItem.name}
@@ -96,7 +123,7 @@ export const ProjectItem = ({
           if (item.action === "rename") {
             setIsRenaming(true);
           } else {
-            onAction?.(item.action, project.id as string);
+            handleAction?.(item.action, project.id as string);
           }
         }}
       >
@@ -108,27 +135,28 @@ export const ProjectItem = ({
       </ContextMenuItem>
     );
   };
-  const handleRename = useCallback(
-    (newName: string) => {
+
+  const handleRenameSubmit = useCallback(
+    async (newName: string) => {
       if (newName.trim() && newName !== project.name) {
-        onAction?.("rename", project.id as string, newName.trim());
+        await handleAction("rename", project.id as string, newName.trim());
       }
       setTempName(project.name || "");
       setIsRenaming(false);
     },
-    [onAction, project.id, project.name]
+    [project.id, project.name, handleAction]
   );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === "Enter") {
-        handleRename(tempName);
+        handleRenameSubmit(tempName);
       } else if (e.key === "Escape") {
         setTempName(project.name || "");
         setIsRenaming(false);
       }
     },
-    [handleRename, tempName, project.name]
+    [handleRenameSubmit, tempName, project.name]
   );
   useEffect(() => {
     if (isRenaming) {
@@ -164,7 +192,7 @@ export const ProjectItem = ({
                             value={tempName}
                             onChange={(e) => setTempName(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            onBlur={() => handleRename(tempName)}
+                            onBlur={() => handleRenameSubmit(tempName)}
                             className="h-6 px-1 py-0 w-full bg-transparent border-none focus:ring-1 focus:ring-ring focus:ring-offset-0"
                             onClick={(e) => e.preventDefault()}
                             autoFocus
@@ -238,7 +266,10 @@ export const ProjectItem = ({
                         project={child}
                         isCollapsed={isCollapsed}
                         level={level + 1}
-                        onAction={onAction}
+                        // onAction={onAction}
+                        onDelete={onDelete}
+                        onDuplicate={onDuplicate}
+                        onRename={onRename}
                         onAddProject={onAddProject}
                       />
                     ))}

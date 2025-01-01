@@ -16,41 +16,24 @@ import { cn } from "@/lib/utils";
 import { Project } from "@/types/project";
 import { File, Folder, Plus } from "lucide-react";
 import { ProjectItem } from "./project-item";
-import { useProjects } from "@/hooks/use-projects";
 
 interface NavWorkspacesProps {
   isCollapsed: boolean;
-  // work: Project[];
   workspaces: Project[];
   onAddProject: (parentId: string | null, type: "folder" | "file") => void;
+  handleRename: (projectId: string, newName: string) => Promise<void>;
+  handleDelete: (projectId: string) => Promise<void>;
+  handleDuplicate: (projectId: string, withContent: boolean) => Promise<void>;
 }
 
 export function NavWorkspaces({
   isCollapsed,
   workspaces,
   onAddProject,
+  handleRename,
+  handleDelete,
+  handleDuplicate,
 }: NavWorkspacesProps) {
-  const { handleProjectAction } = useProjects();
-  // const handleAction = (
-  //   action: string,
-  //   projectId: string,
-  //   newName?: string
-  // ) => {
-  //   switch (action) {
-  //     case "duplicate":
-  //     case "rename":
-  //       if (newName) {
-  //         updateProject(projectId, { name: newName });
-  //       }
-
-  //       break;
-  //     case "delete":
-  //       deleteProject(projectId);
-
-  //       break;
-  //     // ... other cases
-  //   }
-  // };
   const topLevelProjects = workspaces.filter((project) => !project.parent_id);
   return (
     <SidebarGroup>
@@ -66,7 +49,9 @@ export function NavWorkspaces({
               isCollapsed={isCollapsed}
               level={0}
               onAddProject={onAddProject}
-              onAction={handleProjectAction}
+              onRename={handleRename}
+              onDelete={handleDelete}
+              onDuplicate={handleDuplicate}
             />
           ))}
 

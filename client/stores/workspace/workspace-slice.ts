@@ -1,6 +1,7 @@
 import { StateCreator } from "zustand";
 // import { Folder, File } from "lucide-react";
 import { Store } from "@/types/store";
+import { Draft } from "immer";
 import {
   CreateProjectParams,
   WorkspaceSlice,
@@ -34,9 +35,10 @@ export const createWorkspaceSlice: StateCreator<
   WorkspaceSlice
 > = (set) => ({
   ...initialState,
+
   fetchWorkspaces: async (ownerId: string) => {
     try {
-      const response = await apiClient.get(`/owner/${ownerId}`);
+      const response = (await apiClient.get(`/owner/${ownerId}`)) as Project[];
       set({ workspaces: response });
     } catch (error) {
       console.error("Failed to fetch workspaces:", error);
@@ -44,11 +46,11 @@ export const createWorkspaceSlice: StateCreator<
   },
 
   addProject: async (project: Project) => {
-    set((state: WorkSpaceActions) => {
+    set((state) => {
       const addToTree = (
-        workspace: Project[],
-        newProject: Project
-      ): Project[] => {
+        workspace: Draft<Project>[],
+        newProject: Draft<Project>
+      ): Draft<Project>[] => {
         if (!newProject.parent_id) {
           return [...workspace, newProject];
         }
@@ -82,8 +84,11 @@ export const createWorkspaceSlice: StateCreator<
   },
 
   deleteProject: async (projectId: string) => {
-    set((state: WorkSpaceActions) => {
-      const recursiveDelete = (projects: Project[], id: string): Project[] => {
+    set((state) => {
+      const recursiveDelete = (
+        projects: Draft<Project>[],
+        id: string
+      ): Draft<Project>[] => {
         return projects.filter((project) => {
           if (project.id === id) return false;
           if (project.children) {
@@ -98,18 +103,25 @@ export const createWorkspaceSlice: StateCreator<
     });
   },
 
-  updateProject: async (projectId: string, updates: Partial<Project>) => {
-    set((state: WorkSpaceActions) => ({
-      workspaces: findAndUpdateProject(state.workspaces, projectId, updates),
+  updateProject: async (
+    projectId: string,
+    updates: Partial<Project>
+  ): Promise<void> => {
+    set((state) => ({
+      workspaces: findAndUpdateProject(
+        state.workspaces as Project[],
+        projectId,
+        updates
+      ),
     }));
   },
 
   duplicateProject: async (project: Project) => {
-    set((state: WorkSpaceActions) => {
+    set((state) => {
       const addToTree = (
-        workspace: Project[],
-        newProject: Project
-      ): Project[] => {
+        workspace: Draft<Project>[],
+        newProject: Draft<Project>
+      ): Draft<Project>[] => {
         if (!newProject.parent_id) {
           return [...workspace, newProject];
         }

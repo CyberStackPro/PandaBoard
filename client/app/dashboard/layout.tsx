@@ -1,5 +1,4 @@
 import React from "react";
-import DashboardPage from "./page";
 import {
   SidebarInset,
   SidebarProvider,
@@ -14,22 +13,28 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { NavActions } from "../_components/sidebar/nav-actions";
-import { CoverImage } from "../_components/editor/CoverImage";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SidebarProvider>
       <div className="relative flex min-h-screen w-full">
         <AppSidebar />
-        <SidebarInset>
-          <div className="flex-1 flex flex-col min-w-0">
-            <Header />
-            <main className="relative flex-1 overflow-auto p-4 mx-auto h-24  w-full max-w-5xl rounded-xl ">
+        <div className="flex flex-1 flex-col min-w-0">
+          <Header />
+
+          <div className="relative w-full bg-gradient-to-r from-primary/10 to-primary/5 h-[200px]">
+            {/* Cover Image Section */}
+            <button className="absolute bottom-3 right-3 rounded-md bg-background/80 px-3 py-1 text-sm hover:bg-background">
+              Add cover
+            </button>
+          </div>
+
+          <SidebarInset>
+            <main className="relative flex-1 overflow-auto p-6 mx-auto w-full max-w-5xl">
               {children}
             </main>
-            <SidebarTrigger />
-          </div>
-        </SidebarInset>
+          </SidebarInset>
+        </div>
       </div>
     </SidebarProvider>
   );
@@ -37,36 +42,30 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
 export function Header() {
   return (
-    <header className="flex flex-col shrink-0">
-      <CoverImage />
-      <div className="relative h-[200px] w-full bg-gradient-to-r from-primary/10 to-primary/5">
-        {/* Optional: Add cover image upload button */}
-        <button className="absolute bottom-3 right-3 rounded-md bg-background/80 px-2 py-1 text-sm hover:bg-background">
-          Add cover
-        </button>
-      </div>
-
-      {/* Title and Actions Bar */}
-      <div className="flex h-14 items-center gap-2 px-4 border-b">
-        <div className="flex flex-1 items-center gap-2">
+    <header className="sticky top-0 z-10 flex h-14 w-full items-center bg-background shadow-sm">
+      <div className="px-4 pt-3">
+        {/* Breadcrumb Section */}
+        <div className="flex items-center gap-2">
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-4" />
-          <div className="flex items-center gap-2">
-            {/* Page Icon */}
-            <button className="h-6 w-6 rounded hover:bg-muted flex items-center justify-center">
-              📄
-            </button>
-            {/* Page Title */}
-            <h1 className="text-xl font-medium">Untitled</h1>
-          </div>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbPage className="line-clamp-1">
+                  Project Management & Task Tracking
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
-        <div className="ml-auto">
-          <NavActions />
-        </div>
+      </div>
+      <div className="ml-auto px-4">
+        <NavActions />
       </div>
     </header>
   );
 }
+
 export default DashboardLayout;
 
 // const DashboardLayout = ({ children }: { children: React.ReactNode }) => {

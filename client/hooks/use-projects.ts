@@ -14,10 +14,10 @@ export const useProjects = () => {
   const addProject = useStore((state) => state.addProject);
   const deleteProject = useStore((state) => state.deleteProject);
   const updateProject = useStore((state) => state.updateProject);
-  const workspaces = useStore((state) => state.workspaces);
+  const workspaces = useStore<Project[]>((state) => state.workspaces);
   const fetchWorkspaces = useStore((state) => state.fetchWorkspaces);
   const duplicateProject = useStore((state) => state.duplicateProject);
-  const { user } = useAuthStore();
+  // const { user } = useAuthStore();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"folder" | "file">("folder");
@@ -147,80 +147,6 @@ export const useProjects = () => {
             await projectsAPI.delete(`/${projectId}`);
             // await fetchWorkspaces(userId);
             break;
-          // case "duplicate":
-          //   const findProject = (projects: Project[]): Project | null => {
-          //     for (const project of projects) {
-          //       if (project.id === projectId) {
-          //         return project;
-          //       }
-          //       if (project.children?.length) {
-          //         const found = findProject(project.children);
-          //         if (found) return found;
-          //       }
-          //     }
-          //     return null;
-          //   };
-
-          //   const createDuplicateData = (
-          //     project: Project,
-          //     parentId: string | null = null
-          //   ): Project => {
-          //     // Create base project data without ID and children
-          //     const baseData = {
-          //       name: `${project.name} (Copy)`,
-          //       type: project.type,
-          //       parent_id: parentId,
-          //       status: project.status,
-          //       visibility: project.visibility,
-          //       metadata: project.metadata,
-          //       icon: project.icon || "",
-          //       cover_image: project.cover_image,
-          //       owner_id: "8ac84726-7c67-4c1b-a18f-aa8bd52710dc",
-          //     };
-
-          //     return baseData;
-          //   };
-          //   const projectToDuplicate = findProject(workspaces);
-          //   if (projectToDuplicate) {
-          //     const duplicateData = createDuplicateData(
-          //       projectToDuplicate,
-          //       projectToDuplicate.parent_id
-          //     );
-
-          //     // Optimistic update with temporary ID
-          //     const tempId = Date.now().toString();
-          //     const optimisticProject = {
-          //       ...duplicateData,
-          //       id: tempId,
-          //       children: [],
-          //     };
-          //     duplicateProject(optimisticProject);
-
-          //     try {
-          //       // Create the parent project first
-          //       const newProject = await projectsAPI.post(duplicateData);
-
-          //       // If original project had children, duplicate them
-          //       if (projectToDuplicate.children?.length) {
-          //         for (const child of projectToDuplicate.children) {
-          //           const childDuplicateData = createDuplicateData(
-          //             child,
-          //             newProject.id
-          //           );
-          //           await projectsAPI.post(childDuplicateData);
-          //         }
-          //       }
-
-          //       // Fetch the updated project tree to get all new children
-          //       await fetchWorkspaces();
-          //     } catch (error) {
-          //       console.error(`Failed to ${action} project:`, error);
-          //       // Rollback optimistic update
-          //       deleteProject(tempId);
-          //       throw error;
-          //     }
-          //   }
-          //   break;
 
           case "duplicateWithContents":
           case "duplicateStructure": {

@@ -30,6 +30,7 @@ import {
   StrikethroughIcon,
   SubscriptIcon,
   SuperscriptIcon,
+  TentTree,
   UnderlineIcon,
 } from "lucide-react";
 // import {INSERT_INLINE_COMMAND} from '../CommentPlugin';
@@ -299,7 +300,8 @@ function TextFormatFloatingToolbar({
             title="Capitalize"
             aria-label="Format text to capitalize"
           >
-            <i className="format capitalize" />
+            {/* <i className="format capitalize" /> */}
+            <TentTree className="size-4" />
           </button>
           <button
             type="button"
