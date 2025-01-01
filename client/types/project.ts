@@ -2,7 +2,7 @@ export type ProjectStatus = "active" | "archived" | "deleted" | "template";
 export type ProjectVisibility = "private" | "team" | "public";
 
 export interface Project {
-  id?: string;
+  id: string;
   name: string;
   owner_id: string;
   parent_id: string | null;
@@ -14,7 +14,7 @@ export interface Project {
   icon?: string | null;
   cover_image?: string | null;
   children?: Project[];
-  documents?: Document[];
+  documents?: unknown;
   // created_at: string;
   // updated_at: string;
 }

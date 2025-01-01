@@ -2,23 +2,9 @@ import { StateCreator } from "zustand";
 // import { Folder, File } from "lucide-react";
 import { Store } from "@/types/store";
 import { Draft } from "immer";
-import {
-  CreateProjectParams,
-  WorkspaceSlice,
-  WorkspaceState,
-} from "@/types/workspace";
+import { WorkspaceSlice, WorkspaceState } from "@/types/workspace";
 import { Project } from "@/types/project";
 import APIClient from "@/services/api-client";
-
-interface WorkSpaceActions {
-  workspaces: Project[];
-  addProject: (parent?: Project | null) => void;
-  addFile: (parentId?: string | null) => void;
-  deleteProject: (projectId: string) => void;
-  updateProject: (projectId: string, updates: Partial<Project>) => void;
-  duplicateProject: (projectId: string) => void;
-  fetchWorkspaces: () => void;
-}
 
 const initialState: WorkspaceState = {
   workspaces: [],
@@ -47,6 +33,13 @@ export const createWorkspaceSlice: StateCreator<
 
   addProject: async (project: Project) => {
     set((state) => {
+      // Create a new draft-compatible object
+      const draftProject = { ...project };
+
+      if (!draftProject.parent_id) {
+        state.workspaces.push(draftProject);
+        return;
+      }
       const addToTree = (
         workspace: Draft<Project>[],
         newProject: Draft<Project>

@@ -66,7 +66,7 @@ class APIClient<T, R = T> {
     }
   }
 
-  private handleError(error: any) {
+  private handleError(error: unknown) {
     if (axios.isAxiosError(error)) {
       return {
         message: error.response?.data?.message || "An error occurred",
