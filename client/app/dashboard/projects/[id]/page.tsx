@@ -167,9 +167,7 @@ const Page = ({ params }: { params: { id: string } }) => {
             onBlur={handleBlur}
             ref={headingRef}
           >
-            {(activeProject?.children?.length === 0 &&
-              activeProject?.children[0].name) ||
-              "Untitled Project"}
+            {activeProject?.children?.length === 0 || "Untitled Project"}
           </h1>
         </div>
         <LexicalComposer initialConfig={initialConfig}>

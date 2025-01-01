@@ -26,6 +26,7 @@ import {
   SidebarMenuItem,
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 import { RIGHT_CLICK_MENU_ITEMS } from "@/lib/utils/nav-workspaces";
 import { useStore } from "@/stores/store";
 import { Project } from "@/types/project";
@@ -59,6 +60,12 @@ export const ProjectItem = ({
   const [isLoading, setIsLoading] = useState(false);
   const updateActiveProject = useStore((state) => state.updateActiveProject);
   const activeProject = useStore((state) => state.activeProject);
+
+  const isSelected = activeProject?.id === project.id; // Check if current project is selected
+
+  const handleSelectProject = () => {
+    updateActiveProject?.(project); // Update the active project state
+  };
 
   const handleAction = useCallback(
     async (action: string, projectId: string, data?: string) => {
@@ -184,14 +191,21 @@ export const ProjectItem = ({
             <SidebarMenuButton asChild>
               <Link
                 href={`/dashboard/projects/${project.id}`}
-                className="flex relative items-center gap-2"
+                className={cn(
+                  "flex text-muted-foreground transition-all duration-500 relative items-center gap-2 px-2 py-1 rounded-md",
+                  {
+                    "font-semibold text-primary/80": isSelected, // Bold and primary color for selected
+                    "hover:bg-muted": !isSelected, // Regular hover effect for unselected
+                  }
+                )}
                 onClick={(e) => {
                   if (isRenaming) e.preventDefault();
+                  else handleSelectProject(); // Update selection
                 }}
               >
                 <span className="flex-shrink-0">{isRenaming ? "" : icon}</span>
                 {!isCollapsed && (
-                  <span className="text-muted-foreground z-50 min-w-[12px]">
+                  <span className=" truncate z-50 min-w-[12px]">
                     {isRenaming ? (
                       <div className="flex absolute top-0 z-50 scale-110  items-center gap-2 px-2 py-1 w-[50%]">
                         <span className="flex-shrink-0 text-muted-foreground">
