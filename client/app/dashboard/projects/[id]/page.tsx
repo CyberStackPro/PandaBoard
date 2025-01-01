@@ -23,6 +23,7 @@ import { Code } from "lucide-react";
 import { useProjectActions } from "@/hooks/project/use-project-actions";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 function MyOnChangePlugin({ onChange }) {
   const [editor] = useLexicalComposerContext();
@@ -42,20 +43,27 @@ const Page = ({ params }: { params: { id: string } }) => {
   const userId = "06321aa5-78d2-450c-9892-fd5277775fae";
   const activeProject = useStore((state) => state.activeProject);
   const { handleRename } = useProjectActions(userId);
-  const setActiveProject = useStore((state) => state.setActiveProject);
   const updateActiveProject = useStore((state) => state.updateActiveProject);
+  const paths = usePathname();
+  const pathNames = paths.split("/");
+  console.log(paths);
+  console.log(pathNames);
 
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(activeProject?.name || "");
   const headingRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const [editorState, setEditorState] = useState();
   const [isLinkEditMode, setIsLinkEditMode] = useState(false);
 
   const handleRenameSubmit = useCallback(
     async (newName: string) => {
-      if (activeProject && newName.trim() && newName !== activeProject.name) {
+      if (
+        activeProject &&
+        newName.trim() &&
+        newName !== activeProject.name &&
+        activeProject?.children?.length === 0
+      ) {
         await handleRename(activeProject.id, newName);
 
         // if (activeProject.id === activeProject?.id) {
@@ -74,14 +82,14 @@ const Page = ({ params }: { params: { id: string } }) => {
     }
   }, [handleRenameSubmit]);
 
-  // const handleKeyDown = (e: React.KeyboardEvent) => {
-  //   if (e.key === "Enter") {
-  //     handleRenameSubmit(tempName);
-  //   } else if (e.key === "Escape") {
-  //     setTempName(activeProject?.name || "");
-  //     setIsEditing(false);
-  //   }
-  // };
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleRenameSubmit(tempName);
+    } else if (e.key === "Escape") {
+      setTempName(activeProject?.name || "");
+      setIsEditing(false);
+    }
+  };
   useEffect(() => {
     if (headingRef.current && activeProject) {
       headingRef.current.textContent = activeProject.name || "";
@@ -113,12 +121,17 @@ const Page = ({ params }: { params: { id: string } }) => {
         updateActiveProject({ name: newName }); // Update state
       }
     }
-  }, [handleRename, updateActiveProject, activeProject?.name]);
+  }, [
+    handleRename,
+    updateActiveProject,
+    activeProject?.name,
+    activeProject?.id,
+  ]);
   const placeholder = "Untitled Project";
   return (
     <>
       <div className="mx-auto max-w-2xl  ">
-        <div className="flex items-start">
+        <div className="flex items-start pb-48">
           <button
             className="flex items-center justify-center w-9 h-9 rounded-md cursor-pointer relative z-[1] m-1 transition-colors hover:bg-neutral-700 focus:outline-none"
             aria-label="Change page icon"
@@ -146,15 +159,17 @@ const Page = ({ params }: { params: { id: string } }) => {
 
           {/* Editable Heading Section */}
           <h1
-            className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl outline-none w-full py-2"
+            className="scroll-m-2 text-4xl font-extrabold tracking-tight lg:text-5xl outline-none w-full h-10 py-2"
             contentEditable
             suppressContentEditableWarning
             onInput={handleInput}
+            // onKeyDown={handleKeyDown}
             onBlur={handleBlur}
             ref={headingRef}
           >
-            {activeProject?.name || "Untitled Project"}
-            {activeProject?.name.length === 0 && placeholder}
+            {(activeProject?.children?.length === 0 &&
+              activeProject?.children[0].name) ||
+              "Untitled Project"}
           </h1>
         </div>
         <LexicalComposer initialConfig={initialConfig}>

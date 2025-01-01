@@ -144,6 +144,25 @@ export const createWorkspaceSlice: StateCreator<
   },
 });
 
+const findAndUpdateProject = (
+  projects: Project[],
+  projectId: string,
+  updates: Partial<Project>
+): Project[] => {
+  return projects.map((project) => {
+    if (project.id === projectId) {
+      return { ...project, ...updates };
+    }
+    if (project.children) {
+      return {
+        ...project,
+        children: findAndUpdateProject(project.children, projectId, updates),
+      };
+    }
+    return project;
+  });
+};
+
 const addToTree = (workspace: Project[], newProject: Project): Project[] => {
   if (!newProject.parent_id) {
     return [...workspace, newProject];
@@ -165,24 +184,7 @@ const addToTree = (workspace: Project[], newProject: Project): Project[] => {
     return workspace;
   });
 };
-const findAndUpdateProject = (
-  projects: Project[],
-  projectId: string,
-  updates: Partial<Project>
-): Project[] => {
-  return projects.map((project) => {
-    if (project.id === projectId) {
-      return { ...project, ...updates };
-    }
-    if (project.children) {
-      return {
-        ...project,
-        children: findAndUpdateProject(project.children, projectId, updates),
-      };
-    }
-    return project;
-  });
-};
+
 const updateWorkspaceTree = (
   workspaces: Project[],
   projectId: string,

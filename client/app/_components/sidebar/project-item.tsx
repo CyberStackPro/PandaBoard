@@ -56,6 +56,7 @@ export const ProjectItem = ({
   const [tempName, setTempName] = useState(project.name || "");
   const isFolder = project.type === "folder";
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const updateActiveProject = useStore((state) => state.updateActiveProject);
   const activeProject = useStore((state) => state.activeProject);
 
@@ -143,7 +144,9 @@ export const ProjectItem = ({
   const handleRenameSubmit = useCallback(
     async (newName: string) => {
       if (newName.trim() && newName !== project.name) {
+        setIsLoading(true);
         await onRename(project.id as string, newName.trim());
+        setIsLoading(false);
         // If this is the active project, update the active project state
         if (activeProject?.id === project.id) {
           updateActiveProject({ name: newName.trim() });
@@ -261,29 +264,40 @@ export const ProjectItem = ({
                 </DropdownMenu>
               </>
             )}
+            {project.children && project.children.length > 0 ? (
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  {project.children.map((child, index) => (
+                    <ProjectItem
+                      key={`child-${child.id}-${index}`}
+                      project={child}
+                      isCollapsed={isCollapsed}
+                      level={level + 1}
+                      onDelete={onDelete}
+                      onDuplicate={onDuplicate}
+                      onRename={onRename}
+                      onAddProject={onAddProject}
+                    />
+                  ))}
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            ) : (
+              <CollapsibleContent>
+                <div
+                  className="text-muted-foreground text-sm mt-1 ml-6"
+                  style={{ paddingLeft: "1.5rem" }}
+                >
+                  No pages inside
+                </div>
+              </CollapsibleContent>
+            )}
 
-            {!isCollapsed &&
-              isFolder &&
-              project.children &&
-              project.children.length > 0 && (
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {project.children.map((child, index) => (
-                      <ProjectItem
-                        key={`child-${child.id}-${index}`}
-                        project={child}
-                        isCollapsed={isCollapsed}
-                        level={level + 1}
-                        // onAction={onAction}
-                        onDelete={onDelete}
-                        onDuplicate={onDuplicate}
-                        onRename={onRename}
-                        onAddProject={onAddProject}
-                      />
-                    ))}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              )}
+            {isLoading && (
+              <div className="mt-2 space-y-2">
+                <div className="h-4 bg-muted-foreground/20 rounded-md animate-pulse"></div>
+                <div className="h-4 bg-muted-foreground/20 rounded-md animate-pulse"></div>
+              </div>
+            )}
           </SidebarMenuItem>
         </Collapsible>
       </ContextMenuTrigger>
