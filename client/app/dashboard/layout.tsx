@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useEffect, useRef, useState } from "react";
 import {
   SidebarInset,
   SidebarProvider,
@@ -13,6 +14,10 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { NavActions } from "../_components/sidebar/nav-actions";
+import { useStore } from "@/stores/store";
+import { Input } from "@/components/ui/input";
+import { ProjectIcon } from "@/components/sidebar/project-icon";
+import { useProjectActions } from "@/hooks/project/use-project-actions";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -41,6 +46,38 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 export function Header() {
+  const userId = "06321aa5-78d2-450c-9892-fd5277775fae";
+
+  const { handleRename } = useProjectActions(userId);
+  const activeProject = useStore((state) => state.activeProject);
+  const updateActiveProject = useStore((state) => state.updateActiveProject);
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempName, setTempName] = useState(activeProject?.name || "");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmit = async (newName: string) => {
+    if (activeProject && newName.trim() && newName !== activeProject.name) {
+      await handleRename(activeProject.id, newName);
+
+      // if (activeProject.id === activeProject?.id) {
+      updateActiveProject({ name: newName.trim() });
+      // }
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSubmit(tempName);
+    } else if (e.key === "Escape") {
+      setTempName(activeProject?.name || "");
+      setIsEditing(false);
+    }
+  };
+
+  useEffect(() => {
+    setTempName(activeProject?.name || "");
+  }, [activeProject?.name]);
   return (
     <header className="sticky top-0 z-10 flex h-14 w-full items-center bg-background shadow-sm">
       <div className="px-4 pt-3">
@@ -51,9 +88,29 @@ export function Header() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbPage className="line-clamp-1">
-                  Project Management & Task Tracking
-                </BreadcrumbPage>
+                {activeProject?.icon && (
+                  <ProjectIcon icon={activeProject.icon} />
+                )}
+                {isEditing ? (
+                  <Input
+                    ref={inputRef}
+                    value={tempName}
+                    onChange={(e) => setTempName(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onBlur={() => handleSubmit(tempName)}
+                    className="h-7 w-[200px]"
+                    autoFocus
+                  />
+                ) : (
+                  <BreadcrumbPage
+                    className="line-clamp-1 cursor-pointer  hover:bg-muted p-1 rounded-md "
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <span className="truncate">
+                      {activeProject?.name || "Untitled"}
+                    </span>
+                  </BreadcrumbPage>
+                )}
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

@@ -27,6 +27,7 @@ import {
   SidebarMenuSub,
 } from "@/components/ui/sidebar";
 import { RIGHT_CLICK_MENU_ITEMS } from "@/lib/utils/nav-workspaces";
+import { useStore } from "@/stores/store";
 import { Project } from "@/types/project";
 import { ChevronRight, File, Folder, Plus } from "lucide-react";
 import Link from "next/link";
@@ -55,12 +56,15 @@ export const ProjectItem = ({
   const [tempName, setTempName] = useState(project.name || "");
   const isFolder = project.type === "folder";
   const inputRef = useRef<HTMLInputElement>(null);
+  const updateActiveProject = useStore((state) => state.updateActiveProject);
+  const activeProject = useStore((state) => state.activeProject);
+
   const handleAction = useCallback(
     async (action: string, projectId: string, data?: string) => {
       try {
         switch (action) {
           case "rename":
-            await onRename(projectId, data);
+            await onRename(projectId, data || "");
             break;
           case "delete":
             await onDelete(projectId);
@@ -139,12 +143,16 @@ export const ProjectItem = ({
   const handleRenameSubmit = useCallback(
     async (newName: string) => {
       if (newName.trim() && newName !== project.name) {
-        await handleAction("rename", project.id as string, newName.trim());
+        await onRename(project.id as string, newName.trim());
+        // If this is the active project, update the active project state
+        if (activeProject?.id === project.id) {
+          updateActiveProject({ name: newName.trim() });
+        }
       }
       setTempName(project.name || "");
       setIsRenaming(false);
     },
-    [project.id, project.name, handleAction]
+    [project.id, project.name, onRename, activeProject, updateActiveProject]
   );
 
   const handleKeyDown = useCallback(

@@ -15,11 +15,14 @@ export const createActiveProjectSlice: StateCreator<
   ActiveProjectState
 > = (set) => ({
   activeProject: null,
-  setActiveProject: (project) => set({ activeProject: project }),
+  setActiveProject: (project) =>
+    set((state) => {
+      state.activeProject = project ? { ...project } : null;
+    }),
   updateActiveProject: (updates) =>
-    set((state: ActiveProjectState) => {
+    set((state) => {
       if (state.activeProject) {
-        state.activeProject = { ...state.activeProject, ...updates };
+        Object.assign(state.activeProject, updates);
       }
     }),
 });

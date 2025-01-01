@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
@@ -13,10 +13,16 @@ import {
   $createTextNode,
   $getRoot,
   $getSelection,
+  EditorState,
 } from "lexical";
 import { $createListItemNode, $createListNode } from "@lexical/list";
 import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text";
 import { $createLinkNode } from "@lexical/link";
+import { useStore } from "@/stores/store";
+import { Code } from "lucide-react";
+import { useProjectActions } from "@/hooks/project/use-project-actions";
+import { Input } from "@/components/ui/input";
+import Image from "next/image";
 
 function MyOnChangePlugin({ onChange }) {
   const [editor] = useLexicalComposerContext();
@@ -28,94 +34,61 @@ function MyOnChangePlugin({ onChange }) {
   }, [editor, onChange]);
   return null;
 }
-function $prepopulatedRichText() {
-  const root = $getRoot();
-  if (root.getFirstChild() === null) {
-    const heading = $createHeadingNode("h1");
-    heading.append($createTextNode("Welcome to the playground"));
-    root.append(heading);
-    const quote = $createQuoteNode();
-    quote.append(
-      $createTextNode(
-        `In case you were wondering what the black box at the bottom is – it's the debug view, showing the current state of the editor. ` +
-          `You can disable it by pressing on the settings control in the bottom-left of your screen and toggling the debug view setting.`
-      )
-    );
-    root.append(quote);
-    const paragraph = $createParagraphNode();
-    paragraph.append(
-      $createTextNode("The playground is a demo environment built with "),
-      $createTextNode("@lexical/react").toggleFormat("code"),
-      $createTextNode("."),
-      $createTextNode(" Try typing in "),
-      $createTextNode("some text").toggleFormat("bold"),
-      $createTextNode(" with "),
-      $createTextNode("different").toggleFormat("italic"),
-      $createTextNode(" formats.")
-    );
-    root.append(paragraph);
-    const paragraph2 = $createParagraphNode();
-    paragraph2.append(
-      $createTextNode(
-        "Make sure to check out the various plugins in the toolbar. You can also use #hashtags or @-mentions too!"
-      )
-    );
-    root.append(paragraph2);
-    const paragraph3 = $createParagraphNode();
-    paragraph3.append(
-      $createTextNode(`If you'd like to find out more about Lexical, you can:`)
-    );
-    root.append(paragraph3);
-    const list = $createListNode("bullet");
-    list.append(
-      $createListItemNode().append(
-        $createTextNode(`Visit the `),
-        $createLinkNode("https://lexical.dev/").append(
-          $createTextNode("Lexical website")
-        ),
-        $createTextNode(` for documentation and more information.`)
-      ),
-      $createListItemNode().append(
-        $createTextNode(`Check out the code on our `),
-        $createLinkNode("https://github.com/facebook/lexical").append(
-          $createTextNode("GitHub repository")
-        ),
-        $createTextNode(`.`)
-      ),
-      $createListItemNode().append(
-        $createTextNode(`Playground code can be found `),
-        $createLinkNode(
-          "https://github.com/facebook/lexical/tree/main/packages/lexical-playground"
-        ).append($createTextNode("here")),
-        $createTextNode(`.`)
-      ),
-      $createListItemNode().append(
-        $createTextNode(`Join our `),
-        $createLinkNode("https://discord.com/invite/KmG4wQnnD9").append(
-          $createTextNode("Discord Server")
-        ),
-        $createTextNode(` and chat with the team.`)
-      )
-    );
-    root.append(list);
-    const paragraph4 = $createParagraphNode();
-    paragraph4.append(
-      $createTextNode(
-        `Lastly, we're constantly adding cool new features to this playground. So make sure you check back here when you next get a chance :).`
-      )
-    );
-    root.append(paragraph4);
-  }
-}
 
 function onError(error: unknown) {
   console.error(error);
 }
 const Page = ({ params }: { params: { id: string } }) => {
+  const userId = "06321aa5-78d2-450c-9892-fd5277775fae";
+  const activeProject = useStore((state) => state.activeProject);
+  const { handleRename } = useProjectActions(userId);
+  const setActiveProject = useStore((state) => state.setActiveProject);
+  const updateActiveProject = useStore((state) => state.updateActiveProject);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [tempName, setTempName] = useState(activeProject?.name || "");
+  const headingRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const [editorState, setEditorState] = useState();
   const [isLinkEditMode, setIsLinkEditMode] = useState(false);
 
-  function onChange(editorState) {
+  const handleRenameSubmit = useCallback(
+    async (newName: string) => {
+      if (activeProject && newName.trim() && newName !== activeProject.name) {
+        await handleRename(activeProject.id, newName);
+
+        // if (activeProject.id === activeProject?.id) {
+        updateActiveProject({ name: newName.trim() });
+        // }
+      }
+      setIsEditing(false);
+    },
+    [activeProject, handleRename, updateActiveProject]
+  );
+  const handleInput = useCallback(() => {
+    if (headingRef.current) {
+      const newName = headingRef.current.textContent || "";
+      setTempName(newName);
+      handleRenameSubmit(newName);
+    }
+  }, [handleRenameSubmit]);
+
+  // const handleKeyDown = (e: React.KeyboardEvent) => {
+  //   if (e.key === "Enter") {
+  //     handleRenameSubmit(tempName);
+  //   } else if (e.key === "Escape") {
+  //     setTempName(activeProject?.name || "");
+  //     setIsEditing(false);
+  //   }
+  // };
+  useEffect(() => {
+    if (headingRef.current && activeProject) {
+      headingRef.current.textContent = activeProject.name || "";
+    }
+  }, [activeProject]);
+
+  function onChange(editorState: EditorState) {
     editorState.read(() => {
       // Read the contents of the EditorState here.
       const root = $getRoot();
@@ -132,34 +105,85 @@ const Page = ({ params }: { params: { id: string } }) => {
     // theme,
     onError,
   };
+  const handleBlur = useCallback(() => {
+    if (headingRef.current) {
+      const newName = headingRef.current.textContent?.trim() || "";
+      if (newName && newName !== activeProject?.name) {
+        handleRename(activeProject?.id || "", newName); // Sync to database
+        updateActiveProject({ name: newName }); // Update state
+      }
+    }
+  }, [handleRename, updateActiveProject, activeProject?.name]);
+  const placeholder = "Untitled Project";
   return (
-    <div className="mx-auto max-w-4xl  ">
-      <LexicalComposer initialConfig={initialConfig}>
-        <FloatingTextFormatToolbarPlugin
-          setIsLinkEditMode={setIsLinkEditMode}
-        />
-        <RichTextPlugin
-          contentEditable={
-            <ContentEditable className="outline-none prose min-h-[calc(100vh-300px)] prose prose-slate dark:prose-invert max-w-none" />
-          }
-          placeholder={
-            <div className="absolute top-[1.525rem] left-[5.125rem] text-muted-foreground">
-              {`Type '/ ' for commands...`}
+    <>
+      <div className="mx-auto max-w-2xl  ">
+        <div className="flex items-start">
+          <button
+            className="flex items-center justify-center w-9 h-9 rounded-md cursor-pointer relative z-[1] m-1 transition-colors hover:bg-neutral-700 focus:outline-none"
+            aria-label="Change page icon"
+          >
+            <div className="w-9 h-9 flex items-center justify-center">
+              {activeProject?.icon ? (
+                <div
+                  className="relative w-9 h-9"
+                  style={{
+                    fontSize: "36px",
+                    lineHeight: "1",
+                  }}
+                >
+                  <Image
+                    className="absolute top-0 left-0 w-full h-full object-cover"
+                    alt={activeProject.icon}
+                    src={activeProject.icon}
+                  />
+                </div>
+              ) : (
+                <span className="text-2xl">🔖</span> // Default icon
+              )}
             </div>
-          }
-          ErrorBoundary={LexicalErrorBoundary}
-        />
-        <HistoryPlugin />
-        <AutoFocusPlugin />
-        <MyOnChangePlugin onChange={onChange} />
+          </button>
 
-        {/* Add new plugins here */}
-        {/* <ListPlugin />
+          {/* Editable Heading Section */}
+          <h1
+            className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl outline-none w-full py-2"
+            contentEditable
+            suppressContentEditableWarning
+            onInput={handleInput}
+            onBlur={handleBlur}
+            ref={headingRef}
+          >
+            {activeProject?.name || "Untitled Project"}
+            {activeProject?.name.length === 0 && placeholder}
+          </h1>
+        </div>
+        <LexicalComposer initialConfig={initialConfig}>
+          <FloatingTextFormatToolbarPlugin
+            setIsLinkEditMode={setIsLinkEditMode}
+          />
+          <RichTextPlugin
+            contentEditable={
+              <ContentEditable className="outline-none h-0 prose min-h-[calc(100vh-300px)] prose prose-slate dark:prose-invert max-w-none" />
+            }
+            // placeholder={
+            //   <div className="absolute top-[1.525rem] left-[1rem] text-muted-foreground pointer-events-none">
+            //     {`Type '/ ' for commands...`}
+            //   </div>
+            // }
+            ErrorBoundary={LexicalErrorBoundary}
+          />
+          <HistoryPlugin />
+          <AutoFocusPlugin />
+          <MyOnChangePlugin onChange={onChange} />
+
+          {/* Add new plugins here */}
+          {/* <ListPlugin />
       <CheckListPlugin />
       <LinkPlugin /> */}
-        {/* Add more plugins as needed */}
-      </LexicalComposer>
-    </div>
+          {/* Add more plugins as needed */}
+        </LexicalComposer>
+      </div>
+    </>
   );
 };
 
