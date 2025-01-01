@@ -26,16 +26,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <AppSidebar />
         <div className="flex flex-1 flex-col min-w-0">
           <Header />
-
-          <div className="relative w-full bg-gradient-to-r from-primary/10 to-primary/5 h-[200px]">
-            {/* Cover Image Section */}
-            <button className="absolute bottom-3 right-3 rounded-md bg-background/80 px-3 py-1 text-sm hover:bg-background">
-              Add cover
-            </button>
-          </div>
-
           <SidebarInset>
-            <main className="relative flex-1 overflow-auto p-6 mx-auto w-full max-w-5xl">
+            <main className="relative flex-1 overflow-auto mx-auto w-full">
               {children}
             </main>
           </SidebarInset>

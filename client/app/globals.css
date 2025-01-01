@@ -173,3 +173,8 @@ Add to your global.css .sidebar-item-input {
   perspective: 9000px;
   transform-style: preserve-3d;
 } */
+[data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #888; /* Placeholder text color */
+  pointer-events: none;
+}

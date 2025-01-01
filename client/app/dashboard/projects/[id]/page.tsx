@@ -44,6 +44,12 @@ const Page = ({ params }: { params: { id: string } }) => {
   const activeProject = useStore((state) => state.activeProject);
   const { handleRename } = useProjectActions(userId);
   const updateActiveProject = useStore((state) => state.updateActiveProject);
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+
+  const handleAddCover = () => {
+    const newCover = prompt("Enter cover image URL:");
+    if (newCover) setCoverImage(newCover);
+  };
   const paths = usePathname();
   const pathNames = paths.split("/");
   console.log(paths);
@@ -84,12 +90,16 @@ const Page = ({ params }: { params: { id: string } }) => {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      handleRenameSubmit(tempName);
+      e.preventDefault();
+      handleRenameSubmit(tempName); // Save changes
+      headingRef.current?.blur(); // Stop editing
     } else if (e.key === "Escape") {
       setTempName(activeProject?.name || "");
       setIsEditing(false);
+      headingRef.current?.blur(); // Exit editing mode
     }
   };
+
   useEffect(() => {
     if (headingRef.current && activeProject) {
       headingRef.current.textContent = activeProject.name || "";
@@ -130,16 +140,39 @@ const Page = ({ params }: { params: { id: string } }) => {
   const placeholder = "Untitled Project";
   return (
     <>
+      <div className="relative w-full h-[30vh] max-h-[280px] bg-gradient-to-r from-primary/10 to-primary/5 flex items-center justify-center">
+        {coverImage ? (
+          <Image
+            src={coverImage}
+            alt="Cover Image"
+            layout="fill"
+            className="object-cover w-full h-full"
+          />
+        ) : (
+          <div className="text-muted text-center">No Cover Image</div>
+        )}
+        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+          <p className="text-primary text-sm">Drag image to reposition</p>
+        </div>
+        <button
+          onClick={handleAddCover}
+          className="absolute bottom-3 right-3 px-3 py-1 text-sm rounded-md bg-background/80 text-muted hover:bg-background transition"
+          aria-label={coverImage ? "Change Cover" : "Add Cover"}
+        >
+          {coverImage ? "Change Cover" : "Add Cover"}
+        </button>
+      </div>
+
       <div className="mx-auto max-w-2xl  ">
-        <div className="flex items-start pb-48">
+        <div className="flex flex-col items-start pb-4">
           <button
-            className="flex items-center justify-center w-9 h-9 rounded-md cursor-pointer relative z-[1] m-1 transition-colors hover:bg-neutral-700 focus:outline-none"
+            className="flex items-center justify-center bottom-9 size-16 rounded-md cursor-pointer relative z-[1] m-1 transition-colors hover:bg-muted focus:outline-none"
             aria-label="Change page icon"
           >
-            <div className="w-9 h-9 flex items-center justify-center">
+            <div className="size-10 absolute  flex items-center justify-center">
               {activeProject?.icon ? (
                 <div
-                  className="relative w-9 h-9"
+                  className="relative size-10"
                   style={{
                     fontSize: "36px",
                     lineHeight: "1",
@@ -149,6 +182,8 @@ const Page = ({ params }: { params: { id: string } }) => {
                     className="absolute top-0 left-0 w-full h-full object-cover"
                     alt={activeProject.icon}
                     src={activeProject.icon}
+                    width={100}
+                    height={100}
                   />
                 </div>
               ) : (
@@ -159,15 +194,17 @@ const Page = ({ params }: { params: { id: string } }) => {
 
           {/* Editable Heading Section */}
           <h1
-            className="scroll-m-2 text-4xl font-extrabold tracking-tight lg:text-5xl outline-none w-full h-10 py-2"
+            className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl outline-none w-full h-10 py-2"
             contentEditable
             suppressContentEditableWarning
             onInput={handleInput}
-            // onKeyDown={handleKeyDown}
+            onKeyDown={handleKeyDown}
             onBlur={handleBlur}
+            data-placeholder="Untitled Project"
             ref={headingRef}
           >
-            {activeProject?.children?.length === 0 || "Untitled Project"}
+            {/* {activeProject?.children?.length === 0 || "Untitled Project"} */}
+            {tempName || ""}
           </h1>
         </div>
         <LexicalComposer initialConfig={initialConfig}>

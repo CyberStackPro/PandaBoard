@@ -4,7 +4,12 @@ const nextConfig = {
   images: {
     // loader: "custom",
     // loaderFile: "./public/images",
-    // domains: ["res.cloudinary.com", "images.unsplash.com"],
+    domains: [
+      "res.cloudinary.com",
+      "images.unsplash.com",
+      "media.istockphoto.com",
+      "www.notion.so",
+    ],
   },
 };
 
