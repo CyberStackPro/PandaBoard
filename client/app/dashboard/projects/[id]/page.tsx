@@ -19,11 +19,20 @@ import { $createListItemNode, $createListNode } from "@lexical/list";
 import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text";
 import { $createLinkNode } from "@lexical/link";
 import { useStore } from "@/stores/store";
-import { Code } from "lucide-react";
+import {
+  Code,
+  MessageSquare,
+  MessageSquareIcon,
+  Plus,
+  PlusIcon,
+} from "lucide-react";
 import { useProjectActions } from "@/hooks/project/use-project-actions";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 function MyOnChangePlugin({ onChange }) {
   const [editor] = useLexicalComposerContext();
@@ -39,28 +48,49 @@ function MyOnChangePlugin({ onChange }) {
 function onError(error: unknown) {
   console.error(error);
 }
-const Page = ({ params }: { params: { id: string } }) => {
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+const Page = ({ params }: PageProps) => {
   const userId = "06321aa5-78d2-450c-9892-fd5277775fae";
+  const paths = usePathname();
+
+  const [isEditing, setIsEditing] = useState(false);
   const activeProject = useStore((state) => state.activeProject);
-  const { handleRename } = useProjectActions(userId);
   const updateActiveProject = useStore((state) => state.updateActiveProject);
+  const [tempName, setTempName] = useState(activeProject?.name || "");
+  const headingRef = useRef<HTMLDivElement>(null);
+  const [editorState, setEditorState] = useState();
+  const [isLinkEditMode, setIsLinkEditMode] = useState(false);
+  const { handleRename } = useProjectActions(userId);
   const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [coverPosition, setCoverPosition] = useState(0);
+  const [isDraggingCover, setIsDraggingCover] = useState(false);
+  const [showControls, setShowControls] = useState(false);
+
+  const handleCoverDragStart = (e: React.DragEvent) => {
+    setIsDraggingCover(true);
+  };
+  const handleCoverDrag = (e: React.DragEvent) => {
+    if (!isDraggingCover) return;
+
+    const container = e.currentTarget.getBoundingClientRect();
+    const y = e.clientY - container.top;
+    const percentage = Math.max(0, Math.min(100, (y / container.height) * 100));
+    setCoverPosition(percentage);
+  };
+
+  const handleCoverDragEnd = () => {
+    setIsDraggingCover(false);
+  };
 
   const handleAddCover = () => {
     const newCover = prompt("Enter cover image URL:");
     if (newCover) setCoverImage(newCover);
   };
-  const paths = usePathname();
-  const pathNames = paths.split("/");
-  console.log(paths);
-  console.log(pathNames);
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [tempName, setTempName] = useState(activeProject?.name || "");
-  const headingRef = useRef<HTMLDivElement>(null);
-
-  const [editorState, setEditorState] = useState();
-  const [isLinkEditMode, setIsLinkEditMode] = useState(false);
 
   const handleRenameSubmit = useCallback(
     async (newName: string) => {
@@ -81,22 +111,28 @@ const Page = ({ params }: { params: { id: string } }) => {
     [activeProject, handleRename, updateActiveProject]
   );
   const handleInput = useCallback(() => {
-    if (headingRef.current) {
-      const newName = headingRef.current.textContent || "";
-      setTempName(newName);
+    if (!headingRef.current) return;
+
+    const newName = headingRef.current.textContent || "";
+    setTempName(newName);
+    // Debounce the rename submission
+    const timeoutId = setTimeout(() => {
       handleRenameSubmit(newName);
-    }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   }, [handleRenameSubmit]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      handleRenameSubmit(tempName); // Save changes
-      headingRef.current?.blur(); // Stop editing
+      handleRenameSubmit(tempName);
+      headingRef.current?.blur();
     } else if (e.key === "Escape") {
+      e.preventDefault();
       setTempName(activeProject?.name || "");
       setIsEditing(false);
-      headingRef.current?.blur(); // Exit editing mode
+      headingRef.current?.blur();
     }
   };
 
@@ -137,103 +173,181 @@ const Page = ({ params }: { params: { id: string } }) => {
     activeProject?.name,
     activeProject?.id,
   ]);
-  const placeholder = "Untitled Project";
-  return (
-    <>
-      <div className="relative w-full h-[30vh] max-h-[280px] bg-gradient-to-r from-primary/10 to-primary/5 flex items-center justify-center">
-        {coverImage ? (
-          <Image
-            src={coverImage}
-            alt="Cover Image"
-            layout="fill"
-            className="object-cover w-full h-full"
-          />
-        ) : (
-          <div className="text-muted text-center">No Cover Image</div>
-        )}
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-          <p className="text-primary text-sm">Drag image to reposition</p>
-        </div>
-        <button
-          onClick={handleAddCover}
-          className="absolute bottom-3 right-3 px-3 py-1 text-sm rounded-md bg-background/80 text-muted hover:bg-background transition"
-          aria-label={coverImage ? "Change Cover" : "Add Cover"}
-        >
-          {coverImage ? "Change Cover" : "Add Cover"}
-        </button>
-      </div>
 
-      <div className="mx-auto max-w-2xl  ">
-        <div className="flex flex-col items-start pb-4">
-          <button
-            className="flex items-center justify-center bottom-9 size-16 rounded-md cursor-pointer relative z-[1] m-1 transition-colors hover:bg-muted focus:outline-none"
-            aria-label="Change page icon"
+  const placeholder = "Untitled Project";
+
+  return (
+    <div className="pb-[30vh] h-screen overflow-y-auto">
+      <div className="layout-full relative" style={{ isolation: "isolate" }}>
+        {/* Cover Image Section */}
+        <div
+          className="relative w-full h-[25vh] max-h-[280px] group"
+          onMouseEnter={() => setIsDraggingCover(true)}
+          onMouseLeave={() => setIsDraggingCover(false)}
+        >
+          <div
+            className="w-full h-full cursor-move relative overflow-hidden"
+            draggable={!!coverImage}
+            onDragStart={handleCoverDragStart}
+            onDrag={handleCoverDrag}
+            onDragEnd={handleCoverDragEnd}
           >
-            <div className="size-10 absolute  flex items-center justify-center">
-              {activeProject?.icon ? (
-                <div
-                  className="relative size-10"
-                  style={{
-                    fontSize: "36px",
-                    lineHeight: "1",
-                  }}
+            {coverImage ? (
+              <div className="grid w-full h-full">
+                <Image
+                  src={coverImage}
+                  alt="Cover"
+                  layout="fill"
+                  className="object-cover transition-all duration-300 ease-in-out"
+                  style={{ objectPosition: `center ${coverPosition}%` }}
+                />
+              </div>
+            ) : (
+              <div className="w-full h-full bg-gradient-to-r from-primary/10 to-primary/5 flex items-center justify-center">
+                <span className="text-muted-foreground">No Cover Image</span>
+              </div>
+            )}
+          </div>
+
+          {/* Drag Indicator */}
+          {/* <div
+            className={cn(
+              "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+              "bg-black/40 text-white px-6 py-1.5 rounded-md text-sm",
+              "transition-opacity duration-200",
+              isDraggingCover ? "opacity-100" : "opacity-0"
+            )}
+          >
+            Drag image to reposition
+          </div> */}
+
+          {/* Cover Controls */}
+          <div
+            className={cn(
+              "absolute bottom-4 right-4 flex gap-1",
+              "bg-background/90 backdrop-blur-sm rounded-lg shadow-sm",
+              "opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            )}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleAddCover}
+              className="text-sm hover:bg-background/90"
+            >
+              {coverImage ? "Change Cover" : "Add Cover"}
+            </Button>
+            {coverImage && (
+              <>
+                <Separator
+                  orientation="vertical"
+                  className="h-[20px] my-auto"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-sm hover:bg-background/90"
+                  onClick={() => setIsDraggingCover(true)}
                 >
+                  Reposition
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Content Section */}
+
+        <div className="max-w-[765px] mx-auto px-4 mt-16">
+          {/* Page controls */}
+          <div className="flex items-center gap-2 py-4 opacity-0 hover:opacity-100 transition-opacity">
+            {activeProject?.icon && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add icon
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" className="text-muted-foreground">
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Add comment
+            </Button>
+          </div>
+
+          <div className="flex flex-col items-start pb-4">
+            <Button
+              variant={"ghost"}
+              size={"sm"}
+              className="flex items-center justify-center bottom-9 size-16 rounded-md cursor-pointer relative z-[1] m-1 transition-colors hover:bg-muted focus:outline-none"
+              aria-label="Change page icon"
+            >
+              <div className="size-10 absolute  flex items-center justify-center">
+                {activeProject?.icon ? (
                   <Image
                     className="absolute top-0 left-0 w-full h-full object-cover"
                     alt={activeProject.icon}
-                    src={activeProject.icon}
-                    width={100}
-                    height={100}
+                    src={"Project Icon"}
+                    width={32}
+                    height={32}
                   />
-                </div>
-              ) : (
-                <span className="text-2xl">🔖</span> // Default icon
+                ) : (
+                  <span className="text-2xl">🔖</span> // Default icon
+                )}
+              </div>
+            </Button>
+
+            {/* Editable Heading Section */}
+            <h1
+              ref={headingRef}
+              contentEditable
+              suppressContentEditableWarning
+              onInput={handleInput}
+              onKeyDown={handleKeyDown}
+              onBlur={handleBlur}
+              data-placeholder="Untitled Project"
+              className={cn(
+                "outline-none w-full px-1 -mx-1",
+                "text-4xl font-bold tracking-tight",
+                "empty:before:content-[attr(data-placeholder)]",
+                "empty:before:text-muted-foreground/60",
+                "focus:ring-1 focus:ring-primary/20 rounded-sm",
+                "whitespace-pre-wrap break-words"
               )}
-            </div>
-          </button>
+            >
+              {tempName}
+            </h1>
+          </div>
+          <LexicalComposer initialConfig={initialConfig}>
+            <FloatingTextFormatToolbarPlugin
+              setIsLinkEditMode={setIsLinkEditMode}
+            />
+            <RichTextPlugin
+              contentEditable={
+                <ContentEditable className="outline-none  min-h-[calc(100vh-300px)] prose  dark:prose-invert max-w-none relative" />
+              }
+              placeholder={
+                <div className="absolute top-[24px] left-[12px] text-muted-foreground/60 pointer-events-none select-none">
+                  Type '/' for commands...
+                </div>
+              }
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+            <HistoryPlugin />
+            <AutoFocusPlugin />
+            <MyOnChangePlugin onChange={onChange} />
 
-          {/* Editable Heading Section */}
-          <h1
-            className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl outline-none w-full h-10 py-2"
-            contentEditable
-            suppressContentEditableWarning
-            onInput={handleInput}
-            onKeyDown={handleKeyDown}
-            onBlur={handleBlur}
-            data-placeholder="Untitled Project"
-            ref={headingRef}
-          >
-            {/* {activeProject?.children?.length === 0 || "Untitled Project"} */}
-            {tempName || ""}
-          </h1>
-        </div>
-        <LexicalComposer initialConfig={initialConfig}>
-          <FloatingTextFormatToolbarPlugin
-            setIsLinkEditMode={setIsLinkEditMode}
-          />
-          <RichTextPlugin
-            contentEditable={
-              <ContentEditable className="outline-none h-0 prose min-h-[calc(100vh-300px)] prose prose-slate dark:prose-invert max-w-none" />
-            }
-            // placeholder={
-            //   <div className="absolute top-[1.525rem] left-[1rem] text-muted-foreground pointer-events-none">
-            //     {`Type '/ ' for commands...`}
-            //   </div>
-            // }
-            ErrorBoundary={LexicalErrorBoundary}
-          />
-          <HistoryPlugin />
-          <AutoFocusPlugin />
-          <MyOnChangePlugin onChange={onChange} />
-
-          {/* Add new plugins here */}
-          {/* <ListPlugin />
+            {/* Add new plugins here */}
+            {/* <ListPlugin />
       <CheckListPlugin />
       <LinkPlugin /> */}
-          {/* Add more plugins as needed */}
-        </LexicalComposer>
+            {/* Add more plugins as needed */}
+          </LexicalComposer>
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 
