@@ -21,6 +21,7 @@ import { $createLinkNode } from "@lexical/link";
 import { useStore } from "@/stores/store";
 import {
   Code,
+  ImageIcon,
   MessageSquare,
   MessageSquareIcon,
   Plus,
@@ -54,9 +55,8 @@ interface PageProps {
   };
 }
 
-const Page = ({ params }: PageProps) => {
+const Page = () => {
   const userId = "06321aa5-78d2-450c-9892-fd5277775fae";
-  const paths = usePathname();
 
   const [isEditing, setIsEditing] = useState(false);
   const activeProject = useStore((state) => state.activeProject);
@@ -111,28 +111,22 @@ const Page = ({ params }: PageProps) => {
     [activeProject, handleRename, updateActiveProject]
   );
   const handleInput = useCallback(() => {
-    if (!headingRef.current) return;
-
-    const newName = headingRef.current.textContent || "";
-    setTempName(newName);
-    // Debounce the rename submission
-    const timeoutId = setTimeout(() => {
+    if (headingRef.current) {
+      const newName = headingRef.current.textContent || "";
+      setTempName(newName);
       handleRenameSubmit(newName);
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
+    }
   }, [handleRenameSubmit]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      handleRenameSubmit(tempName);
-      headingRef.current?.blur();
+      handleRenameSubmit(tempName); // Save changes
+      headingRef.current?.blur(); // Stop editing
     } else if (e.key === "Escape") {
-      e.preventDefault();
       setTempName(activeProject?.name || "");
       setIsEditing(false);
-      headingRef.current?.blur();
+      headingRef.current?.blur(); // Exit editing mode
     }
   };
 
@@ -173,6 +167,13 @@ const Page = ({ params }: PageProps) => {
     activeProject?.name,
     activeProject?.id,
   ]);
+  const handleAddIconClick = useCallback(() => {
+    setIsLinkEditMode(true);
+    console.log("icon");
+  }, []);
+  const handleAddCommentClick = useCallback(() => {
+    console.log("comment");
+  }, []);
 
   const placeholder = "Untitled Project";
 
@@ -181,33 +182,40 @@ const Page = ({ params }: PageProps) => {
       <div className="layout-full relative" style={{ isolation: "isolate" }}>
         {/* Cover Image Section */}
         <div
-          className="relative w-full h-[25vh] max-h-[280px] group"
+          className={cn(
+            "relative w-full max-h-[280px] group",
+            coverImage && "h-[25vh] "
+          )}
           onMouseEnter={() => setIsDraggingCover(true)}
           onMouseLeave={() => setIsDraggingCover(false)}
         >
-          <div
-            className="w-full h-full cursor-move relative overflow-hidden"
-            draggable={!!coverImage}
-            onDragStart={handleCoverDragStart}
-            onDrag={handleCoverDrag}
-            onDragEnd={handleCoverDragEnd}
-          >
-            {coverImage ? (
-              <div className="grid w-full h-full">
-                <Image
-                  src={coverImage}
-                  alt="Cover"
-                  layout="fill"
-                  className="object-cover transition-all duration-300 ease-in-out"
-                  style={{ objectPosition: `center ${coverPosition}%` }}
-                />
-              </div>
-            ) : (
-              <div className="w-full h-full bg-gradient-to-r from-primary/10 to-primary/5 flex items-center justify-center">
-                <span className="text-muted-foreground">No Cover Image</span>
-              </div>
-            )}
-          </div>
+          {coverImage ? (
+            <div
+              className={cn("w-full h-full  relative overflow-hidden", {
+                "cursor-grabbing": isDraggingCover,
+              })}
+              draggable={!!coverImage}
+              onDragStart={handleCoverDragStart}
+              onDrag={handleCoverDrag}
+              onDragEnd={handleCoverDragEnd}
+            >
+              {coverImage ? (
+                <div className="grid w-full h-full">
+                  <Image
+                    src={coverImage}
+                    alt="Cover"
+                    layout="fill"
+                    className="object-cover transition-all duration-300 ease-in-out"
+                    style={{ objectPosition: `center ${coverPosition}%` }}
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-full bg-gradient-to-r from-primary/10 to-primary/5 flex items-center justify-center">
+                  <span className="text-muted-foreground">No Cover Image</span>
+                </div>
+              )}
+            </div>
+          ) : null}
 
           {/* Drag Indicator */}
           {/* <div
@@ -215,28 +223,31 @@ const Page = ({ params }: PageProps) => {
               "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
               "bg-black/40 text-white px-6 py-1.5 rounded-md text-sm",
               "transition-opacity duration-200",
-              isDraggingCover ? "opacity-100" : "opacity-0"
+              isDraggingCover ? "opacity-1" : "opacity-100"
             )}
           >
-            Drag image to reposition
+            {isDraggingCover ? "Drag to change cover" : ""}
           </div> */}
 
-          {/* Cover Controls */}
+          {/* Cover Controls in the cover image */}
           <div
             className={cn(
               "absolute bottom-4 right-4 flex gap-1",
               "bg-background/90 backdrop-blur-sm rounded-lg shadow-sm",
-              "opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              "opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             )}
           >
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleAddCover}
-              className="text-sm hover:bg-background/90"
-            >
-              {coverImage ? "Change Cover" : "Add Cover"}
-            </Button>
+            {coverImage && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleAddCover}
+                className="text-sm hover:bg-background/90"
+              >
+                {coverImage ? "Change Cover" : "Add Cover"}
+              </Button>
+            )}
+
             {coverImage && (
               <>
                 <Separator
@@ -256,48 +267,65 @@ const Page = ({ params }: PageProps) => {
           </div>
         </div>
 
-        {/* Content Section */}
-
-        <div className="max-w-[765px] mx-auto px-4 mt-16">
+        {/* Main Content Section */}
+        <div className="max-w-[765px] container mx-auto px-4 mt-16">
           {/* Page controls */}
-          <div className="flex items-center gap-2 py-4 opacity-0 hover:opacity-100 transition-opacity">
-            {activeProject?.icon && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add icon
-              </Button>
-            )}
-            <Button variant="ghost" size="sm" className="text-muted-foreground">
-              <MessageSquare className="w-4 h-4 mr-2" />
-              Add comment
-            </Button>
-          </div>
 
-          <div className="flex flex-col items-start pb-4">
+          <div className="flex flex-col gap-2 items-start">
             <Button
               variant={"ghost"}
               size={"sm"}
-              className="flex items-center justify-center bottom-9 size-16 rounded-md cursor-pointer relative z-[1] m-1 transition-colors hover:bg-muted focus:outline-none"
+              className="relative flex items-center justify-center size-16 rounded-md cursor-pointer transition-colors hover:bg-muted focus:outline-none"
               aria-label="Change page icon"
             >
-              <div className="size-10 absolute  flex items-center justify-center">
-                {activeProject?.icon ? (
-                  <Image
-                    className="absolute top-0 left-0 w-full h-full object-cover"
-                    alt={activeProject.icon}
-                    src={"Project Icon"}
-                    width={32}
-                    height={32}
-                  />
-                ) : (
-                  <span className="text-2xl">🔖</span> // Default icon
-                )}
-              </div>
+              {/* <div className="size-10 absolute  flex items-center justify-center"> */}
+              {activeProject?.icon ? (
+                <Image
+                  className="absolute top-0 left-0 rounded-full object-cover"
+                  alt={activeProject.icon}
+                  src={"Project Icon"}
+                  width={32}
+                  height={32}
+                />
+              ) : (
+                <span className="text-2xl">🎉</span> // Default icon
+              )}
+              {/* </div> */}
             </Button>
+
+            <div className="flex items-center   opacity-0 hover:opacity-50 transition-opacity duration-300 ease-in-out">
+              {!activeProject?.icon && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add icon
+                </Button>
+              )}
+              {!coverImage && (
+                <Button
+                  onClick={handleAddCover}
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                >
+                  <ImageIcon className="w-4 h-4 mr-2" />
+                  Add Cover
+                </Button>
+              )}
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleAddCommentClick}
+                className="text-muted-foreground"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Add comment
+              </Button>
+            </div>
 
             {/* Editable Heading Section */}
             <h1
@@ -309,12 +337,11 @@ const Page = ({ params }: PageProps) => {
               onBlur={handleBlur}
               data-placeholder="Untitled Project"
               className={cn(
-                "outline-none w-full px-1 -mx-1",
-                "text-4xl font-bold tracking-tight",
+                "outline-none w-full px-1 whitespace-pre-wrap break-words",
+                "text-4xl font-bold",
                 "empty:before:content-[attr(data-placeholder)]",
                 "empty:before:text-muted-foreground/60",
-                "focus:ring-1 focus:ring-primary/20 rounded-sm",
-                "whitespace-pre-wrap break-words"
+                "focus:ring-1 focus:ring-primary/20 rounded-sm"
               )}
             >
               {tempName}
