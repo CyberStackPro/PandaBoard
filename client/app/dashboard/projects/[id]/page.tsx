@@ -1,39 +1,28 @@
 "use client";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { LexicalComposer } from "@lexical/react/LexicalComposer";
-import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
-import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
-import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import FloatingTextFormatToolbarPlugin from "../../_components/lexical/plugins/FloatingTextFormatToolbarPlugin";
-import {
-  $createParagraphNode,
-  $createTextNode,
-  $getRoot,
-  $getSelection,
-  EditorState,
-} from "lexical";
-import { $createListItemNode, $createListNode } from "@lexical/list";
-import { $createHeadingNode, $createQuoteNode } from "@lexical/rich-text";
-import { $createLinkNode } from "@lexical/link";
-import { useStore } from "@/stores/store";
-import {
-  Code,
-  ImageIcon,
-  MessageSquare,
-  MessageSquareIcon,
-  Plus,
-  PlusIcon,
-} from "lucide-react";
-import { useProjectActions } from "@/hooks/project/use-project-actions";
-import { Input } from "@/components/ui/input";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useProjectActions } from "@/hooks/project/use-project-actions";
+import { cn } from "@/lib/utils";
+import { useStore } from "@/stores/store";
+import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { $getRoot, $getSelection, EditorState } from "lexical";
+import { ImageIcon, MessageSquare, Plus } from "lucide-react";
+import Image from "next/image";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import FloatingTextFormatToolbarPlugin from "../../_components/lexical/plugins/FloatingTextFormatToolbarPlugin";
+import debounce from "lodash.debounce";
 
 function MyOnChangePlugin({ onChange }) {
   const [editor] = useLexicalComposerContext();
@@ -69,7 +58,21 @@ const Page = () => {
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const [coverPosition, setCoverPosition] = useState(0);
   const [isDraggingCover, setIsDraggingCover] = useState(false);
-  const [showControls, setShowControls] = useState(false);
+  // const [showControls, setShowControls] = useState(false);
+
+  const debouncedRename = useMemo(
+    () =>
+      debounce(async (id: string, newName: string) => {
+        try {
+          await handleRename(id, newName);
+          updateActiveProject({ name: newName });
+        } catch (error) {
+          // Revert to last known good state
+          setTempName(activeProject?.name || "");
+        }
+      }, 300),
+    [handleRename, updateActiveProject, activeProject?.name]
+  );
 
   const handleCoverDragStart = (e: React.DragEvent) => {
     setIsDraggingCover(true);
@@ -92,6 +95,23 @@ const Page = () => {
     if (newCover) setCoverImage(newCover);
   };
 
+  const handleInput = useCallback(() => {
+    if (headingRef.current) {
+      const newName = headingRef.current.textContent || "";
+      setTempName(newName);
+      if (activeProject?.id) {
+        debouncedRename(activeProject.id, newName);
+      }
+    }
+  }, [activeProject?.id, debouncedRename]);
+  const handleBlur = useCallback(() => {
+    const newName = tempName.trim();
+    if (newName && newName !== activeProject?.name && activeProject?.id) {
+      handleRename(activeProject.id, newName);
+      updateActiveProject({ name: newName });
+    }
+  }, [tempName, activeProject, handleRename, updateActiveProject]);
+
   const handleRenameSubmit = useCallback(
     async (newName: string) => {
       if (
@@ -110,29 +130,26 @@ const Page = () => {
     },
     [activeProject, handleRename, updateActiveProject]
   );
-  const handleInput = useCallback(() => {
-    if (headingRef.current) {
-      const newName = headingRef.current.textContent || "";
-      setTempName(newName);
-      handleRenameSubmit(newName);
-    }
-  }, [handleRenameSubmit]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleRenameSubmit(tempName); // Save changes
-      headingRef.current?.blur(); // Stop editing
-    } else if (e.key === "Escape") {
-      setTempName(activeProject?.name || "");
-      setIsEditing(false);
-      headingRef.current?.blur(); // Exit editing mode
-    }
-  };
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLHeadingElement>) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        e.currentTarget.blur();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        setTempName(activeProject?.name || "");
+        e.currentTarget.blur();
+      }
+    },
+    [activeProject?.name]
+  );
+  // Cleanup
 
   useEffect(() => {
     if (headingRef.current && activeProject) {
       headingRef.current.textContent = activeProject.name || "";
+      setTempName(activeProject?.name || "");
     }
   }, [activeProject]);
 
@@ -153,20 +170,7 @@ const Page = () => {
     // theme,
     onError,
   };
-  const handleBlur = useCallback(() => {
-    if (headingRef.current) {
-      const newName = headingRef.current.textContent?.trim() || "";
-      if (newName && newName !== activeProject?.name) {
-        handleRename(activeProject?.id || "", newName); // Sync to database
-        updateActiveProject({ name: newName }); // Update state
-      }
-    }
-  }, [
-    handleRename,
-    updateActiveProject,
-    activeProject?.name,
-    activeProject?.id,
-  ]);
+
   const handleAddIconClick = useCallback(() => {
     setIsLinkEditMode(true);
     console.log("icon");
