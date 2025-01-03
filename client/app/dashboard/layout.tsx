@@ -27,9 +27,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="flex flex-1 flex-col min-w-0">
           <Header />
           <SidebarInset>
-            <main className="relative flex-1 overflow-auto mx-auto w-full">
-              {children}
-            </main>
+            <main className="relative flex-1  mx-auto w-full">{children}</main>
           </SidebarInset>
         </div>
       </div>
@@ -71,7 +69,7 @@ export function Header() {
     setTempName(activeProject?.name || "");
   }, [activeProject?.name]);
   return (
-    <header className="sticky top-0 z-10 flex h-14 w-full items-center bg-background shadow-sm">
+    <header className="sticky top-0 z-10 flex h-14 w-full items-center  shadow-sm bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="px-4 pt-3">
         {/* Breadcrumb Section */}
         <div className="flex items-center gap-2">
