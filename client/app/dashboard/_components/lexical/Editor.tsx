@@ -11,6 +11,10 @@ import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import FloatingTextFormatToolbarPlugin from "./plugins/FloatingTextFormatToolbarPlugin";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import ToolbarPlugin from "./plugins/ToolBar/ToolBarPlugin";
+import DraggableBlockPlugin from "./plugins/DraggableBlock";
+import { MentionNode } from "./plugins/MentionPlugins/MentionNode";
+import MentionPlugin from "./plugins/MentionPlugins/MentionPlugin";
 
 export const notionTheme = {
   ltr: "text-left",
@@ -85,6 +89,7 @@ export function Editor({ initialContent, onChange }: EditorProps) {
   const initialConfig = {
     namespace: "MyEditor",
     theme: notionTheme,
+    nodes: [MentionNode],
     onError: (error: unknown) => console.error(error),
   };
 
@@ -92,6 +97,7 @@ export function Editor({ initialContent, onChange }: EditorProps) {
     <LexicalComposer initialConfig={initialConfig}>
       <div className="relative">
         <FloatingTextFormatToolbarPlugin />
+        {/* <ToolbarPlugin /> */}
         <RichTextPlugin
           contentEditable={
             <ContentEditable className="outline-none min-h-[calc(100vh-300px)] prose dark:prose-invert max-w-none" />
@@ -106,6 +112,8 @@ export function Editor({ initialContent, onChange }: EditorProps) {
         <HistoryPlugin />
         <AutoFocusPlugin />
         <OnChangePlugin onChange={onChange} />
+        <DraggableBlockPlugin />
+        <MentionPlugin />
       </div>
     </LexicalComposer>
   );

@@ -45,7 +45,7 @@ const Page = () => {
 
           {/* Content Editorial */}
           <div className="max-w-[765px] mx-auto px-4">
-            <Editor onChange={onChange} />
+            <Editor onChange={onChange} initialContent={""} />
           </div>
         </div>
       </div>
