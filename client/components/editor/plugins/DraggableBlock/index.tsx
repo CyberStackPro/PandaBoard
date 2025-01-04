@@ -1,6 +1,7 @@
 import { DraggableBlockPlugin_EXPERIMENTAL } from "@lexical/react/LexicalDraggableBlockPlugin";
 import { useRef } from "react";
 import { GripVertical } from "lucide-react";
+import "./index.css";
 
 const DRAGGABLE_BLOCK_MENU_CLASSNAME = "draggable-block-menu";
 

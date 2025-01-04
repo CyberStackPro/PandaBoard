@@ -147,27 +147,174 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Draggable  Element */
+  [data-draggable="true"] {
+    @apply cursor-grab;
+  }
+
+  [data-draggable="true"]:active {
+    @apply cursor-grabbing;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-primary/50 text-primary/95 transition-all duration-200 delay-300;
+  }
+  /* Placeholder Styles */
+  .editor-placeholder {
+    @apply absolute text-muted-foreground pointer-events-none select-none;
+    top: 12px;
+    left: 12px;
+  }
+
+  /* Table Styles */
+  .table-cell-action-button-container {
+    @apply absolute -right-2 -top-2 flex opacity-0 group-hover:opacity-100 transition-opacity z-10;
+  }
+
+  .table-cell-resizer {
+    @apply absolute -right-2 top-0 w-1 h-full cursor-col-resize bg-primary/50 opacity-0 transition-opacity;
+  }
+
+  .table-cell-resizer:hover {
+    @apply opacity-100;
+  }
+
+  /* Code Block Styles */
+  .code-line {
+    @apply relative px-4 py-0.5;
+  }
+
+  .code-line-number {
+    @apply absolute left-0 text-muted-foreground text-sm select-none w-8 text-right pr-2;
+  }
+
+  /* Mention Styles */
+  .mention {
+    @apply bg-primary/10 py-0.5 px-1.5 rounded-md text-sm font-medium hover:bg-primary/20 cursor-pointer;
+  }
+
+  /* Rich Text Formatting */
+  .editor-text-bold {
+    @apply font-bold;
+  }
+
+  .editor-text-italic {
+    @apply italic;
+  }
+
+  .editor-text-underline {
+    @apply underline;
+  }
+
+  .editor-text-strikethrough {
+    @apply line-through;
+  }
+
+  .editor-text-underlineStrikethrough {
+    @apply underline line-through;
+  }
+
+  /* Link Editor */
+  .link-editor {
+    @apply absolute z-50 bg-popover border rounded-lg shadow-md p-2 flex items-center gap-2;
+    transform: translate(-50%, -30px);
+  }
+
+  /* Character Limit */
+  .character-limit-exceeded {
+    @apply text-destructive;
+  }
+
+  /* Equations */
+  .editor-equation {
+    @apply cursor-pointer select-none;
+  }
+
+  /* Images */
+  .editor-image {
+    @apply cursor-pointer select-none max-w-full;
+  }
+
+  .image-resizer {
+    @apply absolute w-3 h-3 bg-primary rounded-full opacity-0 transition-opacity;
+  }
+
+  .image-resizer.image-resizer-n {
+    @apply top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-n-resize;
+  }
+
+  .image-resizer.image-resizer-ne {
+    @apply top-0 right-0 -translate-y-1/2 translate-x-1/2 cursor-ne-resize;
+  }
+
+  .image-resizer.image-resizer-e {
+    @apply right-0 top-1/2 translate-x-1/2 -translate-y-1/2 cursor-e-resize;
+  }
+
+  .image-resizer.image-resizer-se {
+    @apply bottom-0 right-0 translate-x-1/2 translate-y-1/2 cursor-se-resize;
+  }
+
+  .image-resizer.image-resizer-s {
+    @apply bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 cursor-s-resize;
+  }
+
+  .image-resizer.image-resizer-sw {
+    @apply bottom-0 left-0 -translate-x-1/2 translate-y-1/2 cursor-sw-resize;
+  }
+
+  .image-resizer.image-resizer-w {
+    @apply left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-w-resize;
+  }
+
+  .image-resizer.image-resizer-nw {
+    @apply top-0 left-0 -translate-x-1/2 -translate-y-1/2 cursor-nw-resize;
+  }
+
+  /* Floating Toolbar */
+  .floating-text-format-popup {
+    @apply flex items-center gap-0.5 bg-popover border rounded-lg shadow-md p-1 z-50;
+  }
+
+  /* Component Picker */
+  .component-picker-menu {
+    @apply absolute z-50 bg-popover border rounded-lg shadow-md max-h-[300px] overflow-y-auto;
+  }
+
+  .component-picker-item {
+    @apply flex items-center gap-2 px-3 py-2 hover:bg-accent cursor-pointer;
+  }
+
+  /* Autocomplete */
+  .autocomplete-popup {
+    @apply absolute z-50 bg-popover border rounded-lg shadow-md max-h-[300px] overflow-y-auto;
+  }
+
+  /* Collapsible */
+  .collapsible-container:has(> .collapsible-content[open])
+    > .collapsible-title {
+    @apply border-b;
+  }
+
+  /* Drag Target Line */
+  .draggable-block-target-line {
+    @apply pointer-events-none absolute left-0 top-0 h-0.5 w-full bg-primary opacity-0 transition-all duration-200 ease-in-out;
+  }
+
+  /* Mobile Optimizations */
+  @media (max-width: 640px) {
+    .editor {
+      @apply px-4;
+    }
+
+    .floating-text-format-popup {
+      @apply scale-90 origin-top-left;
+    }
+  }
 }
 
-Add to your global.css .sidebar-item-input {
-  @apply bg-transparent border-none focus:ring-1 focus:ring-ring py-0.5 px-1 h-7 text-sm;
-  width: calc(100% - 24px); /* Adjust based on your icon size */
-}
-
-.sidebar-item {
-  @apply relative flex items-center w-full rounded-sm hover:bg-accent/50 transition-colors;
-}
-
-.sidebar-item-content {
-  @apply flex items-center gap-2 px-2 py-1 w-full;
-}
-:root {
-  --primary-rgb: 24, 24, 27; /* Change these values based on your primary color */
-}
-
-[data-theme="dark"] {
-  --primary-rgb: 244, 244, 245; /* Change these values for dark mode */
-}
 /* 
 .perspective {
   perspective: 9000px;
@@ -178,11 +325,8 @@ Add to your global.css .sidebar-item-input {
   color: #888; /* Placeholder text color */
   pointer-events: none;
 }
-.editor [draggable="true"] {
-  @apply relative hover:ring-1 hover:ring-accent hover:ring-opacity-50 rounded-sm transition-all duration-200;
-}
 
-.editor [draggable="true"]:hover::before {
+/* .editor [draggable="true"]:hover::before {
   content: "";
   @apply absolute -left-7 top-0 bottom-0 w-6;
-}
+} */
