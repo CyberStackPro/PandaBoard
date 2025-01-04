@@ -1,15 +1,7 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-import './index.css';
-
-import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useLexicalNodeSelection} from '@lexical/react/useLexicalNodeSelection';
-import {mergeRegister} from '@lexical/utils';
+// components/editor/nodes/PageBreakNode/index.tsx
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { useLexicalNodeSelection } from "@lexical/react/useLexicalNodeSelection";
+import { mergeRegister } from "@lexical/utils";
 import {
   $getSelection,
   $isNodeSelection,
@@ -24,13 +16,14 @@ import {
   LexicalNode,
   NodeKey,
   SerializedLexicalNode,
-} from 'lexical';
-import * as React from 'react';
-import {useCallback, useEffect} from 'react';
+} from "lexical";
+import * as React from "react";
+import { useCallback, useEffect } from "react";
+import { cn } from "@/lib/utils"; // Assuming you have shadcn's utility function
 
 export type SerializedPageBreakNode = SerializedLexicalNode;
 
-function PageBreakComponent({nodeKey}: {nodeKey: NodeKey}) {
+function PageBreakComponent({ nodeKey }: { nodeKey: NodeKey }) {
   const [editor] = useLexicalComposerContext();
   const [isSelected, setSelected, clearSelection] =
     useLexicalNodeSelection(nodeKey);
@@ -50,7 +43,7 @@ function PageBreakComponent({nodeKey}: {nodeKey: NodeKey}) {
       }
       return false;
     },
-    [editor, isSelected],
+    [editor, isSelected]
   );
 
   useEffect(() => {
@@ -59,7 +52,6 @@ function PageBreakComponent({nodeKey}: {nodeKey: NodeKey}) {
         CLICK_COMMAND,
         (event: MouseEvent) => {
           const pbElem = editor.getElementByKey(nodeKey);
-
           if (event.target === pbElem) {
             if (!event.shiftKey) {
               clearSelection();
@@ -67,37 +59,41 @@ function PageBreakComponent({nodeKey}: {nodeKey: NodeKey}) {
             setSelected(!isSelected);
             return true;
           }
-
           return false;
         },
-        COMMAND_PRIORITY_LOW,
+        COMMAND_PRIORITY_LOW
       ),
       editor.registerCommand(
         KEY_DELETE_COMMAND,
         $onDelete,
-        COMMAND_PRIORITY_LOW,
+        COMMAND_PRIORITY_LOW
       ),
       editor.registerCommand(
         KEY_BACKSPACE_COMMAND,
         $onDelete,
-        COMMAND_PRIORITY_LOW,
-      ),
+        COMMAND_PRIORITY_LOW
+      )
     );
   }, [clearSelection, editor, isSelected, nodeKey, $onDelete, setSelected]);
 
-  useEffect(() => {
-    const pbElem = editor.getElementByKey(nodeKey);
-    if (pbElem !== null) {
-      pbElem.className = isSelected ? 'selected' : '';
-    }
-  }, [editor, isSelected, nodeKey]);
-
-  return null;
+  return (
+    <div
+      className={cn(
+        "relative my-4 py-2",
+        isSelected && "ring-2 ring-primary ring-offset-2"
+      )}
+    >
+      <hr className="border-t border-border" />
+      {/* <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
+        Page Break
+      </div> */}
+    </div>
+  );
 }
 
 export class PageBreakNode extends DecoratorNode<JSX.Element> {
   static getType(): string {
-    return 'page-break';
+    return "page-break";
   }
 
   static clone(node: PageBreakNode): PageBreakNode {
@@ -111,11 +107,10 @@ export class PageBreakNode extends DecoratorNode<JSX.Element> {
   static importDOM(): DOMConversionMap | null {
     return {
       figure: (domNode: HTMLElement) => {
-        const tp = domNode.getAttribute('type');
+        const tp = domNode.getAttribute("type");
         if (tp !== this.getType()) {
           return null;
         }
-
         return {
           conversion: $convertPageBreakElement,
           priority: COMMAND_PRIORITY_HIGH,
@@ -125,14 +120,15 @@ export class PageBreakNode extends DecoratorNode<JSX.Element> {
   }
 
   createDOM(): HTMLElement {
-    const el = document.createElement('figure');
-    el.style.pageBreakAfter = 'always';
-    el.setAttribute('type', this.getType());
+    const el = document.createElement("figure");
+    el.style.pageBreakAfter = "always";
+    el.setAttribute("type", this.getType());
+    el.className = "my-4";
     return el;
   }
 
   getTextContent(): string {
-    return '\n';
+    return "\n";
   }
 
   isInline(): false {
@@ -149,7 +145,7 @@ export class PageBreakNode extends DecoratorNode<JSX.Element> {
 }
 
 function $convertPageBreakElement(): DOMConversionOutput {
-  return {node: $createPageBreakNode()};
+  return { node: $createPageBreakNode() };
 }
 
 export function $createPageBreakNode(): PageBreakNode {
@@ -157,7 +153,7 @@ export function $createPageBreakNode(): PageBreakNode {
 }
 
 export function $isPageBreakNode(
-  node: LexicalNode | null | undefined,
+  node: LexicalNode | null | undefined
 ): node is PageBreakNode {
   return node instanceof PageBreakNode;
 }

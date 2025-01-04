@@ -28,12 +28,15 @@ import TableActionMenuPlugin from "@/components/editor/plugins/TableActionMenuPl
 import { MentionPlugin } from "@/components/editor/plugins/MentionPlugin/MentionPlugin";
 import { CharacterCountPlugin } from "@/components/editor/plugins/CharacterCountPlugin/CharacterCountPlugin";
 import { LayoutContainerNode } from "@/components/editor/nodes/LayoutContainerNode";
+import { EmojiNode } from "@/components/editor/nodes/EmojiNode";
+import { PageBreakNode } from "@/components/editor/nodes/PageBreakNode";
+import PageBreakPlugin from "@/components/editor/plugins/PageBreakPlugin";
 
 const theme = {
   ltr: "text-left",
   rtl: "text-right",
   paragraph: "mb-2",
-  quote: "border-l-4 border-muted pl-4 my-4",
+  quote: "border-l-4  border-muted pl-4 my-4",
   heading: {
     h1: "text-4xl font-bold mb-4",
     h2: "text-3xl font-bold mb-3",
@@ -52,6 +55,8 @@ const theme = {
     listitemChecked: "ml-4 line-through",
     listitemUnchecked: "ml-4",
   },
+  hashtag:
+    "text-primary underline bg-muted p-4 rounded-lg font-mono text-sm my-4",
   link: "text-primary underline",
   text: {
     bold: "font-bold",
@@ -62,6 +67,15 @@ const theme = {
     code: "bg-muted rounded px-1 py-0.5 font-mono text-sm",
   },
   code: "bg-muted p-4 rounded-lg font-mono text-sm my-4",
+  tableWrapper: "w-full overflow-x-auto",
+  codeHighlight: {
+    language: "language-",
+    theme: "theme-",
+  },
+  table: "w-full border-collapse",
+  tableCell: "border border-muted p-2",
+  tableRow: "border-b border-muted",
+  horizontalRule: "my-4 border-t border-muted",
 };
 
 // function AutoFocusPlugin() {
@@ -99,6 +113,8 @@ export function Editor({ initialContent, onChange }: EditorProps) {
       LinkNode,
       MentionNode,
       LayoutContainerNode,
+      EmojiNode,
+      PageBreakNode,
     ],
     // editorState: initialContent,
   };
@@ -112,7 +128,7 @@ export function Editor({ initialContent, onChange }: EditorProps) {
 
         <RichTextPlugin
           contentEditable={
-            <ContentEditable className="outline-none min-h-[calc(100vh-300px)] prose dark:prose-invert max-w-none px-4 py-2" />
+            <ContentEditable className="relative outline-none min-h-[calc(100vh-300px)] prose dark:prose-invert max-w-none px-8 py-4" />
           }
           placeholder={
             <div className="absolute top-[12px] left-[12px] text-muted-foreground/60 pointer-events-none">
@@ -130,6 +146,7 @@ export function Editor({ initialContent, onChange }: EditorProps) {
         <TableActionMenuPlugin />
         <CharacterCountPlugin />
         <MentionPlugin />
+        <PageBreakPlugin />
       </div>
     </LexicalComposer>
   );

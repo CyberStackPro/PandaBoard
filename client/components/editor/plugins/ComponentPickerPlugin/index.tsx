@@ -306,7 +306,7 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
       icon: (
         <SeparatorHorizontal className="border  size-10 p-1 rounded-md text-muted-foreground" />
       ),
-      keywords: ["page break", "divider", "new page"],
+      keywords: ["page break", "divider", "hr", "separator"],
       onSelect: () => editor.dispatchCommand(INSERT_PAGE_BREAK, undefined),
     }),
     // new ComponentPickerOption("Excalidraw", {
