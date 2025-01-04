@@ -31,7 +31,7 @@ const Page = () => {
   }
 
   return (
-    <div className="pb-[30vh] h-screen overflow-y-clip">
+    <div className="pb-[30vh] h-screen overflow-y-scroll">
       <div className="layout-full relative" style={{ isolation: "isolate" }}>
         <ProjectHeader
           activeProject={activeProject}
@@ -40,11 +40,11 @@ const Page = () => {
           onRename={handleRename}
           updateActiveProject={updateActiveProject}
         />
-        <div className="max-w-[765px]mx-auto px-4 mt-16">
+        <div className="max-w-[765px] mx-auto px-4">
           {/* Page controls */}
 
           {/* Content Editorial */}
-          <div className="max-w-[765px] mx-auto px-4">
+          <div className="max-w-[765px] mx-auto px-">
             <Editor onChange={onChange} initialContent={""} />
           </div>
         </div>

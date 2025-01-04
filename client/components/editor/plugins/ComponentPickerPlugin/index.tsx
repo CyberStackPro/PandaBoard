@@ -497,7 +497,7 @@ export default function ComponentPickerMenuPlugin(): JSX.Element {
                     placeholder="Search..."
                     // onChange={(e) => console.log(e.target.value)}
                   />
-                  <div className="max-h-[300px] overflow-y-auto p-1">
+                  <div className="max-h-[300px] overflow-y-scroll scrollbar-thin scrollbar-thumb-primary scrollbar-track-background p-1">
                     <ul className="space-y-0.5">
                       {options.map((option, i: number) => (
                         <ComponentPickerMenuItem

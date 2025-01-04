@@ -200,12 +200,12 @@ export function Editor({ initialContent, onChange }: EditorProps) {
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="relative">
-        <ToolbarPlugin />
+        {/* <ToolbarPlugin /> */}
 
         <div className="editor-container relative">
           <RichTextPlugin
             contentEditable={
-              <div className="editor-scroller">
+              <div className="editor-scroller overflow-scroll">
                 <div className="editor relative" ref={onRef}>
                   <ContentEditable className="outline-none min-h-[calc(100vh-300px)] prose dark:prose-invert max-w-none px-8 py-4" />
                 </div>
