@@ -30,13 +30,12 @@ import {
 import { useEffect, useRef, useState } from "react";
 import * as React from "react";
 
-import landscapeImage from "../../images/landscape.jpg";
-import yellowFlowerImage from "../../images/yellow-flower.jpg";
-import {
+// import landscapeImage from "../../images/landscape.jpg";
+// import yellowFlowerImage from "../../images/yellow-flower.jpg";
+import ImagePayload, {
   $createImageNode,
   $isImageNode,
   ImageNode,
-  ImagePayload,
 } from "../../nodes/ImageNode";
 
 import { DialogActions, DialogButtonsList } from "@/ui/Dialog";
@@ -177,11 +176,11 @@ export function InsertImageDialog({
                   ? {
                       altText:
                         "Daylight fir trees forest glacier green high ice landscape",
-                      src: landscapeImage,
+                      src: "https://source.unsplash.com/random",
                     }
                   : {
                       altText: "Yellow flower in tilt shift lens",
-                      src: yellowFlowerImage,
+                      src: "https://source.unsplash.com/random",
                     }
               )
             }

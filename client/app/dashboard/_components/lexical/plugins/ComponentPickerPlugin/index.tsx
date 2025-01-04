@@ -42,6 +42,7 @@ import { INSERT_IMAGE_COMMAND, InsertImageDialog } from "../ImagesPlugin";
 import { INSERT_PAGE_BREAK } from "../PageBreakPlugin";
 import { InsertPollDialog } from "../PollPlugin";
 import { INSERT_COLLAPSIBLE_COMMAND } from "../CollapsiblePlugin";
+import { EmbedConfigs } from "../AutoEmbedPlugin";
 // import catTypingGif from '../../images/cat-typing.gif';
 // import {EmbedConfigs} from '../AutoEmbedPlugin';
 // import {INSERT_COLLAPSIBLE_COMMAND} from '../CollapsiblePlugin';

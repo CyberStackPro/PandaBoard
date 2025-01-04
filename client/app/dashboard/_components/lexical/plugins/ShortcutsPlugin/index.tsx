@@ -19,7 +19,7 @@ import {
 } from "lexical";
 import { Dispatch, useEffect } from "react";
 
-import { useToolbarState } from "../../context/ToolbarContext";
+import { useToolbarState } from "@/context/ToolbarContext";
 import { sanitizeUrl } from "../../../../../../lib/utils/lexical/url";
 import {
   clearFormatting,

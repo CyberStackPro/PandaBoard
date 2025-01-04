@@ -1,5 +1,5 @@
 import { EditorState } from "lexical";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 
@@ -15,6 +15,14 @@ import ToolbarPlugin from "./plugins/ToolBar/ToolBarPlugin";
 import DraggableBlockPlugin from "./plugins/DraggableBlock";
 import { MentionNode } from "./plugins/MentionPlugins/MentionNode";
 import MentionPlugin from "./plugins/MentionPlugins/MentionPlugin";
+import ComponentPickerMenuPlugin from "./plugins/ComponentPickerPlugin";
+import YouTubePlugin from "./plugins/YouTubePlugin";
+import TwitterPlugin from "./plugins/TwitterPlugin";
+import { TablePlugin } from "./plugins/TablePlugin";
+import TableActionMenuPlugin from "./plugins/TableActionMenuPlugin";
+import FigmaPlugin from "./plugins/FigmaPlugin";
+import ShortcutsPlugin from "./plugins/ShortcutsPlugin";
+import useLexicalEditable from "@lexical/react/useLexicalEditable";
 
 export const notionTheme = {
   ltr: "text-left",
@@ -86,17 +94,29 @@ interface EditorProps {
 }
 
 export function Editor({ initialContent, onChange }: EditorProps) {
+  //   const [editor] = useLexicalComposerContext();
+  //   const isEditable = useLexicalEditable();
+  //   const [activeEditor, setActiveEditor] = useState(editor);
+  const [isLinkEditMode, setIsLinkEditMode] = useState<boolean>(false);
   const initialConfig = {
     namespace: "MyEditor",
     theme: notionTheme,
-    nodes: [MentionNode],
+    // nodes: [MentionNode],
     onError: (error: unknown) => console.error(error),
   };
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="relative">
-        <FloatingTextFormatToolbarPlugin />
+        <ToolbarPlugin
+        //   editor={editor}
+        //   activeEditor={activeEditor}
+        //   setActiveEditor={setActiveEditor}
+        //   setIsLinkEditMode={setIsLinkEditMode}
+        />
+        <FloatingTextFormatToolbarPlugin
+          setIsLinkEditMode={setIsLinkEditMode}
+        />
         {/* <ToolbarPlugin /> */}
         <RichTextPlugin
           contentEditable={
@@ -111,8 +131,19 @@ export function Editor({ initialContent, onChange }: EditorProps) {
         />
         <HistoryPlugin />
         <AutoFocusPlugin />
+        <ComponentPickerMenuPlugin />
         <OnChangePlugin onChange={onChange} />
         <DraggableBlockPlugin />
+        {/* <YouTubePlugin /> */}
+        {/* <TwitterPlugin /> */}
+        {/* <TablePlugin /> */}
+        <TableActionMenuPlugin />
+        <MyCustomAutoFocusPlugin />
+        {/* <FigmaPlugin /> */}
+        {/* <ShortcutsPlugin
+        //   editor={editor}
+        //   setIsLinkEditMode={setIsLinkEditMode}
+        /> */}
         <MentionPlugin />
       </div>
     </LexicalComposer>
