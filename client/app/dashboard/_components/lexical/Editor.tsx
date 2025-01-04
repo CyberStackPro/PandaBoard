@@ -1,30 +1,35 @@
-import { EditorState } from "lexical";
+// components/editor/Editor.tsx
+import { EditorState, LexicalNode } from "lexical";
 import { useEffect, useState } from "react";
-
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
-
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
-import FloatingTextFormatToolbarPlugin from "./plugins/FloatingTextFormatToolbarPlugin";
-import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import ToolbarPlugin from "./plugins/ToolBar/ToolBarPlugin";
-import DraggableBlockPlugin from "./plugins/DraggableBlock";
-import { MentionNode } from "./plugins/MentionPlugins/MentionNode";
-import MentionPlugin from "./plugins/MentionPlugins/MentionPlugin";
-import ComponentPickerMenuPlugin from "./plugins/ComponentPickerPlugin";
-import YouTubePlugin from "./plugins/YouTubePlugin";
-import TwitterPlugin from "./plugins/TwitterPlugin";
-import { TablePlugin } from "./plugins/TablePlugin";
-import TableActionMenuPlugin from "./plugins/TableActionMenuPlugin";
-import FigmaPlugin from "./plugins/FigmaPlugin";
-import ShortcutsPlugin from "./plugins/ShortcutsPlugin";
-import useLexicalEditable from "@lexical/react/useLexicalEditable";
+import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 
-export const notionTheme = {
+// Import custom nodes
+// import MentionNode from "./nodes/MentionNode";
+
+// Additional node imports you might need
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { TableNode, TableCellNode, TableRowNode } from "@lexical/table";
+import { ListNode, ListItemNode } from "@lexical/list";
+import { CodeNode } from "@lexical/code";
+import { AutoLinkNode, LinkNode } from "@lexical/link";
+import { MentionNode } from "@/components/editor/nodes/MentionNode";
+import ToolbarPlugin from "@/components/editor/plugins/ToolBar/ToolBarPlugin";
+import FloatingTextFormatToolbarPlugin from "@/components/editor/plugins/FloatingTextFormatToolbarPlugin";
+import ComponentPickerMenuPlugin from "@/components/editor/plugins/ComponentPickerPlugin";
+import DraggableBlockPlugin from "@/components/editor/plugins/DraggableBlock";
+import TableActionMenuPlugin from "@/components/editor/plugins/TableActionMenuPlugin";
+import { MentionPlugin } from "@/components/editor/plugins/MentionPlugin/MentionPlugin";
+import { CharacterCountPlugin } from "@/components/editor/plugins/CharacterCountPlugin/CharacterCountPlugin";
+import { LayoutContainerNode } from "@/components/editor/nodes/LayoutContainerNode";
+
+const theme = {
   ltr: "text-left",
   rtl: "text-right",
   paragraph: "mb-2",
@@ -59,91 +64,71 @@ export const notionTheme = {
   code: "bg-muted p-4 rounded-lg font-mono text-sm my-4",
 };
 
-function MyCustomAutoFocusPlugin() {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    // Focus the editor when the effect fires!
-    editor.focus();
-  }, [editor]);
-
-  return null;
-}
-
-function MyOnChangePlugin({ onChange }) {
-  const [editor] = useLexicalComposerContext();
-
-  useEffect(() => {
-    return editor.registerUpdateListener(({ editorState }) => {
-      onChange(editorState);
-    });
-  }, [editor, onChange]);
-  return null;
-}
-
-// Catch any errors that occur during Lexical updates and log them
-// or throw them as needed. If you don't throw them, Lexical will
-// try to recover gracefully without losing user data.
-function onError(error: unknown) {
-  console.error(error);
-}
+// function AutoFocusPlugin() {
+//   const [editor] = useLexicalComposerContext();
+//   useEffect(() => {
+//     editor.focus();
+//   }, [editor]);
+//   return null;
+// }
 
 interface EditorProps {
-  initialContent: string;
-  onChange: (editorState: EditorState) => void;
+  initialContent?: string;
+  onChange?: (editorState: EditorState) => void;
 }
 
 export function Editor({ initialContent, onChange }: EditorProps) {
-  //   const [editor] = useLexicalComposerContext();
-  //   const isEditable = useLexicalEditable();
-  //   const [activeEditor, setActiveEditor] = useState(editor);
   const [isLinkEditMode, setIsLinkEditMode] = useState<boolean>(false);
+
   const initialConfig = {
     namespace: "MyEditor",
-    theme: notionTheme,
-    // nodes: [MentionNode],
-    onError: (error: unknown) => console.error(error),
+    theme,
+    onError: (error: Error) => {
+      console.error(error);
+    },
+    nodes: [
+      HeadingNode,
+      QuoteNode,
+      ListNode,
+      ListItemNode,
+      CodeNode,
+      TableNode,
+      TableCellNode,
+      TableRowNode,
+      AutoLinkNode,
+      LinkNode,
+      MentionNode,
+      LayoutContainerNode,
+    ],
+    // editorState: initialContent,
   };
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="relative">
-        <ToolbarPlugin
-        //   editor={editor}
-        //   activeEditor={activeEditor}
-        //   setActiveEditor={setActiveEditor}
-        //   setIsLinkEditMode={setIsLinkEditMode}
-        />
         <FloatingTextFormatToolbarPlugin
           setIsLinkEditMode={setIsLinkEditMode}
         />
-        {/* <ToolbarPlugin /> */}
+
         <RichTextPlugin
           contentEditable={
-            <ContentEditable className="outline-none min-h-[calc(100vh-300px)] prose dark:prose-invert max-w-none" />
+            <ContentEditable className="outline-none min-h-[calc(100vh-300px)] prose dark:prose-invert max-w-none px-4 py-2" />
           }
           placeholder={
-            <div className="absolute top-0 left-3 text-muted-foreground/60 pointer-events-none">
-              {"Type '/' for commands..."}
+            <div className="absolute top-[12px] left-[12px] text-muted-foreground/60 pointer-events-none">
+              Type '/' for commands...
             </div>
           }
           ErrorBoundary={LexicalErrorBoundary}
         />
+
         <HistoryPlugin />
         <AutoFocusPlugin />
         <ComponentPickerMenuPlugin />
-        <OnChangePlugin onChange={onChange} />
+        {onChange && <OnChangePlugin onChange={onChange} />}
         <DraggableBlockPlugin />
-        {/* <YouTubePlugin /> */}
-        {/* <TwitterPlugin /> */}
-        {/* <TablePlugin /> */}
         <TableActionMenuPlugin />
-        <MyCustomAutoFocusPlugin />
-        {/* <FigmaPlugin /> */}
-        {/* <ShortcutsPlugin
-        //   editor={editor}
-        //   setIsLinkEditMode={setIsLinkEditMode}
-        /> */}
+        <CharacterCountPlugin />
         <MentionPlugin />
       </div>
     </LexicalComposer>

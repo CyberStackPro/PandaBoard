@@ -38,12 +38,12 @@ import {
   $createLayoutContainerNode,
   $isLayoutContainerNode,
   LayoutContainerNode,
-} from "@/app/dashboard/_components/lexical/nodes/LayoutContainerNode";
+} from "@/components/editor/nodes/LayoutContainerNode";
 import {
   $createLayoutItemNode,
   $isLayoutItemNode,
   LayoutItemNode,
-} from "@/app/dashboard/_components/lexical/nodes/LayoutItemNode";
+} from "@/components/editor/nodes/LayoutItemNode";
 
 export const INSERT_LAYOUT_COMMAND: LexicalCommand<string> =
   createCommand<string>();

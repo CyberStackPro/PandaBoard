@@ -9,9 +9,10 @@ import { LexicalEditor } from "lexical";
 import * as React from "react";
 import { useState } from "react";
 
-import DropDown, { DropDownItem } from "@/ui/DropDown";
 import { INSERT_LAYOUT_COMMAND } from "./LayoutPlugin";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
+import { DropDownItem } from "@/ui/DropDown";
 
 const LAYOUTS = [
   { label: "2 columns (equal width)", value: "1fr 1fr" },
@@ -38,10 +39,11 @@ export default function InsertLayoutDialog({
 
   return (
     <>
-      <DropDown
-        buttonClassName="toolbar-item dialog-dropdown"
-        buttonLabel={buttonLabel}
+      <DropdownMenu
+      // buttonClassName="toolbar-item dialog-dropdown"
       >
+        <DropdownMenuLabel>{buttonLabel}</DropdownMenuLabel>
+
         {LAYOUTS.map(({ label, value }) => (
           <DropDownItem
             key={value}
@@ -51,7 +53,7 @@ export default function InsertLayoutDialog({
             <span className="text">{label}</span>
           </DropDownItem>
         ))}
-      </DropDown>
+      </DropdownMenu>
       <Button onClick={onClick}>Insert</Button>
     </>
   );
