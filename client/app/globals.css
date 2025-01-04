@@ -178,3 +178,11 @@ Add to your global.css .sidebar-item-input {
   color: #888; /* Placeholder text color */
   pointer-events: none;
 }
+.editor [draggable="true"] {
+  @apply relative hover:ring-1 hover:ring-accent hover:ring-opacity-50 rounded-sm transition-all duration-200;
+}
+
+.editor [draggable="true"]:hover::before {
+  content: "";
+  @apply absolute -left-7 top-0 bottom-0 w-6;
+}
