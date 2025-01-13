@@ -1,3 +1,4 @@
+import { relations } from 'drizzle-orm';
 import {
   index,
   integer,
@@ -39,3 +40,15 @@ export const blocks = pgTable(
     sortOrderIdx: index('blocks_sort_order_idx').on(table.sort_order),
   }),
 );
+
+export const blocksRelations = relations(blocks, ({ one, many }) => ({
+  document: one(documents, {
+    fields: [blocks.document_id],
+    references: [documents.id],
+  }),
+  parentBlock: one(blocks, {
+    fields: [blocks.parent_block_id],
+    references: [blocks.id],
+  }),
+  childBlocks: many(blocks),
+}));
