@@ -50,7 +50,7 @@ export class TrashServices {
       .returning();
   }
 
-  async getTrashedItems(userId: string) {
+  async getTrashedWorkspaceItems(userId: string) {
     return this.database.query.workspaces.findMany({
       where: and(
         eq(schema.workspaces.owner_id, userId),

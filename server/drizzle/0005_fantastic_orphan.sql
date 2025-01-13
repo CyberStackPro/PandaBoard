@@ -1,0 +1,1 @@
+ALTER TABLE "workspaces" ADD COLUMN "last_accessed_at" timestamp;

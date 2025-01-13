@@ -23,10 +23,14 @@ import {
   DuplicateWorkspaceSchema,
 } from './dto/duplicate-workspace.dto';
 import { WorkspacesService } from './workspaces.service';
+import { TrashServices } from './trash.service';
 
 @Controller('workspaces')
 export class WorkspacesController {
-  constructor(private readonly workspaceService: WorkspacesService) {}
+  constructor(
+    private readonly workspaceService: WorkspacesService,
+    private readonly trashService: TrashServices,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -47,18 +51,26 @@ export class WorkspacesController {
     return this.workspaceService.findWorkspaceById(id);
   }
 
+  @Get('trash')
+  getTrashedWorkspaceItems(ownerId: string) {
+    return this.trashService.getTrashedWorkspaceItems(ownerId);
+  }
+  @Get('favorites')
+  getFavoritesWorkspace(ownerId: string) {
+    return this.workspaceService.getFavoritesWorkspace(ownerId);
+  }
+
+  @Get('recent')
+  getRecentWorkspaces(ownerId: string) {
+    return this.workspaceService.getRecentWorkspaces(ownerId);
+  }
+
   @Patch(':id')
   updateWorkspace(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() workspace: UpdateWorkspaceDto,
   ) {
     return this.workspaceService.updateWorkspace(id, workspace);
-  }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  deleteWorkspace(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.workspaceService.deleteWorkspace(id);
   }
 
   @Post(':id/duplicate')
@@ -68,5 +80,35 @@ export class WorkspacesController {
     duplicateData: DuplicateWorkspaceDto,
   ) {
     return this.workspaceService.duplicateWorkspace(id, duplicateData);
+  }
+  @Post(':id/trash')
+  moveToTrash(
+    @Param('id', new ParseUUIDPipe()) workspaceId: string,
+    ownerId: string,
+  ) {
+    return this.trashService.moveToTrash(workspaceId, ownerId);
+  }
+
+  @Post(':id/restore')
+  restoreWorkspaces(@Param('id', new ParseUUIDPipe()) workspaceId: string) {
+    return this.trashService.restoreWorkspace(workspaceId);
+  }
+  @Post(':id/favorite')
+  toggleFavoriteWor(
+    @Param('id', new ParseUUIDPipe()) workspaceId: string,
+    ownerId: string,
+  ) {
+    return this.workspaceService.toggleFavoriteWorkspaces(workspaceId, ownerId);
+  }
+
+  @Delete(':id/permanent')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  permanentDelete(@Param('id', new ParseUUIDPipe()) workspaceId: string) {
+    return this.trashService.permanentDelete(workspaceId);
+  }
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteWorkspace(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.workspaceService.deleteWorkspace(id);
   }
 }

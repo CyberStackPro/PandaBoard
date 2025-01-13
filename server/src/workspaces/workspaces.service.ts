@@ -2,21 +2,23 @@ import { Inject, Injectable } from '@nestjs/common';
 import * as schema from './schema';
 import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { WorkspacesGateway } from './workspaces.getway';
 import {
   CreateWorkspaceDto,
   UpdateWorkspaceDto,
 } from './dto/create-workspace.dto';
 import { DuplicateWorkspaceDto } from './dto/duplicate-workspace.dto';
+import { TrashServices } from './trash.service';
 
 @Injectable()
 export class WorkspacesService {
-  private workspacesCache: Map<string, any[]> = new Map();
   constructor(
     @Inject(DATABASE_CONNECTION)
+    private workspacesCache: Map<string, any[]> = new Map(),
     private readonly database: NodePgDatabase<typeof schema>,
     private readonly workspacesGateway: WorkspacesGateway,
+    private readonly trashService: TrashServices,
   ) {}
   async createWorkspace(workspace: CreateWorkspaceDto) {
     const defaultMetadata =
@@ -148,6 +150,45 @@ export class WorkspacesService {
     );
   }
 
+  async toggleFavoriteWorkspaces(id: string, userId: string) {
+    const workspace = await this.findWorkspaceById(userId);
+    return this.database
+      .update(schema.workspaces)
+      .set({
+        favorite: !workspace?.favorite,
+      })
+      .where(eq(schema.workspaces.is, id))
+      .returning();
+  }
+  async updateLastAccessesWorkspaces(id: string) {
+    return this.database
+      .update(schema.workspaces)
+      .set({
+        last_accessed_at: new Date(),
+      })
+      .where(eq(schema.workspaces.id, id))
+      .returning();
+  }
+  async getFavoritesWorkspace(userId: string) {
+    return this.database.query.workspaces.findMany({
+      where: and(
+        eq(schema.workspaces.owner_id, userId),
+        eq(schema.workspaces.favorite, true),
+        eq(schema.workspaces.status, 'active'),
+      ),
+      orderBy: (workspaces, { desc }) => [desc(workspaces.last_accessed_at)],
+    });
+  }
+  async getRecentWorkspaces(userId: string, limit = 10) {
+    return this.database.query.workspaces.findMany({
+      where: and(
+        eq(schema.workspaces.owner_id, userId),
+        eq(schema.workspaces.status, 'active'),
+      ),
+      orderBy: (workspaces, { desc }) => [desc(workspaces.last_accessed_at)],
+      limit,
+    });
+  }
   private buildWorkspaceTree(
     workspaces: any[],
     parentId: string | null = null,

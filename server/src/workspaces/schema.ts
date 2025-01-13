@@ -54,6 +54,7 @@ export const workspaces = pgTable(
     cover_image: varchar('cover_image', { length: 1024 }),
     restored_at: timestamp('restored_at', { mode: 'date' }),
     permanent_deleted_at: timestamp('permanent_deleted_at'),
+    last_accessed_at: timestamp('last_accessed_at'),
     deleted_by: uuid('deleted_by').references(() => users.id, {
       onDelete: 'set null',
     }),
