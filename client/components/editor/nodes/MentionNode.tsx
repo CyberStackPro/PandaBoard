@@ -30,7 +30,8 @@ export class MentionNode extends TextNode {
     dom.style.backgroundColor = "#e8f4fe"; /*  */
     dom.style.padding = "1px 4px";
     dom.style.borderRadius = "2px";
-    dom.className = "mention";
+    dom.className =
+      "mention rounded-md px-2 py-1 text-sm text-primary pr-1 bg-accent/10";
     return dom;
   }
 

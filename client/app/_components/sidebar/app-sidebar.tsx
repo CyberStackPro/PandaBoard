@@ -63,7 +63,7 @@ export function AppSidebar({
         />
         <NavSecondary items={data.navSecondary} />
       </SidebarContent>
-      <SidebarRail />
+      {/* <SidebarRail /> */}
       <NameDialog
         type={dialogType}
         isOpen={dialogOpen}

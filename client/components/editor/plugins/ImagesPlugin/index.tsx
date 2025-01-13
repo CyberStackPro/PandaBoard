@@ -32,10 +32,11 @@ import * as React from "react";
 
 // import landscapeImage from "../../images/landscape.jpg";
 // import yellowFlowerImage from "../../images/yellow-flower.jpg";
-import ImagePayload, {
+import {
   $createImageNode,
   $isImageNode,
   ImageNode,
+  ImagePayload,
 } from "../../nodes/ImageNode";
 
 import { DialogActions, DialogButtonsList } from "@/ui/Dialog";
