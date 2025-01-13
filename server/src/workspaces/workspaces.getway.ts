@@ -13,12 +13,12 @@ import { Server, Socket } from 'socket.io';
     origin: 'http://localhost:3000',
     credentials: true,
   },
-  namespace: 'projects',
+  namespace: 'workspaces',
 })
-export class ProjectsGateway
+export class WorkspacesGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
-  private logger: Logger = new Logger('ProjectsGateway');
+  private logger: Logger = new Logger('WorkspacesGateway');
   private userRooms: Map<string, string> = new Map();
 
   @WebSocketServer()
@@ -47,20 +47,20 @@ export class ProjectsGateway
     this.server.to(`user-${userId}`).emit(event, data);
   }
 
-  @SubscribeMessage('createProject')
-  handleProjectCreated(client: Socket, payload: any) {
+  @SubscribeMessage('createWorkspace')
+  handleWorkspaceCreated(client: Socket, payload: any) {
     const userId = client.handshake.query.userId as string;
     this.emitToUser(userId, 'onProjectCreated', payload);
   }
 
-  @SubscribeMessage('updateProject')
-  handleProjectUpdated(client: Socket, payload: any) {
+  @SubscribeMessage('updateWorkspace')
+  handleWorkspaceUpdated(client: Socket, payload: any) {
     const userId = client.handshake.query.userId as string;
     this.emitToUser(userId, 'onProjectUpdated', payload);
   }
 
-  @SubscribeMessage('deleteProject')
-  handleProjectDeleted(client: Socket, payload: any) {
+  @SubscribeMessage('deleteWorkspace')
+  handleWorkspaceDeleted(client: Socket, payload: any) {
     const userId = client.handshake.query.userId as string;
     this.emitToUser(userId, 'onProjectDeleted', payload);
   }

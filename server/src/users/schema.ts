@@ -12,7 +12,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { pgTable } from 'drizzle-orm/pg-core';
 import { uuid } from 'drizzle-orm/pg-core';
-import { projects } from 'src/projects/schema';
+import { projects } from 'src/workspaces/schema';
 import { timestamps } from 'src/utils/schema/timestamps';
 
 export const userStatusEnum = pgEnum('user_status', [

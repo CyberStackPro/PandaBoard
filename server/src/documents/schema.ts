@@ -8,7 +8,7 @@ import {
   integer,
   index,
 } from 'drizzle-orm/pg-core';
-import { projects } from 'src/projects/schema';
+import { projects } from 'src/workspaces/schema';
 import { users } from 'src/users/schema';
 import { timestamps } from 'src/utils/schema/timestamps';
 
