@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 
 import { DocumentsModule } from './documents/documents.module';
 import { WorkspaceModule } from './workspaces/workspaces.module';
+import { BlocksModule } from './blocks/blocks.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { WorkspaceModule } from './workspaces/workspaces.module';
     AuthModule,
     WorkspaceModule,
     DocumentsModule,
+    BlocksModule,
   ],
   controllers: [],
   providers: [],

@@ -8,7 +8,7 @@ import {
   integer,
   index,
 } from 'drizzle-orm/pg-core';
-import { projects } from 'src/workspaces/schema';
+import { workspaces } from 'src/workspaces/schema';
 import { users } from 'src/users/schema';
 import { timestamps } from 'src/utils/schema/timestamps';
 
@@ -17,6 +17,7 @@ export const documentStatusEnum = pgEnum('document_status', [
   'published',
   'archived',
   'template',
+  'trashed',
 ]);
 export const documentTypeEnum = pgEnum('document_type', [
   'page',
@@ -32,7 +33,7 @@ export const documents = pgTable(
     title: varchar('title', { length: 255 }).notNull(),
     project_id: uuid('project_id')
       .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
+      .references(() => workspaces.id, { onDelete: 'cascade' }),
     parent_id: uuid('parent_id').references(() => documents.id, {
       onDelete: 'set null',
     }),
@@ -99,9 +100,9 @@ export const documents = pgTable(
 //     orderIdx: index('document_blocks_order_idx').on(table.order)
 //   }));
 export const documentsRelations = relations(documents, ({ one }) => ({
-  project: one(projects, {
+  project: one(workspaces, {
     fields: [documents.project_id],
-    references: [projects.id],
+    references: [workspaces.id],
   }),
   lastEditedBy: one(users, {
     fields: [documents.last_edited_by],

@@ -12,7 +12,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { pgTable } from 'drizzle-orm/pg-core';
 import { uuid } from 'drizzle-orm/pg-core';
-import { projects } from 'src/workspaces/schema';
+import { workspaces } from 'src/workspaces/schema';
 import { timestamps } from 'src/utils/schema/timestamps';
 
 export const userStatusEnum = pgEnum('user_status', [
@@ -84,7 +84,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     fields: [users.id],
     references: [profiles.user_id],
   }),
-  ownedProjects: many(projects), // Add relation to owned projects
+  ownedWorkspaces: many(workspaces), // Add relation to owned workspaces
   // collaborations: many(projectCollaborators), // Add relation to project collaborations
 }));
 
