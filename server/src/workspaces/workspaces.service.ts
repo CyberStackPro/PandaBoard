@@ -15,7 +15,7 @@ import { TrashServices } from './trash.service';
 export class WorkspacesService {
   constructor(
     @Inject(DATABASE_CONNECTION)
-    private workspacesCache: Map<string, any[]> = new Map(),
+    // private workspacesCache: Map<string, any[]> = new Map(),
     private readonly database: NodePgDatabase<typeof schema>,
     private readonly workspacesGateway: WorkspacesGateway,
     private readonly trashService: TrashServices,
