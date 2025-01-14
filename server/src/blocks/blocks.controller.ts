@@ -1,4 +1,8 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 
 @Controller('blocks')
-export class BlocksController {}
+export class BlocksController {
+  constructor() {}
+  @Get()
+  getBlocks() {}
+}

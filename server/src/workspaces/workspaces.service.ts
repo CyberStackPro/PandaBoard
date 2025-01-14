@@ -150,7 +150,7 @@ export class WorkspacesService {
     );
   }
 
-  async toggleFavoriteWorkspaces(id: string, userId: string) {
+  async toggleFavoriteWorkspace(id: string, userId: string) {
     const workspace = await this.findWorkspaceById(userId);
     return this.database
       .update(schema.workspaces)

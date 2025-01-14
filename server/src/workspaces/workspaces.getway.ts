@@ -50,18 +50,18 @@ export class WorkspacesGateway
   @SubscribeMessage('createWorkspace')
   handleWorkspaceCreated(client: Socket, payload: any) {
     const userId = client.handshake.query.userId as string;
-    this.emitToUser(userId, 'onProjectCreated', payload);
+    this.emitToUser(userId, 'onWorkspaceCreated', payload);
   }
 
   @SubscribeMessage('updateWorkspace')
   handleWorkspaceUpdated(client: Socket, payload: any) {
     const userId = client.handshake.query.userId as string;
-    this.emitToUser(userId, 'onProjectUpdated', payload);
+    this.emitToUser(userId, 'onWorkspaceUpdated', payload);
   }
 
   @SubscribeMessage('deleteWorkspace')
   handleWorkspaceDeleted(client: Socket, payload: any) {
     const userId = client.handshake.query.userId as string;
-    this.emitToUser(userId, 'onProjectDeleted', payload);
+    this.emitToUser(userId, 'onWorkspaceDeleted', payload);
   }
 }

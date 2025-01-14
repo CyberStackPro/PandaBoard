@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import * as userSchema from '../users/schema';
 import * as projects from 'src/workspaces/schema';
 import * as documents from 'src/documents/schema';
+import * as blocks from 'src/blocks/schema';
 import { Pool } from 'pg';
 @Module({
   providers: [
@@ -16,7 +17,7 @@ import { Pool } from 'pg';
         });
 
         return drizzle(pool, {
-          schema: { ...userSchema, ...projects, ...documents },
+          schema: { ...userSchema, ...projects, ...documents, ...blocks },
         });
         // return drizzle(configServices.getOrThrow('DATABASE_URL'), {
         //   schema: { ...userSchema, ...projects, ...documents },

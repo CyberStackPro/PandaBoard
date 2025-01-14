@@ -32,6 +32,7 @@ export class WorkspacesController {
     private readonly trashService: TrashServices,
   ) {}
 
+  // General methods
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UsePipes()
@@ -41,11 +42,13 @@ export class WorkspacesController {
   ) {
     return this.workspaceService.createWorkspace(workspaces);
   }
+
   @Get('owner/:ownerId')
   findAllWorkspaces(@Param('ownerId', new ParseUUIDPipe()) ownerId: string) {
     return this.workspaceService.findAllWorkspaces(ownerId);
   }
 
+  // Specific retrieval
   @Get(':id')
   findWorkspaceById(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.workspaceService.findWorkspaceById(id);
@@ -55,6 +58,7 @@ export class WorkspacesController {
   getTrashedWorkspaceItems(ownerId: string) {
     return this.trashService.getTrashedWorkspaceItems(ownerId);
   }
+
   @Get('favorites')
   getFavoritesWorkspace(ownerId: string) {
     return this.workspaceService.getFavoritesWorkspace(ownerId);
@@ -65,6 +69,7 @@ export class WorkspacesController {
     return this.workspaceService.getRecentWorkspaces(ownerId);
   }
 
+  // Mutative actions
   @Patch(':id')
   updateWorkspace(
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -81,6 +86,7 @@ export class WorkspacesController {
   ) {
     return this.workspaceService.duplicateWorkspace(id, duplicateData);
   }
+
   @Post(':id/trash')
   moveToTrash(
     @Param('id', new ParseUUIDPipe()) workspaceId: string,
@@ -93,19 +99,22 @@ export class WorkspacesController {
   restoreWorkspaces(@Param('id', new ParseUUIDPipe()) workspaceId: string) {
     return this.trashService.restoreWorkspace(workspaceId);
   }
+
   @Post(':id/favorite')
-  toggleFavoriteWor(
+  toggleFavoriteWorkspace(
     @Param('id', new ParseUUIDPipe()) workspaceId: string,
     ownerId: string,
   ) {
-    return this.workspaceService.toggleFavoriteWorkspaces(workspaceId, ownerId);
+    return this.workspaceService.toggleFavoriteWorkspace(workspaceId, ownerId);
   }
 
+  // Deletion
   @Delete(':id/permanent')
   @HttpCode(HttpStatus.NO_CONTENT)
   permanentDelete(@Param('id', new ParseUUIDPipe()) workspaceId: string) {
     return this.trashService.permanentDelete(workspaceId);
   }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteWorkspace(@Param('id', new ParseUUIDPipe()) id: string) {
