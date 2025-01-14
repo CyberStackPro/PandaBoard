@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import * as schema from './schema';
 import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -47,6 +47,10 @@ export class WorkspacesService {
     return result;
   }
   async findAllWorkspaces(ownerId: string) {
+    const checkOwnerId = await this.database.query.workspaces.findFirst({
+      where: (workspaces, { eq }) => eq(workspaces.owner_id, ownerId),
+    });
+    if (!checkOwnerId) return new NotFoundException();
     const allWorkspaces = await this.database.query.workspaces.findMany({
       with: {
         owner: {
@@ -64,7 +68,10 @@ export class WorkspacesService {
   }
 
   async findWorkspaceById(id: string) {
-    return this.database.query.workspaces.findFirst({
+    // const checkId = await this.database.query.workspaces.findFirst({
+    //   where: (workspaces, { eq }) => eq(workspaces.id, id),
+    // });
+    const workspace = await this.database.query.workspaces.findFirst({
       where: (workspaces, { eq }) => eq(workspaces.id, id),
       with: {
         owner: {
@@ -74,8 +81,13 @@ export class WorkspacesService {
         documents: true,
       },
     });
+    return workspace;
   }
   async updateWorkspace(id: string, workspace: UpdateWorkspaceDto) {
+    const checkId = await this.database.query.workspaces.findFirst({
+      where: (workspaces, { eq }) => eq(workspaces.id, id),
+    });
+    if (!checkId) return new NotFoundException();
     const updatedWorkspace = await this.database
       .update(schema.workspaces)
       .set(workspace)
@@ -188,6 +200,53 @@ export class WorkspacesService {
       orderBy: (workspaces, { desc }) => [desc(workspaces.last_accessed_at)],
       limit,
     });
+  }
+  async updateWorkspaceStatus(
+    workspaceId: string,
+    status: 'active' | 'trashed' | 'archived',
+    userId: string,
+  ) {
+    const workspace = await this.database
+      .update(schema.workspaces)
+      .set({
+        status,
+        deleted_by: status === 'trashed' ? userId : null,
+        deleted_at: status === 'trashed' ? new Date() : null,
+      })
+      .where(eq(schema.workspaces.id, workspaceId))
+      .returning();
+
+    // this.workspacesGateway.emitToUser(
+    //   result.owner_id,
+    //   'onWorkspaceStatusChanged',
+    //   result
+    // );
+
+    return workspace[0];
+  }
+  async moveWorkspace(
+    workspaceId: string,
+    newParentId: string | null,
+    newSortOrder: number,
+  ) {
+    const result = await this.database
+      .update(schema.workspaces)
+      .set({
+        parent_id: newParentId,
+        sort_order: newSortOrder,
+        updated_at: new Date(),
+      })
+      .where(eq(schema.workspaces.id, workspaceId))
+      .returning();
+
+    // emit workspace to be realtime
+    // this.workspacesGateway.emitToUser(
+    //   result[0].owner_id,
+    //   'onWorkspaceMoved',
+    //   result[0],
+    // );
+
+    return result[0];
   }
   private buildWorkspaceTree(
     workspaces: any[],

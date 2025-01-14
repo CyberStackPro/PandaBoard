@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import * as schema from './schema';
@@ -51,11 +51,11 @@ export class TrashServices {
   }
 
   async getTrashedWorkspaceItems(userId: string) {
-    return this.database.query.workspaces.findMany({
+    const trashedWorkspaces = await this.database.query.workspaces.findMany({
       where: and(
         eq(schema.workspaces.owner_id, userId),
         eq(schema.workspaces.status, 'trashed'),
-        isNull(schema.workspaces.permanent_delete_at),
+        // isNull(schema.workspaces.permanent_delete_at),
       ),
       with: {
         owner: {
@@ -67,5 +67,9 @@ export class TrashServices {
       },
       orderBy: (workspaces, { desc }) => [desc(workspaces.deleted_at)],
     });
+
+    if (!trashedWorkspaces) return new NotFoundException();
+
+    return trashedWorkspaces;
   }
 }

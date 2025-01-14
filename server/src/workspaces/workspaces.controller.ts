@@ -54,18 +54,18 @@ export class WorkspacesController {
     return this.workspaceService.findWorkspaceById(id);
   }
 
-  @Get('trash')
-  getTrashedWorkspaceItems(ownerId: string) {
+  @Get(':id/trash')
+  getTrashedWorkspaceItems(@Param('id', new ParseUUIDPipe()) ownerId: string) {
     return this.trashService.getTrashedWorkspaceItems(ownerId);
   }
 
-  @Get('favorites')
-  getFavoritesWorkspace(ownerId: string) {
+  @Get(':id/favorites')
+  getFavoritesWorkspace(@Param('id', new ParseUUIDPipe()) ownerId: string) {
     return this.workspaceService.getFavoritesWorkspace(ownerId);
   }
 
-  @Get('recent')
-  getRecentWorkspaces(ownerId: string) {
+  @Get(':id/recent')
+  getRecentWorkspaces(@Param('id', new ParseUUIDPipe()) ownerId: string) {
     return this.workspaceService.getRecentWorkspaces(ownerId);
   }
 
