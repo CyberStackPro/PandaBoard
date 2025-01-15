@@ -1,4 +1,10 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import * as schema from './schema';
 import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -10,6 +16,10 @@ import {
 } from './dto/create-workspace.dto';
 import { DuplicateWorkspaceDto } from './dto/duplicate-workspace.dto';
 import { TrashServices } from './trash.service';
+import {
+  UnauthorizedWorkspaceAccessException,
+  WorkspaceNotFoundException,
+} from 'src/exceptions/workspace.exceptions';
 
 @Injectable()
 export class WorkspacesService {
@@ -50,7 +60,7 @@ export class WorkspacesService {
     const checkOwnerId = await this.database.query.workspaces.findFirst({
       where: (workspaces, { eq }) => eq(workspaces.owner_id, ownerId),
     });
-    if (!checkOwnerId) return new NotFoundException();
+    if (!checkOwnerId) throw new NotFoundException();
     const allWorkspaces = await this.database.query.workspaces.findMany({
       with: {
         owner: {
@@ -81,28 +91,48 @@ export class WorkspacesService {
         documents: true,
       },
     });
+
+    if (!workspace) {
+      throw new WorkspaceNotFoundException(id);
+    }
+
     return workspace;
   }
   async updateWorkspace(id: string, workspace: UpdateWorkspaceDto) {
-    const checkId = await this.database.query.workspaces.findFirst({
-      where: (workspaces, { eq }) => eq(workspaces.id, id),
-    });
-    if (!checkId) return new NotFoundException();
-    const updatedWorkspace = await this.database
-      .update(schema.workspaces)
-      .set(workspace)
-      .where(eq(schema.workspaces.id, id))
-      .returning();
+    const existingWorkspace = await this.findWorkspaceById(id);
 
-    if (updatedWorkspace[0]) {
-      this.workspacesGateway.emitToUser(
-        updatedWorkspace[0].owner_id,
-        'onWorkspaceUpdated',
-        updatedWorkspace[0],
-      );
+    // Check authorization
+    if (existingWorkspace.owner_id !== workspace.owner_id) {
+      throw new UnauthorizedWorkspaceAccessException();
     }
 
-    return updatedWorkspace[0];
+    try {
+      const updatedWorkspace = await this.database
+        .update(schema.workspaces)
+        .set(workspace)
+        .where(eq(schema.workspaces.id, id))
+        .returning();
+
+      if (updatedWorkspace[0]) {
+        this.workspacesGateway.emitToUser(
+          updatedWorkspace[0].owner_id,
+          'onWorkspaceUpdated',
+          updatedWorkspace[0],
+        );
+      }
+
+      return updatedWorkspace[0];
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Update Failed',
+          message: 'Failed to update workspace',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async deleteWorkspace(id: string) {
