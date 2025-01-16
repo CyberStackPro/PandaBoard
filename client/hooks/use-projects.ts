@@ -5,7 +5,7 @@ import { Project } from "@/types/project";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
-const projectsAPI = new APIClient<Project>("/projects");
+const projectsAPI = new APIClient<Project>("/workspaces");
 // const socket = io("http://localhost:4000/projects", {
 //   withCredentials: true,
 // });
@@ -27,7 +27,7 @@ export const useProjects = () => {
   // Use useRef for socket to maintain connection
   const socketRef = useRef<Socket | null>(null);
   const isProcessingServerUpdate = useRef(false);
-  const userId = "06321aa5-78d2-450c-9892-fd5277775fae";
+  const userId = "3a4ca7ae-cc8c-4ce7-8a7a-8daeb6929334";
 
   useEffect(() => {
     if (userId) {
@@ -36,7 +36,7 @@ export const useProjects = () => {
   }, [userId, fetchWorkspaces]);
 
   useEffect(() => {
-    socketRef.current = io("http://localhost:4000/projects", {
+    socketRef.current = io("http://localhost:4000/workspaces", {
       withCredentials: true,
       query: { userId },
     });

@@ -12,7 +12,7 @@ const initialState: WorkspaceState = {
   error: null,
 };
 
-const apiClient = new APIClient("/projects");
+const apiClient = new APIClient("/workspaces");
 
 export const createWorkspaceSlice: StateCreator<
   Store,

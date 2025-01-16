@@ -38,7 +38,7 @@ export class WorkspacesController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtAuthGuard)
-  @UsePipes()
+  @UsePipes(new ZodValidationPipe(CreateWorkspaceSchema))
   createWorkspace(
     @Body(new ZodValidationPipe(CreateWorkspaceSchema))
     workspaces: CreateWorkspaceDto,

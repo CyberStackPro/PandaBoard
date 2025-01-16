@@ -1,9 +1,5 @@
+import { axiosInstance } from "@/lib/axios";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-
-const axiosInstance = axios.create({
-  baseURL: "http://localhost:4000/api/v1",
-  withCredentials: true,
-});
 
 class APIClient<T, R = T> {
   endpoint: string;

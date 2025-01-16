@@ -14,6 +14,7 @@ export class DocumentsService {
   constructor(
     @Inject(DATABASE_CONNECTION)
     private readonly database: NodePgDatabase<typeof schema>,
+    // private readonly documentsGateway: DocumentsGateway
   ) {}
 
   async createDocument(documents: CreateDocumentDto) {

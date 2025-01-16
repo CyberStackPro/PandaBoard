@@ -22,10 +22,10 @@ export const useAuthStore = create<AuthState>()(
         user: null,
         accessToken: null,
         isAuthenticated: false,
-        setAuth: (user: User, token: string) =>
+        setAuth: (user: User, access_token: string) =>
           set((state) => {
             state.user = user;
-            state.accessToken = token;
+            state.accessToken = access_token;
             state.isAuthenticated = true;
           }),
         clearAuth: () =>
@@ -36,7 +36,7 @@ export const useAuthStore = create<AuthState>()(
           }),
       })),
       {
-        name: "notion-auth-store",
+        name: "panda-auth-store",
       }
     )
   )
