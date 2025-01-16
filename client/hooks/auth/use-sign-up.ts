@@ -31,7 +31,7 @@ export const useSignUp = () => {
 
       const response = await apiClient.post(data);
 
-      setAuth(response.user, response.accessToken);
+      setAuth(response.user, response.tokens.access_token);
       console.log(response);
 
       toast({

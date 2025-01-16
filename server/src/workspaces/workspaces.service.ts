@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Inject,
@@ -31,6 +32,13 @@ export class WorkspacesService {
     private readonly trashService: TrashServices,
   ) {}
   async createWorkspace(workspace: CreateWorkspaceDto) {
+    const userExists = await this.database.query.workspaces.findFirst({
+      where: (users, { eq }) => eq(users.id, workspace.owner_id),
+    });
+    if (!userExists) {
+      throw new BadRequestException('Owner does not exist');
+    }
+
     const defaultMetadata =
       workspace.type === 'folder'
         ? { childCount: 0 }

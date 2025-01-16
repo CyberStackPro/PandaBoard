@@ -1,5 +1,5 @@
 // lib/mockData.ts
-import { Project } from "@/types/project";
+import { Project } from "@/types/workspace";
 
 export const mockProjects: Project[] = [
   {

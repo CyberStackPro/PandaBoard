@@ -8,8 +8,10 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.enableCors({
     origin: 'http://localhost:3000',
-    allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept',
+    allowedHeaders:
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization',
     credentials: true,
+
     // methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   });
   await app.listen(process.env.PORT ?? 4000);

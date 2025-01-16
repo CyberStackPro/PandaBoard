@@ -4,9 +4,15 @@ import { persist } from "zustand/middleware";
 import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 
+export interface Tokens {
+  access_token: string;
+  refresh_token: string;
+}
+
 interface AuthState {
   user: User | null;
   accessToken: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
   setAuth: (user: User, token: string) => void;
   clearAuth: () => void;
@@ -21,6 +27,7 @@ export const useAuthStore = create<AuthState>()(
       immer((set) => ({
         user: null,
         accessToken: null,
+        refreshToken: null,
         isAuthenticated: false,
         setAuth: (user: User, access_token: string) =>
           set((state) => {

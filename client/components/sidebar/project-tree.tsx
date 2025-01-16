@@ -11,7 +11,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { Project } from "@/types/project";
+import { Project } from "@/types/workspace";
 import { cn } from "@/lib/utils";
 import { ProjectIcon } from "./project-icon";
 

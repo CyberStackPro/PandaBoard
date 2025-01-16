@@ -18,7 +18,7 @@ import { NavActions } from "../_components/sidebar/nav-actions";
 import { useStore } from "@/stores/store";
 import { Input } from "@/components/ui/input";
 import { ProjectIcon } from "@/components/sidebar/project-icon";
-import { useProjectActions } from "@/hooks/project/use-project-actions";
+import { useWorkspaceActions } from "@/hooks/project/use-project-actions";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -39,7 +39,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 export function Header() {
   const userId = "06321aa5-78d2-450c-9892-fd5277775fae";
 
-  const { handleRename } = useProjectActions(userId);
+  const { handleRename } = useWorkspaceActions(userId);
   const activeProject = useStore((state) => state.activeProject);
   const updateActiveProject = useStore((state) => state.updateActiveProject);
   const [isEditing, setIsEditing] = useState(false);

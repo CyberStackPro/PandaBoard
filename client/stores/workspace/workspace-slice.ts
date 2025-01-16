@@ -2,8 +2,8 @@ import { StateCreator } from "zustand";
 // import { Folder, File } from "lucide-react";
 import { Store } from "@/types/store";
 import { Draft } from "immer";
-import { WorkspaceSlice, WorkspaceState } from "@/types/workspace";
-import { Project } from "@/types/project";
+import { WorkspaceSlice, WorkspaceState } from "@/types/workspaces";
+import { Workspace } from "@/types/workspace";
 import APIClient from "@/services/api-client";
 
 const initialState: WorkspaceState = {
@@ -24,68 +24,70 @@ export const createWorkspaceSlice: StateCreator<
 
   fetchWorkspaces: async (ownerId: string) => {
     try {
-      const response = (await apiClient.get(`/owner/${ownerId}`)) as Project[];
+      const response = (await apiClient.get(
+        `/owner/${ownerId}`
+      )) as Workspace[];
       set({ workspaces: response });
     } catch (error) {
       console.error("Failed to fetch workspaces:", error);
     }
   },
 
-  addProject: async (project: Project) => {
+  addWorkspace: async (workspace: Workspace) => {
     set((state) => {
       // Create a new draft-compatible object
-      const draftProject = { ...project };
+      const draftWorkspace = { ...workspace };
 
-      if (!draftProject.parent_id) {
-        state.workspaces.push(draftProject);
+      if (!draftWorkspace.parent_id) {
+        state.workspaces.push(draftWorkspace);
         return;
       }
       const addToTree = (
-        workspace: Draft<Project>[],
-        newProject: Draft<Project>
-      ): Draft<Project>[] => {
-        if (!newProject.parent_id) {
-          return [...workspace, newProject];
+        workspace: Draft<Workspace>[],
+        newWorkspace: Draft<Workspace>
+      ): Draft<Workspace>[] => {
+        if (!newWorkspace.parent_id) {
+          return [...workspace, newWorkspace];
         }
         return workspace.map((workspace) => {
-          if (workspace.id === newProject.parent_id) {
+          if (workspace.id === newWorkspace.parent_id) {
             return {
               ...workspace,
-              children: [...(workspace.children || []), newProject],
+              children: [...(workspace.children || []), newWorkspace],
             };
           }
           if (workspace.children?.length) {
             return {
               ...workspace,
-              children: addToTree(workspace.children, newProject),
+              children: addToTree(workspace.children, newWorkspace),
             };
           }
           return workspace;
         });
       };
-      if (!project.parent_id) {
+      if (!workspace.parent_id) {
         return {
           ...state,
-          workspaces: [...state.workspaces, project],
+          workspaces: [...state.workspaces, workspace],
         };
       }
       return {
         ...state,
-        workspaces: addToTree(state.workspaces, project),
+        workspaces: addToTree(state.workspaces, workspace),
       };
     });
   },
 
-  deleteProject: async (projectId: string) => {
+  deleteWorkspace: async (projectId: string) => {
     set((state) => {
       const recursiveDelete = (
-        projects: Draft<Project>[],
+        projects: Draft<Workspace>[],
         id: string
-      ): Draft<Project>[] => {
-        return projects.filter((project) => {
-          if (project.id === id) return false;
-          if (project.children) {
-            project.children = recursiveDelete(project.children, id);
+      ): Draft<Workspace>[] => {
+        return projects.filter((workspace) => {
+          if (workspace.id === id) return false;
+          if (workspace.children) {
+            workspace.children = recursiveDelete(workspace.children, id);
           }
           return true;
         });
@@ -96,25 +98,25 @@ export const createWorkspaceSlice: StateCreator<
     });
   },
 
-  updateProject: async (
+  updateWorkspace: async (
     projectId: string,
-    updates: Partial<Project>
+    updates: Partial<Workspace>
   ): Promise<void> => {
     set((state) => ({
       workspaces: findAndUpdateProject(
-        state.workspaces as Project[],
+        state.workspaces as Workspace[],
         projectId,
         updates
       ),
     }));
   },
 
-  duplicateProject: async (project: Project) => {
+  duplicateWorkspace: async (workspace: Workspace) => {
     set((state) => {
       const addToTree = (
-        workspace: Draft<Project>[],
-        newProject: Draft<Project>
-      ): Draft<Project>[] => {
+        workspace: Draft<Workspace>[],
+        newProject: Draft<Workspace>
+      ): Draft<Workspace>[] => {
         if (!newProject.parent_id) {
           return [...workspace, newProject];
         }
@@ -138,32 +140,35 @@ export const createWorkspaceSlice: StateCreator<
 
       return {
         ...state,
-        workspaces: addToTree(state.workspaces, project),
+        workspaces: addToTree(state.workspaces, workspace),
       };
     });
   },
 });
 
 const findAndUpdateProject = (
-  projects: Project[],
+  projects: Workspace[],
   projectId: string,
-  updates: Partial<Project>
-): Project[] => {
-  return projects.map((project) => {
-    if (project.id === projectId) {
-      return { ...project, ...updates };
+  updates: Partial<Workspace>
+): Workspace[] => {
+  return projects.map((workspace) => {
+    if (workspace.id === projectId) {
+      return { ...workspace, ...updates };
     }
-    if (project.children) {
+    if (workspace.children) {
       return {
-        ...project,
-        children: findAndUpdateProject(project.children, projectId, updates),
+        ...workspace,
+        children: findAndUpdateProject(workspace.children, projectId, updates),
       };
     }
-    return project;
+    return workspace;
   });
 };
 
-const addToTree = (workspace: Project[], newProject: Project): Project[] => {
+const addToTree = (
+  workspace: Workspace[],
+  newProject: Workspace
+): Workspace[] => {
   if (!newProject.parent_id) {
     return [...workspace, newProject];
   }
@@ -186,10 +191,10 @@ const addToTree = (workspace: Project[], newProject: Project): Project[] => {
 };
 
 const updateWorkspaceTree = (
-  workspaces: Project[],
+  workspaces: Workspace[],
   projectId: string,
-  updateFn: (project: Project) => Project
-): Project[] => {
+  updateFn: (workspace: Workspace) => Workspace
+): Workspace[] => {
   return workspaces.map((workspace) => {
     if (workspace.id === projectId) {
       return updateFn(workspace);

@@ -15,8 +15,8 @@ import { TeamSwitcher } from "./team-switch";
 // import { useProjects } from "@/hooks/use-projects";
 import { NavFavorites } from "./nav-favorites";
 import { useProjectDialog } from "@/hooks/project/use-project-dialog";
-import { useProjectActions } from "@/hooks/project/use-project-actions";
-import { useProjectSocket } from "@/hooks/project/use-project-socket";
+import { useWorkspaceActions } from "@/hooks/project/use-project-actions";
+import { useWorkspaceSocket } from "@/hooks/project/use-project-socket";
 import { useStore } from "@/stores/store";
 
 export function AppSidebar({
@@ -35,8 +35,8 @@ export function AppSidebar({
   } = useProjectDialog(userId);
 
   const { handleRename, handleDelete, handleDuplicate } =
-    useProjectActions(userId);
-  useProjectSocket(userId);
+    useWorkspaceActions(userId);
+  useWorkspaceSocket(userId);
 
   const workspaces = useStore((state) => state.workspaces);
 

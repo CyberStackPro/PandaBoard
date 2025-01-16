@@ -118,6 +118,7 @@ const SignIn = ({ className }: React.ComponentPropsWithoutRef<"div">) => {
                           <FormControl>
                             <Input
                               className="peer pe-9"
+                              type="password"
                               placeholder="Password"
                               {...field}
                             />

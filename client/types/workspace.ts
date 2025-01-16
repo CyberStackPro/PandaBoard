@@ -1,61 +1,29 @@
-import { Project, ProjectVisibility } from "./project";
+export type WorkspaceStatus = "active" | "archived" | "deleted" | "template";
+export type WorkspaceVisibility = "private" | "team" | "public";
 
-export interface WorkspaceState {
-  workspaces: Project[];
-  isLoading: boolean;
-  error: Error | null;
-}
-export interface ProjectAction {
-  type:
-    | "add"
-    | "rename"
-    | "update"
-    | "delete"
-    | "duplicate"
-    | "favorite"
-    | "copyLink"
-    | "move";
-  handler: WorkspaceActions;
-}
-// const PROJECT_ACTIONS: Record<string, ProjectAction> = {
-//   rename: {
-//     type: 'rename',
-//     handler: {renameProject()}
-//   },
-//   delete: {
-//     type: 'delete',
-//     handler: {deleteProject()}
-//   },
-//   // ... other actions
-// };
-export interface WorkspaceActions {
-  fetchWorkspaces: (userId: string) => Promise<void>;
-  addProject: (project: Project) => Promise<void>;
-  updateProject: (
-    projectId: string,
-    updates: Partial<Project>
-  ) => Promise<void>;
-  deleteProject: (projectId: string) => Promise<void>;
-  duplicateProject: (project: Project) => Promise<void>;
-  //   fetchProjects: () => Promise<void>;
-}
-
-export interface CreateProjectParams {
-  name?: string;
-  parent_id?: string | null;
+export interface Workspace {
+  id: string;
+  name: string;
+  owner_id: string;
+  parent_id: string | null;
   description?: string | null;
+  status?: WorkspaceStatus;
   type: "folder" | "file";
-  visibility?: ProjectVisibility;
+  visibility?: WorkspaceVisibility;
+  metadata?: Record<string, unknown>;
   icon?: string | null;
+  cover_image?: string | null;
+  children?: Workspace[];
+  documents?: unknown;
+  // created_at: string;
+  // updated_at: string;
 }
 
-export interface WorkspaceSlice extends WorkspaceState {
-  fetchWorkspaces: (userId: string) => Promise<void>;
-  addProject: (project: Project) => Promise<void>;
-  updateProject: (
-    projectId: string,
-    updates: Partial<Project>
-  ) => Promise<void>;
-  deleteProject: (projectId: string) => Promise<void>;
-  duplicateProject: (project: Project) => Promise<void>;
+export interface WorkspaceContextProps {
+  workspaces: Workspace[];
+  selectedWorkspace?: Workspace;
+  onCreateWorkspace: (parentId?: string) => void;
+  onDeleteWorkspace: (workspaceId: string) => void;
+  onDuplicateWorkspace: (workspaceId: string) => void;
+  onRenameWorkspace: (workspaceId: string, newName: string) => void;
 }

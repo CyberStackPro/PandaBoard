@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { Project } from "@/types/project";
+import { Project } from "@/types/workspace";
 import {
   ChevronDown,
   ChevronRight,

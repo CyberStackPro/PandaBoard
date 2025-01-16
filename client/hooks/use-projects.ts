@@ -1,7 +1,8 @@
+import { API_URL } from "@/lib/axios";
 import APIClient from "@/services/api-client";
 import { useAuthStore } from "@/stores/auth/auth-store";
 import { useStore } from "@/stores/store";
-import { Project } from "@/types/project";
+import { Project } from "@/types/workspace";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
@@ -36,7 +37,7 @@ export const useProjects = () => {
   }, [userId, fetchWorkspaces]);
 
   useEffect(() => {
-    socketRef.current = io("http://localhost:4000/workspaces", {
+    socketRef.current = io(API_URL, {
       withCredentials: true,
       query: { userId },
     });

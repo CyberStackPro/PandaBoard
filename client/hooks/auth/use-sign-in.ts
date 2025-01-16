@@ -28,7 +28,9 @@ export const useSignIn = () => {
 
       const response = await apiClient.post(data);
 
-      setAuth(response.user, response.accessToken);
+      setAuth(response.user, response.tokens.access_token);
+      console.log("Users=======", response.user);
+      console.log("Tokens=======", response.tokens.access_token);
 
       toast({
         title: "Success",

@@ -1,39 +1,39 @@
 import { useStore } from "@/stores/store";
-import { Project } from "@/types/project";
+import { Workspace } from "@/types/workspace";
 import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
-export const useProjectSocket = (userId: string) => {
+export const useWorkspaceSocket = (userId: string) => {
   const socketRef = useRef<Socket | null>(null);
-  const addProject = useStore((state) => state.addProject);
-  const updateProject = useStore((state) => state.updateProject);
-  const deleteProject = useStore((state) => state.deleteProject);
-  const setActiveProject = useStore((state) => state.setActiveProject);
+  const addWorkspace = useStore((state) => state.addWorkspace);
+  const updateWorkspace = useStore((state) => state.updateWorkspace);
+  const deleteWorkspace = useStore((state) => state.deleteWorkspace);
+  const setActiveWorkspace = useStore((state) => state.setActiveWorkspace);
 
   useEffect(() => {
-    socketRef.current = io("http://localhost:4000/projects", {
+    socketRef.current = io("http://localhost:4000/workspaces", {
       withCredentials: true,
       query: { userId },
     });
 
-    const onProjectCreated = (project: Project) => {
-      addProject(project);
+    const onWorkspaceCreated = (workspace: Workspace) => {
+      addWorkspace(workspace);
     };
 
-    const onProjectUpdated = (project: Project) => {
-      updateProject(project.id, project);
-      // Update active project if needed
-      setActiveProject(project);
+    const onWorkspaceUpdated = (workspace: Workspace) => {
+      updateWorkspace(workspace.id, workspace);
+      // Update active Workspace if needed
+      setActiveWorkspace(workspace);
     };
 
-    const onProjectDeleted = ({ id }: { id: string }) => {
-      deleteProject(id);
-      setActiveProject(null);
+    const onWorkspaceDeleted = ({ id }: { id: string }) => {
+      deleteWorkspace(id);
+      setActiveWorkspace(null);
     };
 
-    socketRef.current.on("onProjectCreated", onProjectCreated);
-    socketRef.current.on("onProjectUpdated", onProjectUpdated);
-    socketRef.current.on("onProjectDeleted", onProjectDeleted);
+    socketRef.current.on("onWorkspaceCreated", onWorkspaceCreated);
+    socketRef.current.on("onWorkspaceUpdated", onWorkspaceUpdated);
+    socketRef.current.on("onWorkspaceDeleted", onWorkspaceDeleted);
 
     return () => {
       if (socketRef.current) {
@@ -41,7 +41,13 @@ export const useProjectSocket = (userId: string) => {
         socketRef.current = null;
       }
     };
-  }, [userId, addProject, updateProject, deleteProject, setActiveProject]);
+  }, [
+    userId,
+    addWorkspace,
+    updateWorkspace,
+    deleteWorkspace,
+    setActiveWorkspace,
+  ]);
 
   return socketRef;
 };

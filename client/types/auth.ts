@@ -10,13 +10,17 @@ export interface SignInRequest {
   email: string;
   password: string;
 }
+export interface Tokens {
+  access_token: string;
+  refresh_token: string;
+}
 
 export interface SignInResponse {
   user: User;
-  accessToken: string;
+  tokens: Tokens;
 }
 
 export interface SignUpResponse {
   user: User;
-  accessToken: string;
+  tokens: Tokens;
 }

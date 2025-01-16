@@ -29,7 +29,7 @@ import {
 import { cn } from "@/lib/utils";
 import { RIGHT_CLICK_MENU_ITEMS } from "@/lib/utils/nav-workspaces";
 import { useStore } from "@/stores/store";
-import { Project } from "@/types/project";
+import { Project } from "@/types/workspace";
 import { ChevronRight, File, Folder, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";

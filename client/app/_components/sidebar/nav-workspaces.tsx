@@ -13,7 +13,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { Project } from "@/types/project";
+import { Project } from "@/types/workspace";
 import { File, Folder, Plus } from "lucide-react";
 import { ProjectItem } from "./project-item";
 

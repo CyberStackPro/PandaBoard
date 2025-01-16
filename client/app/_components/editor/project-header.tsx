@@ -2,7 +2,7 @@ import { ProjectIcon } from "@/components/sidebar/project-icon";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { Project } from "@/types/project";
+import { Project } from "@/types/workspace";
 import debounce from "lodash.debounce";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";

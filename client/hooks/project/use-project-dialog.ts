@@ -1,9 +1,9 @@
 import APIClient from "@/services/api-client";
 import { useStore } from "@/stores/store";
-import { Project } from "@/types/project";
+import { Project } from "@/types/workspace";
 import { useCallback, useState } from "react";
 
-const projectsAPI = new APIClient<Project>("/projects");
+const projectsAPI = new APIClient<Project>("/workspaces");
 export const useProjectDialog = (userId: string) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"folder" | "file">("folder");

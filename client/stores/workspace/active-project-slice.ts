@@ -1,4 +1,4 @@
-import { Project } from "@/types/project";
+import { Project } from "@/types/workspace";
 import { Store } from "@/types/store";
 import { StateCreator } from "zustand";
 
