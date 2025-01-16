@@ -86,11 +86,16 @@ export class AuthService {
       where: eq(schema.users.email, email),
     });
 
-    const isPasswordValid = await bcrypt.compare(password, user!.password);
-    if (!user || !isPasswordValid) {
+    if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-
+    // if (!user || !(await bcrypt.compare(password, user?.password))) {
+    //   throw new UnauthorizedException('Invalid credentials');
+    // }
+    const isPasswordValid = await bcrypt.compare(password, user?.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
     await this.database
       .update(schema.users)
       .set({
@@ -129,20 +134,32 @@ export class AuthService {
       where: eq(schema.users.id, userId),
     });
 
-    if (!user || !user.refresh_token) {
-      throw new UnauthorizedException('Invalid refresh token');
+    if (!user) {
+      throw new UnauthorizedException('User not found');
     }
 
-    const refreshTokenMatches = await bcrypt.compare(
-      refreshToken,
-      user.refresh_token,
-    );
-
-    if (!refreshTokenMatches) {
-      throw new UnauthorizedException('Invalid refresh token');
+    if (!user.refresh_token) {
+      throw new UnauthorizedException(
+        'No refresh token found - please login again',
+      );
     }
+    try {
+      const refreshTokenMatches = await bcrypt.compare(
+        refreshToken,
+        user.refresh_token,
+      );
 
-    return this.generateAuthTokens(user.id, user.email);
+      if (!refreshTokenMatches) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      return this.generateAuthTokens(user.id, user.email);
+    } catch (error) {
+      console.error('Refresh token error:', error);
+      throw new UnauthorizedException(
+        'Invalid refresh token - please login again',
+      );
+    }
   }
 
   private async generateAuthTokens(

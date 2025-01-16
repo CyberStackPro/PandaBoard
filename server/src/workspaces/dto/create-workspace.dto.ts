@@ -19,7 +19,11 @@ export const CreateWorkspaceSchema = z.object({
     .string({ required_error: 'Name is required' })
     .min(1, 'Workspace name is required')
     .max(255, 'Workspace name cannot exceed 255 characters'),
-  parent_id: z.string().uuid('Parent ID must be a valid UUID').nullable(),
+  parent_id: z
+    .string()
+    .uuid('Parent ID must be a valid UUID')
+    .nullable()
+    .optional(),
   description: z.string().optional(),
   status: WorkspaceStatusEnum.default('active'),
   visibility: WorkspaceVisibilityEnum.default('private'),

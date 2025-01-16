@@ -10,6 +10,7 @@ import {
   ParseUUIDPipe,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 
 import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
@@ -24,6 +25,7 @@ import {
 } from './dto/duplicate-workspace.dto';
 import { WorkspacesService } from './workspaces.service';
 import { TrashServices } from './trash.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('workspaces')
 export class WorkspacesController {
@@ -35,6 +37,7 @@ export class WorkspacesController {
   // General methods
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(JwtAuthGuard)
   @UsePipes()
   createWorkspace(
     @Body(new ZodValidationPipe(CreateWorkspaceSchema))
@@ -44,12 +47,14 @@ export class WorkspacesController {
   }
 
   @Get('owner/:ownerId')
+  @UseGuards(JwtAuthGuard)
   findAllWorkspaces(@Param('ownerId', new ParseUUIDPipe()) ownerId: string) {
     return this.workspaceService.findAllWorkspaces(ownerId);
   }
 
   // Specific retrieval
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   findWorkspaceById(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.workspaceService.findWorkspaceById(id);
   }

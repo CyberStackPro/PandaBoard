@@ -72,6 +72,7 @@ export class WorkspacesService {
       where: (workspaces, { eq }) => eq(workspaces.owner_id, ownerId),
       orderBy: (workspaces, { desc }) => [desc(workspaces.created_at)],
     });
+
     const workspaceTree = this.buildWorkspaceTree(allWorkspaces);
 
     return workspaceTree;
