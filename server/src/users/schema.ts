@@ -40,6 +40,7 @@ export const users = pgTable(
     status: userStatusEnum('status').default('pending_verification').notNull(),
     last_login: timestamp('last_login', { mode: 'date' }).defaultNow(),
     login_count: integer('login_count').default(0).notNull(),
+    refresh_token: varchar('refresh_token', { length: 1024 }),
     ...timestamps,
   },
   (table) => ({

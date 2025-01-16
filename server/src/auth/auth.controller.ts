@@ -4,9 +4,11 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Request,
+  UseGuards,
   UsePipes,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { AuthResponse, AuthService } from './auth.service';
 import {
   signUpSchema,
   SignInDto,
@@ -14,6 +16,7 @@ import {
   signInSchema,
 } from './dto/create-auth.dto';
 import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -22,15 +25,28 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @Post('signup')
   @UsePipes(new ZodValidationPipe(signUpSchema))
-  async signup(@Body() request: SignUpDto) {
+  signup(@Body() request: SignUpDto): Promise<AuthResponse> {
     return this.authServices.signup(request);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('signin')
   @UsePipes(new ZodValidationPipe(signInSchema))
-  async signin(@Body() request: SignInDto) {
+  signin(@Body() request: SignInDto): Promise<AuthResponse> {
     return this.authServices.signin(request.email, request.password);
+  }
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async logout(@Request() req) {
+    await this.authServices.logout(req.user.sub);
+    return { message: 'Logged out successfully' };
+  }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refreshTokens(@Body() body: { refresh_token: string }, @Request() req) {
+    return this.authService.refreshTokens(req.user.sub, body.refresh_token);
   }
 }
 

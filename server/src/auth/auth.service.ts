@@ -11,6 +11,22 @@ import * as bcrypt from 'bcrypt';
 import { eq } from 'drizzle-orm';
 import { JwtService } from '@nestjs/jwt';
 
+export interface AuthTokens {
+  access_token: string;
+  refresh_token: string;
+}
+
+export interface AuthResponse {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    status: string;
+  };
+  tokens: AuthTokens;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -19,61 +35,62 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async signup(request: typeof schema.users.$inferInsert) {
+  async signup(
+    request: typeof schema.users.$inferInsert,
+  ): Promise<AuthResponse> {
     const existingUser = await this.database.query.users.findFirst({
       where: eq(schema.users.email, request.email),
     });
 
     if (existingUser) {
-      throw new BadRequestException('Email is already in use.');
+      throw new BadRequestException('Email already exists');
     }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(request.password, 10);
 
-    // Insert the new user
-    // const [newUser] = await this.database
-    //   .insert(schema.users)
-    //   .values({
-    //     ...request,
-    //     password: hashedPassword,
-    //   })
-    //   .returning();
-    const [newUser] = await this.database.transaction(async (tx) => {
-      const [user] = await tx
+    const [user] = await this.database.transaction(async (tx) => {
+      const [newUser] = await tx
         .insert(schema.users)
         .values({
-          ...request,
+          name: request.name,
+          email: request.email,
           password: hashedPassword,
         })
         .returning();
 
       await tx.insert(schema.profiles).values({
-        user_id: user.id,
+        user_id: newUser.id,
         preferences: { notifications: true, theme: 'light' },
-        social_links: {},
       });
 
-      return [user];
+      return [newUser];
     });
 
-    return this.generateAuthResponse(newUser);
+    const tokens = await this.generateAuthTokens(user.id, user.email);
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        status: user.status,
+      },
+      tokens,
+    };
   }
 
-  async signin(email: string, password: string) {
+  async signin(email: string, password: string): Promise<AuthResponse> {
     const user = await this.database.query.users.findFirst({
       where: eq(schema.users.email, email),
     });
 
-    if (!user) {
-      throw new BadRequestException('Invalid credentials');
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
+    const isPasswordValid = await bcrypt.compare(password, user!.password);
+    if (!user || !isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
+
     await this.database
       .update(schema.users)
       .set({
@@ -82,25 +99,72 @@ export class AuthService {
       })
       .where(eq(schema.users.id, user.id));
 
-    return this.generateAuthResponse(user);
-  }
-
-  private async generateAuthResponse(user: typeof schema.users.$inferSelect) {
-    const payload = {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      status: user.status,
-    };
-
-    const accessToken = await this.jwtService.signAsync(payload);
+    const tokens = await this.generateAuthTokens(user.id, user.email);
 
     return {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      status: user.status,
-      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        status: user.status,
+      },
+      tokens,
+    };
+  }
+
+  async logout(userId: string): Promise<void> {
+    await this.database
+      .update(schema.users)
+      .set({
+        refresh_token: null,
+      })
+      .where(eq(schema.users.id, userId));
+  }
+  async refreshTokens(
+    userId: string,
+    refreshToken: string,
+  ): Promise<AuthTokens> {
+    const user = await this.database.query.users.findFirst({
+      where: eq(schema.users.id, userId),
+    });
+
+    if (!user || !user.refresh_token) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const refreshTokenMatches = await bcrypt.compare(
+      refreshToken,
+      user.refresh_token,
+    );
+
+    if (!refreshTokenMatches) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    return this.generateAuthTokens(user.id, user.email);
+  }
+
+  private async generateAuthTokens(
+    userId: string,
+    email: string,
+  ): Promise<AuthTokens> {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync({ sub: userId, email }, { expiresIn: '15m' }),
+      this.jwtService.signAsync({ sub: userId, email }, { expiresIn: '7d' }),
+    ]);
+
+    await this.database
+      .update(schema.users)
+      .set({
+        refresh_token: await bcrypt.hash(refreshToken, 10),
+        last_login: new Date(),
+      })
+      .where(eq(schema.users.id, userId));
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
     };
   }
 }
