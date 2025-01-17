@@ -76,6 +76,7 @@ export class WorkspacesController {
 
   // Mutative actions
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   updateWorkspace(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() workspace: UpdateWorkspaceDto,

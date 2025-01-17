@@ -288,20 +288,27 @@ export const WorkspaceItem = ({
             )}
             {workspace.children && workspace.children.length > 0 ? (
               <CollapsibleContent>
-                <SidebarMenuSub>
-                  {workspace.children.map((child, index) => (
-                    <WorkspaceItem
-                      key={`child-${child.id}-${index}`}
-                      workspace={child}
-                      isCollapsed={isCollapsed}
-                      level={level + 1}
-                      onDelete={onDelete}
-                      onDuplicate={onDuplicate}
-                      onRename={onRename}
-                      onAddWorkspace={onAddWorkspace}
-                    />
-                  ))}
-                </SidebarMenuSub>
+                {isLoading ? (
+                  <div className="mt-2 space-y-2">
+                    {/* <div className="h-4 bg-muted-foreground/20 rounded-md animate-pulse"></div> */}
+                    <div className="h-4 bg-muted-foreground/20 rounded-md animate-pulse"></div>
+                  </div>
+                ) : (
+                  <SidebarMenuSub>
+                    {workspace.children.map((child, index) => (
+                      <WorkspaceItem
+                        key={`child-${child.id}-${index}`}
+                        workspace={child}
+                        isCollapsed={isCollapsed}
+                        level={level + 1}
+                        onDelete={onDelete}
+                        onDuplicate={onDuplicate}
+                        onRename={onRename}
+                        onAddWorkspace={onAddWorkspace}
+                      />
+                    ))}
+                  </SidebarMenuSub>
+                )}
               </CollapsibleContent>
             ) : (
               <CollapsibleContent>
@@ -312,13 +319,6 @@ export const WorkspaceItem = ({
                   No pages inside
                 </div>
               </CollapsibleContent>
-            )}
-
-            {isLoading && (
-              <div className="mt-2 space-y-2">
-                <div className="h-4 bg-muted-foreground/20 rounded-md animate-pulse"></div>
-                <div className="h-4 bg-muted-foreground/20 rounded-md animate-pulse"></div>
-              </div>
             )}
           </SidebarMenuItem>
         </Collapsible>

@@ -1,6 +1,6 @@
 "use client";
 import { ProjectHeader } from "@/app/_components/editor/project-header";
-import { useWorkspaceActions } from "@/hooks/project/use-project-actions";
+import { useWorkspaceActions } from "@/hooks/workspace/use-workspace-actions";
 import { useStore } from "@/stores/store";
 import { $getRoot, $getSelection, EditorState } from "lexical";
 import React, { useState } from "react";
@@ -17,8 +17,10 @@ const Page = () => {
   const { user } = useStore();
   const userId = user?.id;
 
-  const activeProject = useStore((state) => state.activeProject);
-  const updateActiveProject = useStore((state) => state.updateActiveProject);
+  const activeWorkspace = useStore((state) => state.activeWorkspace);
+  const updateActiveWorkspace = useStore(
+    (state) => state.updateActiveWorkspace
+  );
   const { handleRename } = useWorkspaceActions(userId);
   const [coverImage, setCoverImage] = useState<string | null>(null);
 
@@ -28,19 +30,21 @@ const Page = () => {
       const root = $getRoot();
       const selection = $getSelection();
 
+      console.log("EditorState", editorState.toJSON());
+
       console.log(root, selection);
     });
   }
 
   return (
-    <div className="pb-[30vh] h-screen overflow-y-scroll">
+    <div className="pb-[30vh] h-screen ">
       <div className="layout-full relative" style={{ isolation: "isolate" }}>
         <ProjectHeader
-          activeProject={activeProject}
+          activeWorkspace={activeWorkspace}
           coverImage={coverImage}
           onCoverImageChange={setCoverImage}
           onRename={handleRename}
-          updateActiveProject={updateActiveProject}
+          updateActiveWorkspace={updateActiveWorkspace}
         />
         <div className="max-w-[765px] mx-auto px-4">
           {/* Page controls */}

@@ -28,7 +28,12 @@ export const useSignIn = () => {
 
       const response = await apiClient.post(data);
 
-      setAuth(response.user, response.tokens.access_token);
+      setAuth(
+        response.user,
+        response.tokens.access_token,
+        response.tokens.refresh_token
+      );
+
       console.log("Users=======", response.user);
       console.log("Tokens=======", response.tokens.access_token);
 

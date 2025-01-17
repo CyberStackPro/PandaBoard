@@ -2,27 +2,28 @@ import { ProjectIcon } from "@/components/sidebar/project-icon";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { Project } from "@/types/workspace";
+import { Workspace } from "@/types/workspace";
 import debounce from "lodash.debounce";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface ProjectHeaderProps {
-  activeProject?: Project | null;
+  activeWorkspace?: Workspace | null;
   coverImage: string | null;
   onCoverImageChange: (url: string | null) => void;
   onRename: (id: string, name: string) => void;
-  updateActiveProject: (data: { name: string }) => void;
+  updateActiveWorkspace: (data: { name: string }) => void;
+  setActiveWorkspace: (workspace: Workspace | null) => void;
 }
 
 export function ProjectHeader({
-  activeProject,
+  activeWorkspace,
   coverImage,
   onCoverImageChange,
   onRename,
-  updateActiveProject,
+  updateActiveWorkspace,
 }: ProjectHeaderProps) {
-  const [tempName, setTempName] = useState(activeProject?.name || "");
+  const [tempName, setTempName] = useState(activeWorkspace?.name || "");
   const [isDraggingCover, setIsDraggingCover] = useState(false);
   const [coverPosition, setCoverPosition] = useState(0);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -32,13 +33,15 @@ export function ProjectHeader({
       debounce(async (id: string, newName: string) => {
         try {
           onRename(id, newName);
-          updateActiveProject({ name: newName });
-        } catch (error: unknown) {
+          updateActiveWorkspace({ name: newName });
+        } catch (error) {
+          if (error instanceof Error) console.error(error.message);
+
           // Revert to last known good state
-          setTempName(activeProject?.name || "");
+          setTempName(activeWorkspace?.name || "");
         }
       }, 300),
-    [onRename, updateActiveProject, activeProject?.name]
+    [onRename, updateActiveWorkspace, activeWorkspace?.name]
   );
 
   // Cover image handlers
@@ -71,11 +74,12 @@ export function ProjectHeader({
     if (headingRef.current) {
       const newName = headingRef.current.textContent || "";
       setTempName(newName);
-      if (activeProject?.id) {
-        debouncedRename(activeProject.id, newName);
+
+      if (activeWorkspace?.id) {
+        debouncedRename(activeWorkspace.id, newName);
       }
     }
-  }, [activeProject?.id, debouncedRename]);
+  }, [activeWorkspace?.id, debouncedRename]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLHeadingElement>) => {
@@ -84,27 +88,27 @@ export function ProjectHeader({
         e.currentTarget.blur();
       } else if (e.key === "Escape") {
         e.preventDefault();
-        setTempName(activeProject?.name || "");
+        setTempName(activeWorkspace?.name || "");
         e.currentTarget.blur();
       }
     },
-    [activeProject?.name]
+    [activeWorkspace?.name]
   );
 
   const handleBlur = useCallback(() => {
     const newName = tempName.trim();
-    if (newName && newName !== activeProject?.name && activeProject?.id) {
-      onRename(activeProject.id, newName);
-      updateActiveProject({ name: newName });
+    if (newName && newName !== activeWorkspace?.name && activeWorkspace?.id) {
+      onRename(activeWorkspace.id, newName);
+      updateActiveWorkspace({ name: newName });
     }
-  }, [tempName, activeProject, onRename, updateActiveProject]);
+  }, [tempName, activeWorkspace, onRename, updateActiveWorkspace]);
 
   useEffect(() => {
-    if (headingRef.current && activeProject) {
-      headingRef.current.textContent = activeProject.name || "";
-      setTempName(activeProject?.name || "");
+    if (headingRef.current && activeWorkspace) {
+      headingRef.current.textContent = activeWorkspace.name || "";
+      setTempName(activeWorkspace?.name || "");
     }
-  }, [activeProject]);
+  }, [activeWorkspace]);
 
   return (
     <div className="relative">
@@ -179,7 +183,7 @@ export function ProjectHeader({
             handleAddCommentClick={handleAddCommentClick}
             coverImage={coverImage}
             handleAddCover={handleAddCover}
-            icon={activeProject?.icon || ""}
+            icon={activeWorkspace?.icon || ""}
           />
           <h1
             ref={headingRef}

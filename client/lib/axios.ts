@@ -55,8 +55,8 @@ class HttpClient {
         if (error.response?.status === 401 && !originalRequest._retry) {
           //   ?? originalRequest._retry = true: Marks the request as retried. This prevents the interceptor from retrying the same request multiple times.
           originalRequest._retry = true;
-          await this.handleTokenRefresh(originalRequest);
-          return this.axiosInstance(originalRequest);
+          return await this.handleTokenRefresh(originalRequest);
+          // return this.axiosInstance(originalRequest);
         }
         if (originalRequest._retryCount && originalRequest._retryCount >= 3) {
           console.error("Max retries exceeded");
@@ -71,16 +71,18 @@ class HttpClient {
 
   public async handleTokenRefresh(failedRequest: AxiosRequestConfig) {
     try {
-      const refreshToken = localStorage.getItem("refreshToken");
+      const refreshToken = localStorage.getItem("panda-auth-store");
+      console.log("Refresh token:", refreshToken);
+
       if (!refreshToken) throw new Error("Refresh token is missing");
 
       const response = await axiosInstance.post("/auth/refresh", {
         refreshToken,
       });
 
-      const { access_token, user } = response.data;
+      const { access_token, user, refresh_token } = response.data;
 
-      useAuthStore.getState().setAuth(user, access_token);
+      useAuthStore.getState().setAuth(user, access_token, refresh_token);
 
       if (failedRequest && failedRequest.headers) {
         failedRequest.headers.Authorization = `Bearer ${access_token}`;

@@ -14,7 +14,7 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
-  setAuth: (user: User, token: string) => void;
+  setAuth: (user: User, access_token: string, refresh_token: string) => void;
   clearAuth: () => void;
   // accessTokenExpires: Date | null;
   // refreshToken: string | null;
@@ -29,16 +29,18 @@ export const useAuthStore = create<AuthState>()(
         accessToken: null,
         refreshToken: null,
         isAuthenticated: false,
-        setAuth: (user: User, access_token: string) =>
+        setAuth: (user: User, access_token: string, refresh_token: string) =>
           set((state) => {
             state.user = user;
             state.accessToken = access_token;
+            state.refreshToken = refresh_token;
             state.isAuthenticated = true;
           }),
         clearAuth: () =>
           set((state) => {
             state.user = null;
             state.accessToken = null;
+            state.refreshToken = null;
             state.isAuthenticated = false;
           }),
       })),

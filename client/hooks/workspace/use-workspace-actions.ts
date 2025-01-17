@@ -1,19 +1,29 @@
 import APIClient from "@/services/api-client";
 import { useStore } from "@/stores/store";
 import { Workspace } from "@/types/workspace";
+import { useToast } from "../use-toast";
 
 const workspacesAPI = new APIClient<Workspace>("/workspaces");
 export const useWorkspaceActions = (userId: string) => {
   const workspaces = useStore((state) => state.workspaces);
   const duplicateWorkspace = useStore((state) => state.duplicateWorkspace);
   const fetchWorkspaces = useStore((state) => state.fetchWorkspaces);
+  const updateWorkspace = useStore((state) => state.updateWorkspace);
+  const { toast } = useToast();
   //   const setActiveWorkspace = useStore((state) => state.setActiveWorkspace);
 
   const handleRename = async (workspaceId: string, newName: string) => {
     try {
       await workspacesAPI.patch(`/${workspaceId}`, { name: newName });
+      updateWorkspace(workspaceId, { name: newName });
     } catch (error) {
-      console.error("Failed to rename Workspace:", error);
+      console.error("Failed to rename Workspace:", error.message);
+      // toast({
+      //   title: "Failed to rename Workspace",
+      //   message: error.message,
+      //   type: "foreground",
+      // });
+
       await fetchWorkspaces(userId);
       throw error;
     }

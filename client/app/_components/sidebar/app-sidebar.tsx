@@ -14,9 +14,9 @@ import { NavWorkspaces } from "./nav-workspaces";
 import { TeamSwitcher } from "./team-switch";
 // import { useProjects } from "@/hooks/use-projects";
 import { NavFavorites } from "./nav-favorites";
-import { useWorkspaceDialog } from "@/hooks/project/use-project-dialog";
-import { useWorkspaceActions } from "@/hooks/project/use-project-actions";
-import { useWorkspaceSocket } from "@/hooks/project/use-project-socket";
+import { useWorkspaceDialog } from "@/hooks/workspace/use-workspace-dialog";
+import { useWorkspaceActions } from "@/hooks/workspace/use-workspace-actions";
+import { useWorkspaceSocket } from "@/hooks/workspace/use-workspace-socket";
 import { useStore } from "@/stores/store";
 import { useAuthStore } from "@/stores/auth/auth-store";
 

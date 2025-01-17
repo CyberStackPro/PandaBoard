@@ -18,7 +18,7 @@ import { NavActions } from "../_components/sidebar/nav-actions";
 import { useStore } from "@/stores/store";
 import { Input } from "@/components/ui/input";
 import { ProjectIcon } from "@/components/sidebar/project-icon";
-import { useWorkspaceActions } from "@/hooks/project/use-project-actions";
+import { useWorkspaceActions } from "@/hooks/workspace/use-workspace-actions";
 import { useAuthStore } from "@/stores/auth/auth-store";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
@@ -39,20 +39,23 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
 export function Header() {
   const { user } = useAuthStore();
+  const userId = user?.id || "";
 
-  const { handleRename } = useWorkspaceActions(user?.id || "");
-  const activeProject = useStore((state) => state.activeProject);
-  const updateActiveProject = useStore((state) => state.updateActiveProject);
+  const { handleRename } = useWorkspaceActions(userId);
+  const activeWorkspace = useStore((state) => state.activeWorkspace);
+  const updateActiveWorkspace = useStore(
+    (state) => state.updateActiveWorkspace
+  );
   const [isEditing, setIsEditing] = useState(false);
-  const [tempName, setTempName] = useState(activeProject?.name || "");
+  const [tempName, setTempName] = useState(activeWorkspace?.name || "");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (newName: string) => {
-    if (activeProject && newName.trim() && newName !== activeProject.name) {
-      await handleRename(activeProject.id, newName);
+    if (activeWorkspace && newName.trim() && newName !== activeWorkspace.name) {
+      await handleRename(activeWorkspace.id, newName);
 
-      // if (activeProject.id === activeProject?.id) {
-      updateActiveProject({ name: newName.trim() });
+      // if (activeWorkspace.id === activeWorkspace?.id) {
+      updateActiveWorkspace({ name: newName.trim() });
       // }
     }
     setIsEditing(false);
@@ -62,14 +65,14 @@ export function Header() {
     if (e.key === "Enter") {
       handleSubmit(tempName);
     } else if (e.key === "Escape") {
-      setTempName(activeProject?.name || "");
+      setTempName(activeWorkspace?.name || "");
       setIsEditing(false);
     }
   };
 
   useEffect(() => {
-    setTempName(activeProject?.name || "");
-  }, [activeProject?.name]);
+    setTempName(activeWorkspace?.name || "");
+  }, [activeWorkspace?.name]);
   return (
     <header className="sticky top-0 z-10 flex h-14 w-full items-center  shadow-sm bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="px-4 pt-3">
@@ -80,8 +83,8 @@ export function Header() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                {activeProject?.icon && (
-                  <ProjectIcon icon={activeProject.icon} />
+                {activeWorkspace?.icon && (
+                  <ProjectIcon icon={activeWorkspace.icon} />
                 )}
                 {isEditing ? (
                   <Input
@@ -99,7 +102,7 @@ export function Header() {
                     onClick={() => setIsEditing(true)}
                   >
                     <span className="truncate">
-                      {activeProject?.name || "Untitled"}
+                      {activeWorkspace?.name || "Untitled"}
                     </span>
                   </BreadcrumbPage>
                 )}

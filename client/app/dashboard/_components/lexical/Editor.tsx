@@ -123,20 +123,20 @@ export function Editor({ initialContent, onChange }: EditorProps) {
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <div className="relative">
+      <div className="relative pt-2 ">
         <ToolbarPlugin />
 
-        <div className="editor-container relative">
+        <div className="editor-container  relative">
           <RichTextPlugin
             contentEditable={
-              <div className="editor-scroller ">
+              <div className="editor-scroller  ">
                 <div className="editor relative" ref={onRef}>
                   <ContentEditable className="outline-none min-h-[calc(100vh-300px)] prose dark:prose-invert max-w-none px-8 py-4" />
                 </div>
               </div>
             }
             placeholder={
-              <div className="absolute top-[12px] left-[12px] text-muted-foreground/60 pointer-events-none">
+              <div className="absolute top-4 left-10 text-muted-foreground/60 pointer-events-none">
                 {"Type '/' for commands..."}
               </div>
             }

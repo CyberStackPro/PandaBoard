@@ -110,10 +110,12 @@ export class WorkspacesService {
   async updateWorkspace(id: string, workspace: UpdateWorkspaceDto) {
     const existingWorkspace = await this.findWorkspaceById(id);
 
+    // console.log(existingWorkspace);
+
     // Check authorization
-    if (existingWorkspace.owner_id !== workspace.owner_id) {
-      throw new UnauthorizedWorkspaceAccessException();
-    }
+    // if (existingWorkspace.owner_id !== workspace.owner_id) {
+    //   throw new UnauthorizedWorkspaceAccessException();
+    // }
 
     try {
       const updatedWorkspace = await this.database
