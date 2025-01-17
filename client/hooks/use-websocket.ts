@@ -16,7 +16,7 @@ export const useWebSocket = () => {
       });
     }
 
-    socket.on("projectCreated", (project) => {
+    socket.on("workspaceCreated", (project) => {
       addProject(project);
     });
 

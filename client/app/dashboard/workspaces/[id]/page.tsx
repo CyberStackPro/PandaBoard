@@ -1,6 +1,6 @@
 "use client";
 import { ProjectHeader } from "@/app/_components/editor/project-header";
-import { useProjectActions } from "@/hooks/project/use-project-actions";
+import { useWorkspaceActions } from "@/hooks/project/use-project-actions";
 import { useStore } from "@/stores/store";
 import { $getRoot, $getSelection, EditorState } from "lexical";
 import React, { useState } from "react";
@@ -13,11 +13,13 @@ interface PageProps {
 }
 
 const Page = () => {
-  const userId = "06321aa5-78d2-450c-9892-fd5277775fae";
+  // const userId = "06321aa5-78d2-450c-9892-fd5277775fae";
+  const { user } = useStore();
+  const userId = user?.id;
 
   const activeProject = useStore((state) => state.activeProject);
   const updateActiveProject = useStore((state) => state.updateActiveProject);
-  const { handleRename } = useProjectActions(userId);
+  const { handleRename } = useWorkspaceActions(userId);
   const [coverImage, setCoverImage] = useState<string | null>(null);
 
   function onChange(editorState: EditorState) {

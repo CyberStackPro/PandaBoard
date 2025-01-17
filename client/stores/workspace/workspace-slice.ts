@@ -27,6 +27,8 @@ export const createWorkspaceSlice: StateCreator<
       const response = (await apiClient.get(
         `/owner/${ownerId}`
       )) as Workspace[];
+      console.log(response);
+
       set({ workspaces: response });
     } catch (error) {
       console.error("Failed to fetch workspaces:", error);

@@ -19,6 +19,7 @@ import { useStore } from "@/stores/store";
 import { Input } from "@/components/ui/input";
 import { ProjectIcon } from "@/components/sidebar/project-icon";
 import { useWorkspaceActions } from "@/hooks/project/use-project-actions";
+import { useAuthStore } from "@/stores/auth/auth-store";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -37,9 +38,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 export function Header() {
-  const userId = "06321aa5-78d2-450c-9892-fd5277775fae";
+  const { user } = useAuthStore();
 
-  const { handleRename } = useWorkspaceActions(userId);
+  const { handleRename } = useWorkspaceActions(user?.id || "");
   const activeProject = useStore((state) => state.activeProject);
   const updateActiveProject = useStore((state) => state.updateActiveProject);
   const [isEditing, setIsEditing] = useState(false);

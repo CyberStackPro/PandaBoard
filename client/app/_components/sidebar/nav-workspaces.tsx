@@ -13,13 +13,13 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { Project } from "@/types/workspace";
+import { Workspace } from "@/types/workspace";
 import { File, Folder, Plus } from "lucide-react";
-import { ProjectItem } from "./project-item";
+import { WorkspaceItem } from "./project-item";
 
 interface NavWorkspacesProps {
   isCollapsed: boolean;
-  workspaces: Project[];
+  workspaces: Workspace[];
   onAddProject: (parentId: string | null, type: "folder" | "file") => void;
   handleRename: (projectId: string, newName: string) => Promise<void>;
   handleDelete: (projectId: string) => Promise<void>;
@@ -34,7 +34,8 @@ export function NavWorkspaces({
   handleDelete,
   handleDuplicate,
 }: NavWorkspacesProps) {
-  const topLevelProjects = workspaces.filter((project) => !project.parent_id);
+  const topLevelProjects =
+    workspaces && workspaces?.filter((project) => !project.parent_id);
   return (
     <SidebarGroup>
       <SidebarGroupLabel className={cn(isCollapsed && "sr-only")}>
@@ -43,12 +44,12 @@ export function NavWorkspaces({
       <SidebarGroupContent>
         <SidebarMenu>
           {topLevelProjects.map((project) => (
-            <ProjectItem
+            <WorkspaceItem
               key={`project-${project.id}`}
-              project={project}
+              workspace={project}
               isCollapsed={isCollapsed}
               level={0}
-              onAddProject={onAddProject}
+              onAddWorkspace={onAddProject}
               onRename={handleRename}
               onDelete={handleDelete}
               onDuplicate={handleDuplicate}
@@ -87,7 +88,7 @@ export function NavWorkspaces({
 }
 
 // Helper functions
-// function findProject(projects: Project[], id: string): Project | null {
+// function findProject(projects: Workspace[], id: string): Workspace | null {
 //   for (const project of projects) {
 //     if (project.id === id) return project;
 //     if (project.children) {
@@ -98,7 +99,7 @@ export function NavWorkspaces({
 //   return null;
 // }
 
-// function deleteProject(projects: Project[], id: string): boolean {
+// function deleteProject(projects: Workspace[], id: string): boolean {
 //   for (let i = 0; i < projects.length; i++) {
 //     if (projects[i].id === id) {
 //       projects.splice(i, 1);

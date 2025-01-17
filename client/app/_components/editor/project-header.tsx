@@ -188,7 +188,7 @@ export function ProjectHeader({
             onInput={handleInput}
             onKeyDown={handleKeyDown}
             onBlur={handleBlur}
-            data-placeholder="Untitled Project"
+            data-placeholder={tempName || "Untitled Project"}
             className={cn(
               "outline-none w-full px-1 whitespace-pre-wrap break-words",
               "text-4xl font-bold",

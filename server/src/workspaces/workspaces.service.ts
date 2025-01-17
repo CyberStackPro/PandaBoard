@@ -35,9 +35,9 @@ export class WorkspacesService {
     const userExists = await this.database.query.workspaces.findFirst({
       where: (users, { eq }) => eq(users.id, workspace.owner_id),
     });
-    if (!userExists) {
-      throw new BadRequestException('Owner does not exist');
-    }
+    // if (!userExists) {
+    //   throw new BadRequestException('Owner does not exist');
+    // }
 
     const defaultMetadata =
       workspace.type === 'folder'

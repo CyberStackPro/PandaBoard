@@ -5,7 +5,7 @@ import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
-  SidebarRail,
+  // SidebarRail,s
 } from "@/components/ui/sidebar";
 import { DATA } from "@/constants/side-bar-data";
 import { NameDialog } from "../dialogs/add-project-dialog";
@@ -14,29 +14,33 @@ import { NavWorkspaces } from "./nav-workspaces";
 import { TeamSwitcher } from "./team-switch";
 // import { useProjects } from "@/hooks/use-projects";
 import { NavFavorites } from "./nav-favorites";
-import { useProjectDialog } from "@/hooks/project/use-project-dialog";
+import { useWorkspaceDialog } from "@/hooks/project/use-project-dialog";
 import { useWorkspaceActions } from "@/hooks/project/use-project-actions";
 import { useWorkspaceSocket } from "@/hooks/project/use-project-socket";
 import { useStore } from "@/stores/store";
+import { useAuthStore } from "@/stores/auth/auth-store";
 
 export function AppSidebar({
   // className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   const [data] = React.useState(DATA);
-  const userId = "06321aa5-78d2-450c-9892-fd5277775fae";
+  // const user.id || '' = "3a4ca7ae-cc8c-4ce7-8a7a-8daeb6929334";
+  const { user } = useAuthStore();
+  const userId = user?.id;
 
   const {
     dialogOpen,
     setDialogOpen,
     dialogType,
-    handleCreateProject,
+    handleCreateWorkspace,
     handleDialogSubmit,
-  } = useProjectDialog(userId);
+  } = useWorkspaceDialog(userId || "");
 
-  const { handleRename, handleDelete, handleDuplicate } =
-    useWorkspaceActions(userId);
-  useWorkspaceSocket(userId);
+  const { handleRename, handleDelete, handleDuplicate } = useWorkspaceActions(
+    userId || ""
+  );
+  useWorkspaceSocket(userId || "");
 
   const workspaces = useStore((state) => state.workspaces);
 
@@ -55,7 +59,7 @@ export function AppSidebar({
         <NavFavorites favorites={data.favorites} />
         <NavWorkspaces
           isCollapsed={false}
-          onAddProject={handleCreateProject}
+          onAddProject={handleCreateWorkspace}
           workspaces={workspaces}
           handleRename={handleRename}
           handleDelete={handleDelete}

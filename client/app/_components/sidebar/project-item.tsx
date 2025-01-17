@@ -29,59 +29,61 @@ import {
 import { cn } from "@/lib/utils";
 import { RIGHT_CLICK_MENU_ITEMS } from "@/lib/utils/nav-workspaces";
 import { useStore } from "@/stores/store";
-import { Project } from "@/types/workspace";
+import { Workspace } from "@/types/workspace";
 import { ChevronRight, File, Folder, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-interface ProjectItemProps {
-  project: Project;
+interface WorkspaceItemProps {
+  workspace: Workspace;
   isCollapsed: boolean;
   level: number;
-  onAddProject?: (parentId: string | null, type: "folder" | "file") => void;
-  onRename: (projectId: string, newName: string) => Promise<void>;
-  onDelete: (projectId: string) => Promise<void>;
-  onDuplicate: (projectId: string, withContent: boolean) => Promise<void>;
+  onAddWorkspace?: (parentId: string | null, type: "folder" | "file") => void;
+  onRename: (WorkspaceId: string, newName: string) => Promise<void>;
+  onDelete: (WorkspaceId: string) => Promise<void>;
+  onDuplicate: (WorkspaceId: string, withContent: boolean) => Promise<void>;
 }
 
-export const ProjectItem = ({
-  project,
+export const WorkspaceItem = ({
+  workspace,
   isCollapsed,
   level,
-  onAddProject,
+  onAddWorkspace,
   onRename,
   onDelete,
   onDuplicate,
-}: ProjectItemProps) => {
+}: WorkspaceItemProps) => {
   const [isRenaming, setIsRenaming] = useState(false);
-  const [tempName, setTempName] = useState(project.name || "");
-  const isFolder = project.type === "folder";
+  const [tempName, setTempName] = useState(workspace.name || "");
+  const isFolder = workspace.type === "folder";
   const inputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const updateActiveProject = useStore((state) => state.updateActiveProject);
-  const activeProject = useStore((state) => state.activeProject);
+  const updateActiveWorkspace = useStore(
+    (state) => state.updateActiveWorkspace
+  );
+  const activeWorkspace = useStore((state) => state.activeWorkspace);
 
-  const isSelected = activeProject?.id === project.id; // Check if current project is selected
+  const isSelected = activeWorkspace?.id === workspace.id; // Check if current Workspace is selected
 
-  const handleSelectProject = () => {
-    updateActiveProject?.(project); // Update the active project state
+  const handleSelectWorkspace = () => {
+    updateActiveWorkspace?.(workspace); // Update the active Workspace state
   };
 
   const handleAction = useCallback(
-    async (action: string, projectId: string, data?: string) => {
+    async (action: string, workspaceId: string, data?: string) => {
       try {
         switch (action) {
           case "rename":
-            await onRename(projectId, data || "");
+            await onRename(workspaceId, data || "");
             break;
           case "delete":
-            await onDelete(projectId);
+            await onDelete(workspaceId);
             break;
           case "duplicate":
-            await onDuplicate(projectId, true);
+            await onDuplicate(workspaceId, true);
             break;
           case "duplicate-structure":
-            await onDuplicate(projectId, false);
+            await onDuplicate(workspaceId, false);
             break;
         }
       } catch (error) {
@@ -92,14 +94,14 @@ export const ProjectItem = ({
   );
   const icon = useMemo(
     () =>
-      project.icon ? (
-        project.icon
+      workspace.icon ? (
+        workspace.icon
       ) : isFolder ? (
         <Folder className="h-4 w-4" />
       ) : (
         <File className="h-4 w-4" />
       ),
-    [project.icon, isFolder]
+    [workspace.icon, isFolder]
   );
 
   const renderContextMenuItem = (item: (typeof RIGHT_CLICK_MENU_ITEMS)[0]) => {
@@ -117,7 +119,7 @@ export const ProjectItem = ({
                 onClick={() => {
                   console.log(subItem.action);
 
-                  handleAction?.(subItem.action, project.id as string);
+                  handleAction?.(subItem.action, workspace.id as string);
                 }}
               >
                 {subItem.name}
@@ -135,7 +137,7 @@ export const ProjectItem = ({
           if (item.action === "rename") {
             setIsRenaming(true);
           } else {
-            handleAction?.(item.action, project.id as string);
+            handleAction?.(item.action, workspace.id as string);
           }
         }}
       >
@@ -150,19 +152,25 @@ export const ProjectItem = ({
 
   const handleRenameSubmit = useCallback(
     async (newName: string) => {
-      if (newName.trim() && newName !== project.name) {
+      if (newName.trim() && newName !== workspace.name) {
         setIsLoading(true);
-        await onRename(project.id as string, newName.trim());
+        await onRename(workspace.id as string, newName.trim());
         setIsLoading(false);
-        // If this is the active project, update the active project state
-        if (activeProject?.id === project.id) {
-          updateActiveProject({ name: newName.trim() });
+        // If this is the active Workspace, update the active Workspace state
+        if (activeWorkspace?.id === workspace.id) {
+          updateActiveWorkspace({ name: newName.trim() });
         }
       }
-      setTempName(project.name || "");
+      setTempName(workspace.name || "");
       setIsRenaming(false);
     },
-    [project.id, project.name, onRename, activeProject, updateActiveProject]
+    [
+      workspace.id,
+      workspace.name,
+      onRename,
+      activeWorkspace,
+      updateActiveWorkspace,
+    ]
   );
 
   const handleKeyDown = useCallback(
@@ -170,11 +178,11 @@ export const ProjectItem = ({
       if (e.key === "Enter") {
         handleRenameSubmit(tempName);
       } else if (e.key === "Escape") {
-        setTempName(project.name || "");
+        setTempName(workspace.name || "");
         setIsRenaming(false);
       }
     },
-    [handleRenameSubmit, tempName, project.name]
+    [handleRenameSubmit, tempName, workspace.name]
   );
   useEffect(() => {
     if (isRenaming) {
@@ -190,7 +198,7 @@ export const ProjectItem = ({
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link
-                href={`/dashboard/projects/${project.id}`}
+                href={`/dashboard/workspaces/${workspace.id}`}
                 className={cn(
                   "flex text-muted-foreground transition-all duration-500 relative items-center gap-2 px-2 py-1 rounded-md",
                   {
@@ -200,7 +208,7 @@ export const ProjectItem = ({
                 )}
                 onClick={(e) => {
                   if (isRenaming) e.preventDefault();
-                  else handleSelectProject(); // Update selection
+                  else handleSelectWorkspace(); // Update selection
                 }}
               >
                 <span className="flex-shrink-0">{isRenaming ? "" : icon}</span>
@@ -229,7 +237,7 @@ export const ProjectItem = ({
                         className="px-1 py-0.5 rounded-sm hover:bg-accent/50 cursor-text"
                         onClick={() => setIsRenaming(true)}
                       >
-                        {project.name}
+                        {workspace.name}
                       </span>
                     )}
                   </span>
@@ -257,8 +265,8 @@ export const ProjectItem = ({
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
-                        const parentId = project.id || null;
-                        onAddProject?.(parentId, "folder");
+                        const parentId = workspace.id || null;
+                        onAddWorkspace?.(parentId, "folder");
                       }}
                     >
                       <Folder className="mr-2 h-4 w-4" />
@@ -267,8 +275,8 @@ export const ProjectItem = ({
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
-                        const parentId = project.id || null;
-                        onAddProject?.(parentId, "file");
+                        const parentId = workspace.id || null;
+                        onAddWorkspace?.(parentId, "file");
                       }}
                     >
                       <File className="mr-2 h-4 w-4" />
@@ -278,19 +286,19 @@ export const ProjectItem = ({
                 </DropdownMenu>
               </>
             )}
-            {project.children && project.children.length > 0 ? (
+            {workspace.children && workspace.children.length > 0 ? (
               <CollapsibleContent>
                 <SidebarMenuSub>
-                  {project.children.map((child, index) => (
-                    <ProjectItem
+                  {workspace.children.map((child, index) => (
+                    <WorkspaceItem
                       key={`child-${child.id}-${index}`}
-                      project={child}
+                      workspace={child}
                       isCollapsed={isCollapsed}
                       level={level + 1}
                       onDelete={onDelete}
                       onDuplicate={onDuplicate}
                       onRename={onRename}
-                      onAddProject={onAddProject}
+                      onAddWorkspace={onAddWorkspace}
                     />
                   ))}
                 </SidebarMenuSub>

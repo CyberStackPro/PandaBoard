@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { createWorkspaceSlice } from "./workspace/workspace-slice";
 import { Store } from "@/types/store";
-import { createActiveProjectSlice } from "./workspace/active-project-slice";
+import { createActiveWorkspaceSlice } from "./workspace/active-project-slice";
 
 export const useStore = create<Store>()(
   devtools(
@@ -11,7 +11,7 @@ export const useStore = create<Store>()(
       subscribeWithSelector(
         immer((...a) => ({
           ...createWorkspaceSlice(...a),
-          ...createActiveProjectSlice(...a),
+          ...createActiveWorkspaceSlice(...a),
         }))
       ),
       { name: "notion-store" }
