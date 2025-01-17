@@ -22,12 +22,24 @@ export const theme = {
     nested: {
       listitem: "ml-6 relative",
     },
-    checklist: "list-none ml-2 my-2",
+    listitemChecked: `relative my-1 pl-8 before:absolute before:left-0 before:top-1 
+                      before:h-4 before:w-4 before:rounded 
+                      before:border before:border-primary before:bg-primary
+                      before:content-[''] text-muted-foreground line-through
+                      after:absolute after:left-[7px] after:top-[6px]
+                      after:h-[6px] after:w-[3px] after:rotate-45
+                      after:border-r-2 after:border-b-2 after:border-white
+                      after:content-['']`,
+    listitemUnchecked: `relative my-1 pl-8 before:absolute before:left-0 before:top-1 
+                        before:h-4 before:w-4 before:rounded 
+                        before:border before:border-muted-foreground
+                        before:content-[''] hover:before:border-primary
+                        focus:before:ring-2 focus:before:ring-ring`,
     ol: "list-decimal ml-6 my-2 relative space-y-1",
     ul: "list-disc ml-6 my-2 relative space-y-1",
     listitem: "ml-2 relative",
-    listitemChecked: "ml-2 line-through text-muted-foreground relative",
-    listitemUnchecked: "ml-2 relative",
+    // listitemChecked: "ml-2 line-through text-muted-foreground relative",
+    // listitemUnchecked: "ml-2 relative",
     olDepth: [
       "list-decimal",
       "list-[lower-alpha]",
@@ -35,7 +47,7 @@ export const theme = {
       "list-[upper-alpha]",
       "list-[upper-roman]",
     ],
-    checkbox: "mr-2 h-4 w-4 rounded border-muted",
+    checkbox: "mr-2 h-4 w-4 rounded border-muted-foreground",
   },
 
   // Enhanced code highlighting

@@ -68,6 +68,7 @@ import {
   Link,
   FileVideo,
   Type,
+  PaintRoller,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
@@ -114,10 +115,6 @@ function ComponentPickerMenuItem({
   onMouseEnter: () => void;
   option: ComponentPickerOption;
 }) {
-  let className = "item";
-  if (isSelected) {
-    className += " selected";
-  }
   return (
     <li
       key={option.key}
@@ -126,10 +123,10 @@ function ComponentPickerMenuItem({
         flex items-center px-3 py-2 text-sm cursor-pointer
         ${
           isSelected
-            ? "bg-primary-foreground text-primary"
+            ? "bg-primary/10 text-primary"
             : "text-foreground hover:bg-accent/10"
         }
-        transition-colors rounded-md
+        transition-colors duration-200 rounded-md
       `}
       ref={option.setRefElement}
       role="option"
@@ -138,8 +135,8 @@ function ComponentPickerMenuItem({
       onMouseEnter={onMouseEnter}
       onClick={onClick}
     >
-      <span className="mr-2">{option.icon}</span>
-      <span className="flex-1">{option.title}</span>
+      <span className="mr-2 flex-shrink-0">{option.icon}</span>
+      <span className="flex-1 truncate">{option.title}</span>
       {option.keyboardShortcut && (
         <span className="ml-auto text-xs text-muted-foreground">
           {option.keyboardShortcut}
@@ -247,9 +244,9 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
         editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined),
     }),
 
-    new ComponentPickerOption("To-do List", {
+    new ComponentPickerOption("Check List", {
       icon: (
-        <CheckSquare className="border  size-10 p-1 rounded-md text-muted-foreground" />
+        <CheckSquare className="border size-10 p-1 rounded-md text-muted-foreground" />
       ),
       keywords: ["check list", "todo list", "task", "todo"],
       onSelect: () =>
@@ -316,7 +313,9 @@ function getBaseOptions(editor: LexicalEditor, showModal: ShowModal) {
     //     editor.dispatchCommand(INSERT_EXCALIDRAW_COMMAND, undefined),
     // }),
     new ComponentPickerOption("Poll", {
-      icon: <i className="icon poll" />,
+      icon: (
+        <PaintRoller className="border  size-10 p-1 rounded-md text-muted-foreground" />
+      ),
       keywords: ["poll", "vote"],
       onSelect: () =>
         showModal("Insert Poll", (onClose) => (

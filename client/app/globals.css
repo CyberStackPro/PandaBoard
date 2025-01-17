@@ -301,9 +301,9 @@ body {
   }
 
   /* Drag Target Line */
-  .draggable-block-target-line {
+  /* .draggable-block-target-line {
     @apply pointer-events-none absolute left-0 top-0 h-0.5 w-full bg-primary opacity-0 transition-all duration-200 ease-in-out;
-  }
+  } */
 
   /* Mobile Optimizations */
   @media (max-width: 640px) {

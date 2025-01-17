@@ -1,49 +1,46 @@
 // components/editor/Editor.tsx
-import { EditorState, LexicalNode } from "lexical";
-import { useEffect, useState } from "react";
+import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+import { EditorState } from "lexical";
+import { useEffect, useState } from "react";
 import "./editor.css";
 // Import custom nodes
 // import MentionNode from "./nodes/MentionNode";
 
 // Additional node imports you might need
-import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { TableNode, TableCellNode, TableRowNode } from "@lexical/table";
-import { ListNode, ListItemNode } from "@lexical/list";
+import { MentionNode } from "@/components/editor/nodes/MentionNode";
 import { CodeNode } from "@lexical/code";
 import { AutoLinkNode, LinkNode } from "@lexical/link";
-import { MentionNode } from "@/components/editor/nodes/MentionNode";
-import ToolbarPlugin from "@/components/editor/plugins/ToolBar/ToolBarPlugin";
-import FloatingTextFormatToolbarPlugin from "@/components/editor/plugins/FloatingTextFormatToolbarPlugin";
-import ComponentPickerMenuPlugin from "@/components/editor/plugins/ComponentPickerPlugin";
-import DraggableBlockPlugin from "@/components/editor/plugins/DraggableBlock";
-import TableActionMenuPlugin from "@/components/editor/plugins/TableActionMenuPlugin";
-import { MentionPlugin } from "@/components/editor/plugins/MentionPlugin/MentionPlugin";
-import { CharacterCountPlugin } from "@/components/editor/plugins/CharacterCountPlugin/CharacterCountPlugin";
-import { LayoutContainerNode } from "@/components/editor/nodes/LayoutContainerNode";
+import { ListItemNode, ListNode } from "@lexical/list";
+import { HeadingNode, QuoteNode } from "@lexical/rich-text";
+import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
+// import ToolbarPlugin from "@/components/editor/plugins/ToolBar/ToolBarPlugin";
 import { EmojiNode } from "@/components/editor/nodes/EmojiNode";
-import { PageBreakNode } from "@/components/editor/nodes/PageBreakNode";
+import { LayoutContainerNode } from "@/components/editor/nodes/LayoutContainerNode";
 import { LayoutItemNode } from "@/components/editor/nodes/LayoutItemNode";
-import PageBreakPlugin from "@/components/editor/plugins/PageBreakPlugin";
-import { CollapsibleContentNode } from "@/components/editor/plugins/CollapsiblePlugin/CollapsibleContentNode";
-import CollapsiblePlugin from "@/components/editor/plugins/CollapsiblePlugin";
-import { CollapsibleTitleNode } from "@/components/editor/plugins/CollapsiblePlugin/CollapsibleTitleNode";
-import { useSettings } from "@/context/SettingsContext";
+import { PageBreakNode } from "@/components/editor/nodes/PageBreakNode";
 import { PollNode } from "@/components/editor/nodes/PollNode";
-import PollPlugin from "@/components/editor/plugins/PollPlugin";
-import { LayoutPlugin } from "@/components/editor/plugins/LayoutPlugin/LayoutPlugin";
-import { CAN_USE_DOM } from "@/lib/utils/lexical/can-use-DOM";
-import TableHoverActionsPlugin from "@/components/editor/plugins/TableHoverActionsPlugin";
+import { CharacterCountPlugin } from "@/components/editor/plugins/CharacterCountPlugin/CharacterCountPlugin";
+import { CollapsibleContentNode } from "@/components/editor/plugins/CollapsiblePlugin/CollapsibleContentNode";
+import { CollapsibleTitleNode } from "@/components/editor/plugins/CollapsiblePlugin/CollapsibleTitleNode";
+import ComponentPickerMenuPlugin from "@/components/editor/plugins/ComponentPickerPlugin";
 import DragDropPaste from "@/components/editor/plugins/DragDropPastePlugin";
-import MarkdownPlugin from "@/components/editor/plugins/MarkdownShortcutPlugin";
-import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
+import DraggableBlockPlugin from "@/components/editor/plugins/DraggableBlock";
+import FloatingTextFormatToolbarPlugin from "@/components/editor/plugins/FloatingTextFormatToolbarPlugin";
+import { LayoutPlugin } from "@/components/editor/plugins/LayoutPlugin/LayoutPlugin";
+import { MentionPlugin } from "@/components/editor/plugins/MentionPlugin/MentionPlugin";
+import PageBreakPlugin from "@/components/editor/plugins/PageBreakPlugin";
+import PollPlugin from "@/components/editor/plugins/PollPlugin";
+import TableActionMenuPlugin from "@/components/editor/plugins/TableActionMenuPlugin";
+import { CAN_USE_DOM } from "@/lib/utils/lexical/can-use-DOM";
+import { ListPlugin } from "@lexical/react/LexicalListPlugin";
+import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
+import ToolbarPlugin from "@/components/editor/plugins/ToolBar/ToolBarPlugin";
 import { theme } from "./theme";
 
 // function AutoFocusPlugin() {
@@ -100,8 +97,6 @@ export function Editor({ initialContent, onChange }: EditorProps) {
       QuoteNode,
       ListNode,
       ListItemNode,
-      // CheckListNode,
-      // CheckListItemNode,
       CodeNode,
       TableNode,
       TableCellNode,
@@ -175,6 +170,8 @@ export function Editor({ initialContent, onChange }: EditorProps) {
               />
             </>
           )}
+          <ListPlugin />
+          <CheckListPlugin />
           <PollPlugin />
           <MentionPlugin />
           <LayoutPlugin />

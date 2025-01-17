@@ -72,7 +72,7 @@ class HttpClient {
   public async handleTokenRefresh(failedRequest: AxiosRequestConfig) {
     try {
       const refreshToken = localStorage.getItem("panda-auth-store");
-      console.log("Refresh token:", refreshToken);
+      // console.log("Refresh token:", refreshToken);
 
       if (!refreshToken) throw new Error("Refresh token is missing");
 
