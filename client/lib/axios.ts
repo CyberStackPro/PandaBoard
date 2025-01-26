@@ -69,33 +69,33 @@ class HttpClient {
     );
   }
 
-  public async handleTokenRefresh(failedRequest: AxiosRequestConfig) {
+  // Update the handleTokenRefresh method in HttpClient class
+  private async handleTokenRefresh(failedRequest: AxiosRequestConfig) {
     try {
-      const refreshToken = localStorage.getItem("panda-auth-store");
-      // console.log("Refresh token:", refreshToken);
+      const { refreshToken } = useAuthStore.getState();
 
-      if (!refreshToken) throw new Error("Refresh token is missing");
+      if (!refreshToken) {
+        useAuthStore.getState().clearAuth();
+        throw new Error("No refresh token available");
+      }
 
-      const response = await axiosInstance.post("/auth/refresh", {
-        refreshToken,
+      const response = await axios.post(`${API_URL}/auth/refresh`, {
+        refresh_token: refreshToken, // Match backend expected field name
       });
 
-      const { access_token, user, refresh_token } = response.data;
+      const { access_token, refresh_token, user } = response.data;
 
       useAuthStore.getState().setAuth(user, access_token, refresh_token);
 
-      if (failedRequest && failedRequest.headers) {
+      if (failedRequest.headers) {
         failedRequest.headers.Authorization = `Bearer ${access_token}`;
       }
+
       return this.axiosInstance(failedRequest);
     } catch (error) {
-      //   if (error instanceof Error) {
-      //     console.log(error.message);
-      //   }
-      console.error("Failed to refresh token:", error);
-
       useAuthStore.getState().clearAuth();
-      return Promise.reject(error);
+      window.location.href = "/login";
+      throw error;
     }
   }
   public getAxiosInstance(): AxiosInstance {

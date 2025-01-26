@@ -126,39 +126,31 @@ export class AuthService {
       })
       .where(eq(schema.users.id, userId));
   }
-  async refreshTokens(
-    userId: string,
-    refreshToken: string,
-  ): Promise<AuthTokens> {
-    const user = await this.database.query.users.findFirst({
-      where: eq(schema.users.id, userId),
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    if (!user.refresh_token) {
-      throw new UnauthorizedException(
-        'No refresh token found - please login again',
-      );
-    }
+  async refreshTokens(refreshToken: string): Promise<AuthTokens> {
     try {
-      const refreshTokenMatches = await bcrypt.compare(
-        refreshToken,
-        user.refresh_token,
-      );
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET, // Use separate secret for refresh tokens
+      });
 
-      if (!refreshTokenMatches) {
+      const user = await this.database.query.users.findFirst({
+        where: eq(schema.users.id, payload.sub),
+      });
+
+      if (!user?.refresh_token) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      return this.generateAuthTokens(user.id, user.email);
+      const isValid = await bcrypt.compare(refreshToken, user.refresh_token);
+      if (!isValid) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      const newTokens = await this.generateAuthTokens(user.id, user.email);
+      return newTokens;
     } catch (error) {
-      console.error('Refresh token error:', error);
-      throw new UnauthorizedException(
-        'Invalid refresh token - please login again',
-      );
+      console.log(error);
+
+      throw new UnauthorizedException('Invalid refresh token');
     }
   }
 
@@ -167,8 +159,14 @@ export class AuthService {
     email: string,
   ): Promise<AuthTokens> {
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync({ sub: userId, email }, { expiresIn: '15m' }),
-      this.jwtService.signAsync({ sub: userId, email }, { expiresIn: '7d' }),
+      this.jwtService.signAsync(
+        { sub: userId, email },
+        { secret: process.env.JWT_ACCESS_SECRET, expiresIn: '15m' },
+      ),
+      this.jwtService.signAsync(
+        { sub: userId, email },
+        { secret: process.env.JWT_REFRESH_SECRET, expiresIn: '7d' },
+      ),
     ]);
 
     await this.database
