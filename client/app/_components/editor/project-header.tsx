@@ -25,8 +25,25 @@ export function ProjectHeader({
 }: ProjectHeaderProps) {
   const [tempName, setTempName] = useState(activeWorkspace?.name || "");
   const [isDraggingCover, setIsDraggingCover] = useState(false);
-  const [coverPosition, setCoverPosition] = useState(0);
+  const [coverPosition, setCoverPosition] = useState(50);
+  const [isRepositioning, setIsRepositioning] = useState(false);
+
+  const coverRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const compositionRef = useRef(false);
+
+  const handleCoverPosition = useCallback((clientY: number) => {
+    if (!coverRef.current || !headingRef.current) return;
+    setIsRepositioning(true);
+
+    const container = coverRef.current.getBoundingClientRect();
+    const yPosition = clientY - container.top;
+    const percentage = Math.max(
+      0,
+      Math.min(100, (yPosition / container.height) * 100)
+    );
+    setCoverPosition(percentage);
+  }, []);
 
   const debouncedRename = useMemo(
     () =>
@@ -42,6 +59,89 @@ export function ProjectHeader({
         }
       }, 300),
     [onRename, updateActiveWorkspace, activeWorkspace?.name]
+  );
+
+  const handleComposition = useCallback(
+    (e: React.CompositionEvent) => {
+      if (e.type === "compositionstart") {
+        compositionRef.current = true;
+        return;
+      }
+
+      compositionRef.current = false;
+      // Force update after composition ends
+      const newName = e.currentTarget.textContent || "";
+      setTempName(newName);
+      if (activeWorkspace?.id) {
+        debouncedRename(activeWorkspace.id, newName);
+      }
+    },
+    [activeWorkspace?.id, debouncedRename]
+  );
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (isRepositioning) {
+        e.preventDefault();
+        handleCoverPosition(e.clientY);
+      }
+    },
+    [isRepositioning, handleCoverPosition]
+  );
+  const handleTouchMove = useCallback(
+    (e: TouchEvent) => {
+      if (isRepositioning && e.touches[0]) {
+        e.preventDefault();
+        handleCoverPosition(e.touches[0].clientY);
+      }
+    },
+    [isRepositioning, handleCoverPosition]
+  );
+  const endRepositioning = useCallback(() => {
+    setIsRepositioning(false);
+    if (coverRef.current) {
+      coverRef.current.style.cursor = "grab";
+    }
+
+    // Save final position to your backend/store
+    if (activeWorkspace?.id) {
+      // Update your workspace data here
+      updateActiveWorkspace({ coverPosition });
+    }
+  }, [activeWorkspace?.id, coverPosition, updateActiveWorkspace]);
+
+  useEffect(() => {
+    if (isRepositioning) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("touchmove", handleTouchMove, {
+        passive: false,
+      });
+      document.addEventListener("mouseup", endRepositioning);
+      document.addEventListener("touchend", endRepositioning);
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("mouseup", endRepositioning);
+      document.removeEventListener("touchend", endRepositioning);
+    };
+  }, [isRepositioning, handleMouseMove, handleTouchMove, endRepositioning]);
+
+  const startRepositioning = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault();
+      setIsRepositioning(true);
+      if (coverRef.current) {
+        coverRef.current.style.cursor = "grabbing";
+      }
+
+      // Handle initial position for touch
+      if ("touches" in e && e.touches[0]) {
+        handleCoverPosition(e.touches[0].clientY);
+      }
+    },
+    [handleCoverPosition]
   );
 
   // Cover image handlers
@@ -115,63 +215,53 @@ export function ProjectHeader({
       {/* Cover Image Section */}
       {coverImage && (
         <div
-          className="relative w-full h-[25vh] max-h-[280px] group"
-          onMouseEnter={() => setIsDraggingCover(true)}
-          onMouseLeave={() => setIsDraggingCover(false)}
+          ref={coverRef}
+          className="relative w-full h-[25vh] max-h-[280px] group overflow-hidden"
+          style={{ cursor: isRepositioning ? "move" : "default" }}
         >
           <div
-            className={cn("w-full h-full relative overflow-hidden", {
-              "cursor-grabbing": isDraggingCover,
-            })}
-            draggable
-            onDrag={handleCoverDrag}
-            onDragEnd={() => setIsDraggingCover(false)}
-            onDragStart={() => setIsDraggingCover(true)}
+            className="w-full h-full relative"
+            onMouseDown={isRepositioning ? startRepositioning : undefined}
+            onTouchStart={isRepositioning ? startRepositioning : undefined}
           >
             <Image
               src={coverImage}
               alt="Cover"
               layout="fill"
-              className="object-cover transition-all duration-300"
+              className="object-cover select-none"
               style={{ objectPosition: `center ${coverPosition}%` }}
             />
           </div>
 
-          {/* Cover Controls */}
+          {/* Updated Cover Controls */}
           <div
             className={cn(
-              "absolute bottom-4 right-4 flex gap-1",
-              "bg-background/90 backdrop-blur-sm rounded-lg shadow-sm",
-              "opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              "absolute bottom-4 right-4 flex gap-2",
+              "bg-background/90 backdrop-blur-sm rounded-lg shadow-sm p-1",
+              "opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+              { "opacity-100": isRepositioning }
             )}
           >
-            {coverImage && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleAddCover}
-                className="text-sm hover:bg-background/90"
-              >
-                {coverImage ? "Change Cover" : "Add Cover"}
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleAddCover}
+              className="text-sm hover:bg-background/80"
+            >
+              {coverImage ? "Change" : "Add"}
+            </Button>
 
-            {coverImage && (
-              <>
-                <Separator
-                  orientation="vertical"
-                  className="h-[20px] my-auto"
-                />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-sm hover:bg-background/90"
-                  onClick={() => setIsDraggingCover(true)}
-                >
-                  Reposition
-                </Button>
-              </>
-            )}
+            <Separator orientation="vertical" className="h-[20px] my-auto" />
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-sm hover:bg-background/80"
+              onMouseDown={startRepositioning}
+              onTouchStart={startRepositioning}
+            >
+              Reposition
+            </Button>
           </div>
         </div>
       )}
@@ -191,18 +281,19 @@ export function ProjectHeader({
             suppressContentEditableWarning
             onInput={handleInput}
             onKeyDown={handleKeyDown}
+            onCompositionStart={handleComposition}
+            onCompositionEnd={handleComposition}
             onBlur={handleBlur}
-            data-placeholder={tempName || "Untitled Project"}
+            data-placeholder={"Untitled Project"}
             className={cn(
-              "outline-none w-full px-1 whitespace-pre-wrap break-words",
+              "outline-none w-full px-1 ",
               "text-4xl font-bold",
               "empty:before:content-[attr(data-placeholder)]",
-              "empty:before:text-muted-foreground/60",
-              "focus:ring-1 focus:ring-primary/20 rounded-sm"
+              "empty:before:text-muted-foreground/60"
             )}
-          >
-            {tempName}
-          </h1>
+          />
+          {/* {tempName}
+          </h1> */}
         </div>
       </div>
     </div>

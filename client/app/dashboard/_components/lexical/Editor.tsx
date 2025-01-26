@@ -153,6 +153,7 @@ export function Editor({ initialContent, onChange }: EditorProps) {
           {floatingAnchorElem && !isSmallWidthViewport && (
             <>
               <DraggableBlockPlugin anchorElem={floatingAnchorElem} />
+
               {/* <CodeActionMenuPlugin anchorElem={floatingAnchorElem} />
                 <FloatingLinkEditorPlugin
                   anchorElem={floatingAnchorElem}

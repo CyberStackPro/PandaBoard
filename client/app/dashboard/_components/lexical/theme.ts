@@ -22,7 +22,7 @@ export const theme = {
     nested: {
       listitem: "ml-6 relative",
     },
-    listitemChecked: `relative my-1 pl-8 before:absolute before:left-0 before:top-1 
+    listitemChecked: `list-none relative my-1 pl-8 before:absolute before:left-0 before:top-1 
                       before:h-4 before:w-4 before:rounded 
                       before:border before:border-primary before:bg-primary
                       before:content-[''] text-muted-foreground line-through
@@ -30,7 +30,7 @@ export const theme = {
                       after:h-[6px] after:w-[3px] after:rotate-45
                       after:border-r-2 after:border-b-2 after:border-white
                       after:content-['']`,
-    listitemUnchecked: `relative my-1 pl-8 before:absolute before:left-0 before:top-1 
+    listitemUnchecked: `list-none relative my-1 pl-8 before:absolute before:left-0 before:top-1 
                         before:h-4 before:w-4 before:rounded 
                         before:border before:border-muted-foreground
                         before:content-[''] hover:before:border-primary
