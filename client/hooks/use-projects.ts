@@ -50,7 +50,7 @@ export const useProjects = () => {
         socketRef.current = null;
       }
     };
-  }, [user?.id]);
+  }, [user?.id, userId]);
   const handleCreateProject = useCallback(
     (pId: string | null, type: "folder" | "file") => {
       setDialogType(type);

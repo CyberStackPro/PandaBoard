@@ -6,6 +6,7 @@ import { Workspace } from "@/types/workspace";
 import debounce from "lodash.debounce";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { is } from "../../../.next/server/chunks/ssr/f416f_next_acb7a8._";
 
 interface ProjectHeaderProps {
   activeWorkspace?: Workspace | null;
@@ -144,21 +145,6 @@ export function ProjectHeader({
     [handleCoverPosition]
   );
 
-  // Cover image handlers
-  const handleCoverDrag = useCallback(
-    (e: React.DragEvent) => {
-      if (!isDraggingCover) return;
-      const container = e.currentTarget.getBoundingClientRect();
-      const y = e.clientY - container.top;
-      const percentage = Math.max(
-        0,
-        Math.min(100, (y / container.height) * 100)
-      );
-      setCoverPosition(percentage);
-    },
-    [isDraggingCover]
-  );
-
   const handleAddCover = useCallback(() => {
     const newCover = prompt("Enter cover image URL:");
     if (newCover) onCoverImageChange(newCover);
@@ -170,17 +156,21 @@ export function ProjectHeader({
   }, [onCoverImageChange]);
 
   // Title editing handlers
+  // Update handleInput in ProjectHeader
   const handleInput = useCallback(() => {
     if (headingRef.current) {
       const newName = headingRef.current.textContent || "";
       setTempName(newName);
 
+      // Immediate local update
+      updateActiveWorkspace({ name: newName });
+
+      // Debounced API call
       if (activeWorkspace?.id) {
         debouncedRename(activeWorkspace.id, newName);
       }
     }
-  }, [activeWorkspace?.id, debouncedRename]);
-
+  }, [activeWorkspace?.id, debouncedRename, updateActiveWorkspace]);
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLHeadingElement>) => {
       if (e.key === "Enter") {
@@ -216,13 +206,14 @@ export function ProjectHeader({
       {coverImage && (
         <div
           ref={coverRef}
-          className="relative w-full h-[25vh] max-h-[280px] group overflow-hidden"
+          className="relative w-full h-[30vh]    group overflow-hidden"
           style={{ cursor: isRepositioning ? "move" : "default" }}
         >
           <div
             className="w-full h-full relative"
-            onMouseDown={isRepositioning ? startRepositioning : undefined}
+            // onMouseDown={isRepositioning ? startRepositioning : undefined}
             onTouchStart={isRepositioning ? startRepositioning : undefined}
+            onMouseDown={isRepositioning ? startRepositioning : undefined}
           >
             <Image
               src={coverImage}
@@ -231,6 +222,13 @@ export function ProjectHeader({
               className="object-cover select-none"
               style={{ objectPosition: `center ${coverPosition}%` }}
             />
+            {isRepositioning && (
+              <div className="flex justify-center items-center absolute top-0 left-0 right-0 bottom-0">
+                <div className=" h-6 w-52 text-center text-sm flex justify-center  rounded-md  bg-background/50">
+                  Drag to reposition
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Updated Cover Controls */}
@@ -251,7 +249,7 @@ export function ProjectHeader({
               {coverImage ? "Change" : "Add"}
             </Button>
 
-            <Separator orientation="vertical" className="h-[20px] my-auto" />
+            <Separator orientation="vertical" className="h-[10px] my-auto" />
 
             <Button
               variant="ghost"
@@ -260,7 +258,7 @@ export function ProjectHeader({
               onMouseDown={startRepositioning}
               onTouchStart={startRepositioning}
             >
-              Reposition
+              {isRepositioning ? "Cancel" : "Reposition"}
             </Button>
           </div>
         </div>
@@ -292,8 +290,6 @@ export function ProjectHeader({
               "empty:before:text-muted-foreground/60"
             )}
           />
-          {/* {tempName}
-          </h1> */}
         </div>
       </div>
     </div>

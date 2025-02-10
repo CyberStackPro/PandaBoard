@@ -7,7 +7,7 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { EditorState } from "lexical";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./editor.css";
 // Import custom nodes
 // import MentionNode from "./nodes/MentionNode";
@@ -86,40 +86,52 @@ export function Editor({ initialContent, onChange }: EditorProps) {
     }
   };
 
-  const initialConfig = {
-    namespace: "MyEditor",
-    theme,
-    onError: (error: Error) => {
-      console.error(error);
-    },
-    nodes: [
-      HeadingNode,
-      QuoteNode,
-      ListNode,
-      ListItemNode,
-      CodeNode,
-      TableNode,
-      TableCellNode,
-      TableRowNode,
-      AutoLinkNode,
-      PollNode,
-      LinkNode,
-      MentionNode,
-      EmojiNode,
-      PageBreakNode,
-      CollapsibleContentNode,
-      CollapsibleTitleNode,
-      LayoutContainerNode,
-      LayoutItemNode,
-      // Special
-    ],
-    // editorState: initialContent,
-  };
+  const initialConfig = useMemo(() => {
+    let parsedContent = undefined;
+
+    if (initialContent) {
+      try {
+        // Parse the JSON string into an object
+        parsedContent = JSON.parse(initialContent);
+      } catch (error) {
+        console.error("Failed to parse initial content:", error);
+      }
+    }
+
+    return {
+      namespace: "MyEditor",
+      theme,
+      onError: (error: Error) => {
+        console.error(error);
+      },
+      nodes: [
+        HeadingNode,
+        QuoteNode,
+        ListNode,
+        ListItemNode,
+        CodeNode,
+        TableNode,
+        TableCellNode,
+        TableRowNode,
+        AutoLinkNode,
+        PollNode,
+        LinkNode,
+        MentionNode,
+        EmojiNode,
+        PageBreakNode,
+        CollapsibleContentNode,
+        CollapsibleTitleNode,
+        LayoutContainerNode,
+        LayoutItemNode,
+      ],
+      editorState: parsedContent ? JSON.stringify(parsedContent) : undefined,
+    };
+  }, [initialContent]);
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="relative pt-2 ">
-        <ToolbarPlugin />
+        {/* <ToolbarPlugin /> */}
 
         <div className="editor-container  relative">
           <RichTextPlugin

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   SidebarInset,
   SidebarProvider,
@@ -20,20 +20,25 @@ import { Input } from "@/components/ui/input";
 import { ProjectIcon } from "@/components/sidebar/project-icon";
 import { useWorkspaceActions } from "@/hooks/workspace/use-workspace-actions";
 import { useAuthStore } from "@/stores/auth/auth-store";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <SidebarProvider>
-      <div className="relative flex min-h-screen w-full">
-        <AppSidebar />
-        <div className="flex flex-1 flex-col min-w-0">
-          <Header />
-          <SidebarInset>
+    <QueryClientProvider client={queryClient}>
+      <SidebarProvider>
+        <div className="relative !bg-[#111110] flex min-h-screen w-full">
+          <AppSidebar />
+          <div className="flex flex-1 !bg-[#111110] flex-col min-w-0">
+            <Header />
+            {/* <SidebarInset> */}
             <main className="relative flex-1  mx-auto w-full">{children}</main>
-          </SidebarInset>
+            {/* </SidebarInset> */}
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </QueryClientProvider>
   );
 };
 
@@ -50,16 +55,48 @@ export function Header() {
   const [tempName, setTempName] = useState(activeWorkspace?.name || "");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = async (newName: string) => {
-    if (activeWorkspace && newName.trim() && newName !== activeWorkspace.name) {
-      await handleRename(activeWorkspace.id, newName);
+  const handleSubmit = useCallback(
+    async (newName: string) => {
+      if (
+        activeWorkspace &&
+        newName.trim() &&
+        newName !== activeWorkspace.name
+      ) {
+        await handleRename(activeWorkspace.id, newName);
 
-      // if (activeWorkspace.id === activeWorkspace?.id) {
-      updateActiveWorkspace({ name: newName.trim() });
-      // }
+        // if (activeWorkspace.id === activeWorkspace?.id) {
+        updateActiveWorkspace({ name: newName.trim() });
+        // }
+      }
+      setIsEditing(false);
+    },
+    [activeWorkspace, handleRename, updateActiveWorkspace]
+  );
+  // const handleSubmit = async (newName: string) => {
+  //   if (activeWorkspace && newName.trim() && newName !== activeWorkspace.name) {
+  //     await handleRename(activeWorkspace.id, newName);
+
+  //     // if (activeWorkspace.id === activeWorkspace?.id) {
+  //     updateActiveWorkspace({ name: newName.trim() });
+  //     // }
+  //   }
+  //   setIsEditing(false);
+  // };
+  const handleBlur = useCallback(() => {
+    const newName = tempName.trim();
+    if (newName && activeWorkspace?.id) {
+      handleRename(activeWorkspace.id, newName);
+      handleSubmit(tempName);
+
+      updateActiveWorkspace({ name: newName });
     }
-    setIsEditing(false);
-  };
+  }, [
+    tempName,
+    activeWorkspace,
+    handleRename,
+    updateActiveWorkspace,
+    handleSubmit,
+  ]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -92,7 +129,7 @@ export function Header() {
                     value={tempName}
                     onChange={(e) => setTempName(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    onBlur={() => handleSubmit(tempName)}
+                    onBlur={handleBlur}
                     className="h-7 w-[200px]"
                     autoFocus
                   />
