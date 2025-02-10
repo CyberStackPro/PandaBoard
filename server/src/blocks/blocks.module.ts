@@ -7,5 +7,6 @@ import { DatabaseModule } from 'src/database/database.module';
   imports: [DatabaseModule],
   controllers: [BlocksController],
   providers: [BlocksService],
+  exports: [BlocksService],
 })
 export class BlocksModule {}

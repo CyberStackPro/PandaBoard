@@ -23,7 +23,7 @@ export const CreateDocumentSchema = z.object({
   project_id: z.string().uuid('Project ID must be a valid UUID'),
   parent_id: z.string().uuid('Parent ID must be a valid UUID').optional(),
   status: DocumentStatusEnum.default('draft'),
-  content: z.record(z.any()).default({}),
+  // content: z.record(z.any()).default({}),
   metadata: z.record(z.any()).optional(),
   version: z
     .number()

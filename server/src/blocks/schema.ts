@@ -46,9 +46,13 @@ export const blocksRelations = relations(blocks, ({ one, many }) => ({
     fields: [blocks.document_id],
     references: [documents.id],
   }),
+  // Both sides now share the same relation name 'childBlocks'
   parentBlock: one(blocks, {
+    relationName: 'childBlocks',
     fields: [blocks.parent_block_id],
     references: [blocks.id],
   }),
-  childBlocks: many(blocks),
+  childBlocks: many(blocks, {
+    relationName: 'childBlocks',
+  }),
 }));

@@ -8,17 +8,37 @@ import { DATABASE_CONNECTION } from 'src/database/database-connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from './schema';
 import { eq } from 'drizzle-orm';
+import { BlocksService } from 'src/blocks/blocks.service';
+import { CreateBlockDto } from 'src/blocks/dto/block.dto';
 
 @Injectable()
 export class DocumentsService {
   constructor(
     @Inject(DATABASE_CONNECTION)
     private readonly database: NodePgDatabase<typeof schema>,
+    private readonly blocksService: BlocksService,
     // private readonly documentsGateway: DocumentsGateway
   ) {}
 
-  async createDocument(documents: CreateDocumentDto) {
-    return this.database.insert(schema.documents).values(documents).returning();
+  async createDocumentWithBlocks(data: {
+    document: CreateDocumentDto;
+    blocks: CreateBlockDto[];
+  }) {
+    const insertedDocuments = await this.database
+      .insert(schema.documents)
+      .values(data.document)
+      .returning();
+    const newDocument = insertedDocuments[0];
+
+    if (data.blocks.length > 0) {
+      const blocksWithDocumentId = data.blocks.map((block) => ({
+        ...block,
+        document_id: newDocument.id,
+      }));
+      await this.blocksService.createManyBlocks(blocksWithDocumentId);
+    }
+
+    return this.findDocumentById(newDocument.id);
   }
 
   async findDocumentsByProject(projectId: string) {

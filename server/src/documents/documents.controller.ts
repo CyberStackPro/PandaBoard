@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { DocumentsService } from './documents.service';
 import {
-  CreateDocumentDto,
+  // CreateDocumentDto,
   CreateDocumentSchema,
   UpdateDocumentDto,
   UpdateDocumentSchema,
@@ -22,12 +22,12 @@ import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
-  @Post()
+  @Post('create')
   createDocument(
     @Body(new ZodValidationPipe(CreateDocumentSchema))
-    documents: CreateDocumentDto,
+    documents: any,
   ) {
-    return this.documentsService.createDocument(documents);
+    return this.documentsService.createDocumentWithBlocks(documents as any);
   }
 
   @Get('project/:projectId')
@@ -37,7 +37,7 @@ export class DocumentsController {
     return this.documentsService.findDocumentsByProject(projectId);
   }
 
-  @Get(':id')
+  @Get(':id/blocks')
   findDocumentById(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.documentsService.findDocumentById(id);
   }
