@@ -4,6 +4,7 @@ import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "../_components/sidebar/app-sidebar";
 
@@ -21,22 +22,51 @@ import { ProjectIcon } from "@/components/sidebar/project-icon";
 import { useWorkspaceActions } from "@/hooks/workspace/use-workspace-actions";
 import { useAuthStore } from "@/stores/auth/auth-store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 const queryClient = new QueryClient();
+
+const DashboardContent = ({ children }: { children: React.ReactNode }) => {
+  const { state, setOpen } = useSidebar();
+
+  return (
+    <ResizablePanelGroup direction="horizontal" className="min-h-screen ">
+      <ResizablePanel
+        defaultSize={20}
+        minSize={15}
+        maxSize={40}
+        onResize={(size) => {
+          if (size < 20) {
+            setOpen(false);
+          } else {
+            setOpen(true);
+          }
+        }}
+      >
+        <AppSidebar />
+      </ResizablePanel>
+      <ResizableHandle withHandle />
+      <ResizablePanel defaultSize={50}>
+        <div className="flex flex-1 flex-col bg-[#111110]">
+          <Header />
+          <SidebarInset>
+            <main className="relative flex-1 mx-auto w-full">{children}</main>
+          </SidebarInset>
+        </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
+  );
+};
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
       <SidebarProvider>
-        <div className="relative !bg-[#111110] flex min-h-screen w-full">
-          <AppSidebar />
-          <div className="flex flex-1 !bg-[#111110] flex-col min-w-0">
-            <Header />
-            {/* <SidebarInset> */}
-            <main className="relative flex-1  mx-auto w-full">{children}</main>
-            {/* </SidebarInset> */}
-          </div>
-        </div>
+        <DashboardContent>{children}</DashboardContent>
       </SidebarProvider>
     </QueryClientProvider>
   );

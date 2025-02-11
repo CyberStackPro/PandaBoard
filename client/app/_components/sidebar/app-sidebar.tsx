@@ -48,8 +48,8 @@ export function AppSidebar({
     // <div className="relative  group-data-[variant=floating]:border-0">
     // {/* <div className="absolute inset-y-0 right-0 w-3 bg-white filter blur-md opacity-100"></div> */}
     <Sidebar
-      className="border-r-0 backdrop-blur-sm bg-background/50"
-      collapsible="offcanvas"
+      className="border-r-0 backdrop-blur-sm bg-background/50 "
+      // collapsible="offcanvas"
       {...props}
     >
       <SidebarHeader>

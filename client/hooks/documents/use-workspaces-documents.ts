@@ -1,22 +1,28 @@
-// import APIClient from "@/services/api-client";
-// import { Project } from "@/types/project";
-// import { useEffect, useState } from "react";
+import APIClient from "@/services/api-client";
+import { useStore } from "@/stores/store";
+import { Workspace } from "@/types/workspace";
+import { useToast } from "../use-toast";
 
-// const apiClient = new APIClient(
-//   "/projects/owner/8ac84726-7c67-4c1b-a18f-aa8bd52710dc"
-// );
-// export const useWorkspace = () => {
-//   const [workspaces, setWorkspace] = useState<Project[]>();
-//   const [error, setError] = useState<string | null>(null);
-//   const [loading, setLoading] = useState(false);
-//   console.log(workspaces);
+const documentsAPI = new APIClient<Workspace>("/documents");
+export const useWorkspaceActions = (userId: string) => {
 
-//   useEffect(() => {
-//     apiClient
-//       .get()
-//       .then((res) => setWorkspace(res))
-//       .catch((err) => console.log(err));
-//   }, []);
+  const { toast } = useToast();
+  //   const setActiveWorkspace = useStore((state) => state.setActiveWorkspace);
 
-//   return { workspaces };
-// };
+  const handleRename = async (workspaceId: string, newName: string) => {
+    try {
+      await documentsAPI.patch(`/${workspaceId}`, { name: newName });
+      updateWorkspace(workspaceId, { name: newName });
+    } catch (error) {
+      console.error("Failed to rename Workspace:", error.message);
+      // toast({
+      //   title: "Failed to rename Workspace",
+      //   message: error.message,
+      //   type: "foreground",
+      // });
+
+      await fetchWorkspaces(userId);
+      throw error;
+    }
+  };
+}
