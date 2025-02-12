@@ -42,7 +42,7 @@ const Page = ({ params }: PageProps) => {
       console.log("ROOTED", editorStateJson);
     });
 
-    // handleEditorChange(editorState);
+    handleEditorChange(editorState);
   }
 
   useEffect(() => {

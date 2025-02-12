@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   CreateDocumentDto,
   UpdateDocumentDto,
@@ -13,6 +13,7 @@ import { CreateBlockDto } from 'src/blocks/dto/block.dto';
 
 @Injectable()
 export class DocumentsService {
+  private readonly logger = new Logger(DocumentsService.name);
   constructor(
     @Inject(DATABASE_CONNECTION)
     private readonly database: NodePgDatabase<typeof schema>,
@@ -24,6 +25,10 @@ export class DocumentsService {
     document: CreateDocumentDto;
     blocks: CreateBlockDto[];
   }) {
+    this.logger.log('Entering createDocumentWithBlocks service:'); // Add logs
+    this.logger.debug(`Type of data: ${typeof data}`);
+    this.logger.debug(`Data object received: ${JSON.stringify(data, null, 2)}`);
+
     const insertedDocuments = await this.database
       .insert(schema.documents)
       .values(data.document)
@@ -37,8 +42,10 @@ export class DocumentsService {
       }));
       await this.blocksService.createManyBlocks(blocksWithDocumentId);
     }
+    console.log(newDocument);
 
     return this.findDocumentById(newDocument.id);
+    // return data;
   }
 
   async findDocumentsByProject(projectId: string) {

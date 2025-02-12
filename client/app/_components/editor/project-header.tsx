@@ -106,7 +106,7 @@ export function ProjectHeader({
     // Save final position to your backend/store
     if (activeWorkspace?.id) {
       // Update your workspace data here
-      updateActiveWorkspace({ coverPosition });
+      // updateActiveWorkspace({ coverPosition });
     }
   }, [activeWorkspace?.id, coverPosition, updateActiveWorkspace]);
 
@@ -205,7 +205,7 @@ export function ProjectHeader({
       {coverImage && (
         <div
           ref={coverRef}
-          className="relative w-full h-[30vh]    group overflow-hidden"
+          className="relative w-full h-[50vh]    group overflow-hidden"
           style={{ cursor: isRepositioning ? "move" : "default" }}
         >
           <div

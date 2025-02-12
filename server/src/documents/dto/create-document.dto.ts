@@ -1,3 +1,4 @@
+import { CreateBlockSchema } from 'src/blocks/dto/block.dto';
 import { z } from 'zod';
 
 // Enums
@@ -44,3 +45,11 @@ export const UpdateDocumentSchema = CreateDocumentSchema.partial();
 // Type Definitions
 export type CreateDocumentDto = z.infer<typeof CreateDocumentSchema>;
 export type UpdateDocumentDto = z.infer<typeof UpdateDocumentSchema>;
+
+export const CreateDocumentWithBlocksSchema = z.object({
+  document: CreateDocumentSchema,
+  blocks: z.array(CreateBlockSchema).default([]),
+});
+export type CreateDocumentWithBlocksDto = z.infer<
+  typeof CreateDocumentWithBlocksSchema
+>;

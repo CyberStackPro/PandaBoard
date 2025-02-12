@@ -9,6 +9,11 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
 export function useEditorContent(documentId: string) {
+  const documents = {
+    // data: {
+    //   blocks: []
+    // }
+  };
   const { mutateAsync: saveBlocks } = useMutation({
     mutationFn: (blocks: Block[]) =>
       axios.post(`http://localhost:4000/api/v1/documents/create`, { blocks }),
