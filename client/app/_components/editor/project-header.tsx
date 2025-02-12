@@ -6,7 +6,6 @@ import { Workspace } from "@/types/workspace";
 import debounce from "lodash.debounce";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { is } from "../../../.next/server/chunks/ssr/f416f_next_acb7a8._";
 
 interface ProjectHeaderProps {
   activeWorkspace?: Workspace | null;
@@ -25,7 +24,7 @@ export function ProjectHeader({
   updateActiveWorkspace,
 }: ProjectHeaderProps) {
   const [tempName, setTempName] = useState(activeWorkspace?.name || "");
-  const [isDraggingCover, setIsDraggingCover] = useState(false);
+  // const [isDraggingCover, setIsDraggingCover] = useState(false);
   const [coverPosition, setCoverPosition] = useState(50);
   const [isRepositioning, setIsRepositioning] = useState(false);
 
@@ -212,8 +211,8 @@ export function ProjectHeader({
           <div
             className="w-full h-full relative"
             // onMouseDown={isRepositioning ? startRepositioning : undefined}
-            onTouchStart={isRepositioning ? startRepositioning : undefined}
-            onMouseDown={isRepositioning ? startRepositioning : undefined}
+            // onTouchStart={isRepositioning ? startRepositioning : undefined}
+            // onMouseDown={isRepositioning ? startRepositioning : undefined}
           >
             <Image
               src={coverImage}
@@ -254,9 +253,13 @@ export function ProjectHeader({
             <Button
               variant="ghost"
               size="sm"
-              className="text-sm hover:bg-background/80"
-              onMouseDown={startRepositioning}
-              onTouchStart={startRepositioning}
+              className="text-sm z-50 hover:bg-background/80"
+              onClick={
+                () => setIsRepositioning(!isRepositioning)
+                // setIsRepositioning(!isRepositioning);
+              }
+              // onMouseDown={startRepositioning}
+              // onTouchStart={startRepositioning}
             >
               {isRepositioning ? "Cancel" : "Reposition"}
             </Button>
