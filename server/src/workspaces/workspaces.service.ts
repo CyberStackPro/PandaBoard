@@ -21,6 +21,7 @@ import {
   UnauthorizedWorkspaceAccessException,
   WorkspaceNotFoundException,
 } from 'src/exceptions/workspace.exceptions';
+import { DocumentsService } from 'src/documents/documents.service';
 
 @Injectable()
 export class WorkspacesService {
@@ -30,7 +31,37 @@ export class WorkspacesService {
     private readonly database: NodePgDatabase<typeof schema>,
     private readonly workspacesGateway: WorkspacesGateway,
     private readonly trashService: TrashServices,
+    private readonly documentsService: DocumentsService,
   ) {}
+  //   async updateWorkspace(id: string, workspace: UpdateWorkspaceDto) {
+  //     const existingWorkspace = await this.findWorkspaceById(id);
+
+  //     try {
+  //         const updatedWorkspace = await this.database
+  //             .update(schema.workspaces)
+  //             .set(workspace)
+  //             .where(eq(schema.workspaces.id, id))
+  //             .returning();
+
+  //         if (updatedWorkspace[0]) {
+  //             this.workspacesGateway.emitToUser(
+  //                 updatedWorkspace[0].owner_id,
+  //                 'onWorkspaceUpdated',
+  //                 updatedWorkspace[0],
+  //             );
+
+  //             // Update linked document title if workspace is a 'file' and name changed
+  //             if (updatedWorkspace[0].type === 'file' && workspace.name && workspace.name !== existingWorkspace.name) { // Check if name is being updated and is different
+  //                 await this.documentsService.updateDocumentByWorkspaceId(updatedWorkspace[0].id, {
+  //                     title: workspace.name,
+  //                 });
+  //             }
+  //         }
+  //         return updatedWorkspace[0];
+  //     } catch (e) {
+  //         // ... error handling ...
+  //     }
+  // }
   async createWorkspace(workspace: CreateWorkspaceDto) {
     const userExists = await this.database.query.workspaces.findFirst({
       where: (users, { eq }) => eq(users.id, workspace.owner_id),
@@ -56,11 +87,21 @@ export class WorkspacesService {
       })
       .returning();
 
+    const newWorkspace = result[0];
+
+    let linkedDocument = '';
+    if (newWorkspace.type === 'file') {
+      linkedDocument = await this.documentsService.createDocument({
+        workspace_id: newWorkspace.id,
+        title: newWorkspace.name,
+      });
+    }
+
     // Emit the new workspace to all connected clients
     this.workspacesGateway.emitToUser(
       workspace.owner_id,
       'onWorkspaceCreated',
-      result[0],
+      newWorkspace,
     );
     return result;
   }

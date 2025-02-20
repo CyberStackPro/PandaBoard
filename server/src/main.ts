@@ -12,7 +12,7 @@ async function bootstrap() {
       'Origin, X-Requested-With, Content-Type, Accept, Authorization',
     credentials: true,
 
-    // methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   });
   await app.listen(process.env.PORT ?? 4000);
 }

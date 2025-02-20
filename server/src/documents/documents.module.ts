@@ -9,5 +9,6 @@ import { BlocksModule } from 'src/blocks/blocks.module';
   imports: [DatabaseModule, BlocksModule],
   controllers: [DocumentsController],
   providers: [DocumentsService],
+  exports: [DocumentsService],
 })
 export class DocumentsModule {}

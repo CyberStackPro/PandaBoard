@@ -1,6 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   CreateDocumentDto,
+  UpdateDocumentContentDto,
   UpdateDocumentDto,
 } from './dto/create-document.dto';
 
@@ -20,6 +21,25 @@ export class DocumentsService {
     private readonly blocksService: BlocksService,
     // private readonly documentsGateway: DocumentsGateway
   ) {}
+
+  async createDocument(
+    documentData: Omit<
+      CreateDocumentDto,
+      | 'content'
+      | 'metadata'
+      | 'status'
+      | 'version'
+      | 'icon'
+      | 'cover_image'
+      | 'last_edited_by'
+    >,
+  ) {
+    const insertedDocuments = await this.database
+      .insert(schema.documents)
+      .values(documentData) // Use provided document data
+      .returning();
+    return insertedDocuments[0];
+  }
 
   async createDocumentWithBlocks(data: {
     document: CreateDocumentDto;
@@ -48,7 +68,7 @@ export class DocumentsService {
     // return data;
   }
 
-  async findDocumentsByProject(projectId: string) {
+  async findDocumentsByWorkspce(projectId: string) {
     return this.database.query.documents.findMany({
       where: (documents, { eq }) => eq(documents.project_id, projectId),
       with: {
@@ -75,6 +95,17 @@ export class DocumentsService {
         },
       },
     });
+  }
+
+  async updateDocumentContent(
+    id: string,
+    updateDocumentContentDto: UpdateDocumentContentDto,
+  ) {
+    return this.database
+      .update(schema.documents)
+      .set({ content: updateDocumentContentDto.content }) // Only update the content field
+      .where(eq(schema.documents.id, id))
+      .returning();
   }
 
   async updateDocument(id: string, document: UpdateDocumentDto) {

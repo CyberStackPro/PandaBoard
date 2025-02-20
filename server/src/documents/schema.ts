@@ -31,7 +31,7 @@ export const documents = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom().notNull(),
     title: varchar('title', { length: 255 }).notNull(),
-    project_id: uuid('project_id')
+    workspace_id: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id, { onDelete: 'cascade' }),
     parent_id: uuid('parent_id').references(() => documents.id, {
@@ -49,7 +49,7 @@ export const documents = pgTable(
     ...timestamps,
   },
   (table) => ({
-    projectIdIdx: index('documents_project_id_idx').on(table.project_id),
+    projectIdIdx: index('documents_workspace_id_idx').on(table.workspace_id),
     parentIdx: index('documents_parent_id_idx').on(table.parent_id),
     titleIdx: index('documents_title_idx').on(table.title),
     // Full-text search index
@@ -101,7 +101,7 @@ export const documents = pgTable(
 //   }));
 export const documentsRelations = relations(documents, ({ one }) => ({
   project: one(workspaces, {
-    fields: [documents.project_id],
+    fields: [documents.workspace_id],
     references: [workspaces.id],
   }),
   lastEditedBy: one(users, {

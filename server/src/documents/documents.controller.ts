@@ -16,6 +16,8 @@ import {
   CreateDocumentSchema,
   CreateDocumentWithBlocksDto,
   CreateDocumentWithBlocksSchema,
+  UpdateDocumentContentDto,
+  UpdateDocumentContentSchema,
   UpdateDocumentDto,
   UpdateDocumentSchema,
 } from './dto/create-document.dto';
@@ -30,12 +32,14 @@ export class DocumentsController {
 
   @Post('create')
   createDocument(
-    @Body(new ZodValidationPipe(CreateDocumentWithBlocksSchema))
-    documents // documents: {
+    @Body(new ZodValidationPipe(CreateDocumentWithBlocksSchema)) // documents: {
     //   document: CreateDocumentDto;
-    //   blocks: CreateBlockDto[];
+    documents //   blocks: CreateBlockDto[];
     // },
-    : CreateDocumentWithBlocksDto,
+    : {
+      document: CreateDocumentDto;
+      blocks: CreateBlockDto[];
+    },
   ) {
     this.logger.log('Received documents in controller:'); // Add logs
     this.logger.debug(`Type of documents: ${typeof documents}`);
@@ -47,10 +51,10 @@ export class DocumentsController {
   }
 
   @Get('project/:projectId')
-  findDocumentsByProject(
+  findDocumentsByWorkspce(
     @Param('projectId', new ParseUUIDPipe()) projectId: string,
   ) {
-    return this.documentsService.findDocumentsByProject(projectId);
+    return this.documentsService.findDocumentsByWorkspce(projectId);
   }
 
   @Get(':id/blocks')
@@ -65,6 +69,30 @@ export class DocumentsController {
     updateDocumentDto: UpdateDocumentDto,
   ) {
     return this.documentsService.updateDocument(id, updateDocumentDto);
+  }
+  // @Patch(':id') // Keep this for updating document metadata (title, status, etc.)
+  // updateDocumentMetadata( // Renamed for clarity
+  //     @Param('id', new ParseUUIDPipe()) id: string,
+  //     @Body(new ZodValidationPipe(UpdateDocumentSchema))
+  //     updateDocumentDto: UpdateDocumentDto,
+  // ) {
+  //     return this.documentsService.updateDocument(id, updateDocumentDto); // Keep using updateDocument for metadata updates
+  // }
+  @Patch(':id/content') // New endpoint for updating document content (blocks)
+  updateDocumentContent(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body(new ZodValidationPipe(UpdateDocumentContentSchema)) // Use new schema
+    updateDocumentContentDto: UpdateDocumentContentDto, // Use new DTO
+  ) {
+    // this.logger.log('Received documents in controller:'); // Add logs
+    // this.logger.debug(`Type of documents: ${typeof updateDocumentContentDto}`);
+    // this.logger.debug(
+    //   `updateDocumentContentDto object: ${JSON.stringify(updateDocumentContentDto, null, 2)}`,
+    // );
+    return this.documentsService.updateDocumentContent(
+      id,
+      updateDocumentContentDto,
+    ); // Call new service function
   }
 
   @Delete(':id')

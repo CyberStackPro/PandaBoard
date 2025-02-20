@@ -21,7 +21,7 @@ export const CreateDocumentSchema = z.object({
     .string()
     .min(5, 'Document title is required')
     .max(255, 'Title cannot exceed 255 characters'),
-  project_id: z.string().uuid('Project ID must be a valid UUID'),
+  workspace_id: z.string().uuid('Project ID must be a valid UUID'),
   parent_id: z.string().uuid('Parent ID must be a valid UUID').optional(),
   status: DocumentStatusEnum.default('draft'),
   // content: z.record(z.any()).default({}),
@@ -42,12 +42,19 @@ export const CreateDocumentSchema = z.object({
 // Update Document Schema
 export const UpdateDocumentSchema = CreateDocumentSchema.partial();
 
+export class UpdateDocumentContentDto {
+  content: any; // or be more specific with your Lexical JSON type if you have one
+}
+export const UpdateDocumentContentSchema = z.object({
+  content: z.any(), // or a more specific schema for your Lexical JSON content
+});
+
 // Type Definitions
 export type CreateDocumentDto = z.infer<typeof CreateDocumentSchema>;
 export type UpdateDocumentDto = z.infer<typeof UpdateDocumentSchema>;
 
 export const CreateDocumentWithBlocksSchema = z.object({
-  document: CreateDocumentSchema,
+  document: CreateDocumentSchema.optional(),
   blocks: z.array(CreateBlockSchema).default([]),
 });
 export type CreateDocumentWithBlocksDto = z.infer<
