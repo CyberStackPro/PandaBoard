@@ -12,7 +12,7 @@ export interface BlockContent {
 
 export interface Block {
   document_id: string;
-  type: string;
+  type?: string;
   content: BlockContent;
   sort_order: number;
   parent_block_id?: string;

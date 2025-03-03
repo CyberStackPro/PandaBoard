@@ -16,7 +16,7 @@ export function useEditorContent(documentId: string) {
   };
   const { mutateAsync: saveBlocks } = useMutation({
     mutationFn: (blocks: Block[]) =>
-      axios.post(`http://localhost:4000/api/v1/documents/create`, { blocks }),
+      axios.post(`http://localhost:4000/api/v1/blocks/create`, { blocks }),
   });
 
   const debouncedSave = useMemo(
@@ -33,7 +33,7 @@ export function useEditorContent(documentId: string) {
             // Consider adding error reporting here
           }
         },
-        500,
+        1000,
         { leading: false, trailing: true }
       ),
     [documentId, saveBlocks]

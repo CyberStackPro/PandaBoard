@@ -26,7 +26,7 @@ import { z } from 'zod';
 // });
 export const CreateBlockSchema = z.object({
   document_id: z.string().uuid(),
-  type: z.enum(['text', 'heading', 'list', 'quote', 'code', 'image', 'table']),
+  // type: z.enum(['text', 'heading', 'list', 'quote', 'code', 'image', 'table']),
   // .optional(),
   // content: z
   //   .object({
@@ -52,7 +52,7 @@ export const CreateBlockSchema = z.object({
   //   .passthrough(),
   content: z.record(z.any()), // More flexible content structure
   // .passthrough(),
-  sort_order: z.number(),
+  // sort_order: z.number(),
   parent_block_id: z.string().uuid().optional(),
 });
 
