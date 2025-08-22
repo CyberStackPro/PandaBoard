@@ -165,7 +165,7 @@ See [`LICENSE`](./LICENSE) for full license text.
 ## 📬 Stay Connected
 
 - GitHub: [CyberStackPro](https://github.com/CyberStackPro)
-- Twitter/X: [@CyberStackPro](https://twitter.com/CyberStackPro) *(if available)*
+- Twitter/X: [@CyberStackPro](https://twitter.com/CyberStackPro)
 - Website: Coming soon!
 - Contributions welcome — join the dev community 🙌
 
