@@ -1,9 +1,3 @@
-Absolutely! Here's a **complete and polished root-level `README.md`** for your open-source Notion alternative, now named **PandaBoard** 🐼.
-
-You can copy-paste this into your `README.md` at the root of your repo (`/Notion_Clone/README.md`).
-
----
-
 
 # 🐼 PandaBoard — Open Source Notion Alternative
 
