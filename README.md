@@ -4,7 +4,7 @@ You can copy-paste this into your `README.md` at the root of your repo (`/Notion
 
 ---
 
-```md
+
 # 🐼 PandaBoard — Open Source Notion Alternative
 
 PandaBoard is a **modern, full-stack, open-source alternative to Notion**, built for developers, writers, and teams who want full control over their data and workflows.
@@ -170,8 +170,3 @@ See [`LICENSE`](./LICENSE) for full license text.
 - Contributions welcome — join the dev community 🙌
 
 ---
-
-> Made with ❤️ by CyberStackPro | Open Source Forever 🔓
-
-
-```
